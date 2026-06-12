@@ -19,10 +19,10 @@ navLinks.forEach(link => {
 window.addEventListener('scroll', () => {
     const navbar = document.querySelector('.navbar');
     if (window.scrollY > 50) {
-        navbar.style.background = 'rgba(15, 23, 42, 1)';
-        navbar.style.borderBottom = '1px solid rgba(51, 65, 85, 0.5)';
+        navbar.style.background = 'rgba(10, 10, 10, 1)';
+        navbar.style.borderBottom = '1px solid rgba(51, 51, 51, 0.5)';
     } else {
-        navbar.style.background = 'rgba(15, 23, 42, 0.95)';
+        navbar.style.background = 'rgba(10, 10, 10, 0.95)';
     }
 });
 
