@@ -3,293 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neha - CS, AI + Design at Duke</title>
+    <title>Neha — Work</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Flex:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="nav-wrapper">
-                <a href="#home" class="logo">Neha</a>
-                <ul class="nav-menu">
-                    <li><a href="#home" class="nav-link">Home</a></li>
-                    <li><a href="#about" class="nav-link">About</a></li>
-                    <li><a href="#projects" class="nav-link">Projects</a></li>
-                    <li><a href="#skills" class="nav-link">Skills</a></li>
-                    <li><a href="#contact" class="nav-link">Contact</a></li>
-                </ul>
-                <div class="hamburger">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            </div>
+
+    <nav class="nav-container">
+        <a href="index.html" class="nav-logo">
+            <svg width="28" height="28" viewBox="0 0 32 32" fill="none" style="margin-right: 12px;">
+                <circle cx="16" cy="16" r="15" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
+                <path d="M11 22V10L21 22V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>neha.</span>
+        </a>
+        <div class="nav-links">
+            <a href="index.html" class="active">Work</a>
+            <a href="playground.html">Playground</a>
+            <a href="about.html">About</a>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section id="home" class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <div class="hero-header">
-                    <h1 class="hero-name">Neha</h1>
-                    <p class="hero-title">CS, AI + Design at Duke</p>
-                </div>
-                <p class="hero-description">Building thoughtful digital experiences at the intersection of design and technology. Currently exploring AI-driven interfaces and creative problem-solving.</p>
-                <div class="cta-buttons">
-                    <a href="#projects" class="btn btn-primary">View My Work</a>
-                    <a href="#contact" class="btn btn-secondary">Get In Touch</a>
-                </div>
-            </div>
-            <div class="hero-visual">
-                <div class="floating-card"></div>
-                <div class="floating-card card-2"></div>
-                <div class="floating-card card-3"></div>
-            </div>
-        </div>
-    </section>
+    <main class="main-layout">
+        <section class="hero-section">
+            <h1 class="hero-text text-reveal">
+                Engineering intelligent systems through an <span class="italic-serif">aesthetic structure</span>.
+            </h1>
+            <p class="hero-subtext text-reveal-delayed">
+                Computer Science & Statistics at Duke University. Specializing in machine learning models and high-fidelity interaction design.
+            </p>
+        </section>
 
-    <!-- About Section -->
-    <section id="about" class="about">
-        <div class="container">
+        <section id="work" class="section-container reveal">
             <div class="section-header">
-                <h2>About Me</h2>
-                <div class="header-line"></div>
+                <span class="section-number">01 /</span>
+                <h2 class="section-title">Selected Production</h2>
             </div>
-            <div class="about-grid">
-                <div class="about-content">
-                    <p>I'm a student at Duke University studying Computer Science with a focus on AI, combined with design. I'm passionate about creating intuitive, beautiful interfaces that solve real problems.</p>
-                    <p>I believe the best products come from the intersection of technical excellence and thoughtful design. When I'm not coding or designing, you'll find me exploring new technologies, contributing to creative projects, or thinking about how AI can enhance human experiences.</p>
-                    <div class="about-stats">
-                        <div class="stat">
-                            <h3>10+</h3>
-                            <p>Projects</p>
-                        </div>
-                        <div class="stat">
-                            <h3>5+</h3>
-                            <p>Design Tools</p>
-                        </div>
-                        <div class="stat">
-                            <h3>3+</h3>
-                            <p>Years Building</p>
-                        </div>
+            
+            <div class="work-index">
+                <a href="#" class="project-row">
+                    <div class="project-meta">
+                        <span class="project-year">'26</span>
+                        <span class="project-title">Jonas Rx Prediction Engine</span>
                     </div>
-                </div>
-                <div class="about-image">
-                    <img src="assets/images/profile.jpg" alt="Neha" onerror="this.style.display='none'">
-                </div>
-            </div>
-        </div>
-    </section>
+                    <div class="project-tags">
+                        <span class="tag">Machine Learning</span>
+                        <span class="tag">Healthcare UI</span>
+                    </div>
+                    <div class="project-arrow">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12H19M19 12L13 6M19 12L13 18"/></svg>
+                    </div>
+                </a>
 
-    <!-- Projects Section -->
-    <section id="projects" class="projects">
-        <div class="container">
-            <div class="section-header">
-                <h2>Featured Projects</h2>
-                <div class="header-line"></div>
+                <a href="#" class="project-row">
+                    <div class="project-meta">
+                        <span class="project-year">'26</span>
+                        <span class="project-title">R Shiny Editorial Interface</span>
+                    </div>
+                    <div class="project-tags">
+                        <span class="tag">Product Analytics</span>
+                        <span class="tag">API</span>
+                    </div>
+                    <div class="project-arrow">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12H19M19 12L13 6M19 12L13 18"/></svg>
+                    </div>
+                </a>
             </div>
-            <div class="projects-grid">
-                <div class="project-card">
-                    <div class="project-image">
-                        <img src="assets/images/project1.png" alt="Project 1" onerror="this.style.display='none'">
-                    </div>
-                    <div class="project-content">
-                        <h3>Project One</h3>
-                        <p>An AI-powered application that combines design thinking with cutting-edge technology to create meaningful user experiences.</p>
-                        <div class="project-tags">
-                            <span class="tag">React</span>
-                            <span class="tag">AI/ML</span>
-                            <span class="tag">Design</span>
-                        </div>
-                        <div class="project-links">
-                            <a href="#" class="link-btn">View Project →</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="project-card">
-                    <div class="project-image">
-                        <img src="assets/images/project2.png" alt="Project 2" onerror="this.style.display='none'">
-                    </div>
-                    <div class="project-content">
-                        <h3>Project Two</h3>
-                        <p>A full-stack web application designed with accessibility and user-centric principles at its core.</p>
-                        <div class="project-tags">
-                            <span class="tag">Vue.js</span>
-                            <span class="tag">Figma</span>
-                            <span class="tag">UX/UI</span>
-                        </div>
-                        <div class="project-links">
-                            <a href="#" class="link-btn">View Project →</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="project-card">
-                    <div class="project-image">
-                        <img src="assets/images/project3.png" alt="Project 3" onerror="this.style.display='none'">
-                    </div>
-                    <div class="project-content">
-                        <h3>Project Three</h3>
-                        <p>Creative exploration of interactive design systems combining motion, storytelling, and technical innovation.</p>
-                        <div class="project-tags">
-                            <span class="tag">Animation</span>
-                            <span class="tag">Design System</span>
-                            <span class="tag">Creative Dev</span>
-                        </div>
-                        <div class="project-links">
-                            <a href="#" class="link-btn">View Project →</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Skills Section -->
-    <section id="skills" class="skills">
-        <div class="container">
-            <div class="section-header">
-                <h2>Skills & Technologies</h2>
-                <div class="header-line"></div>
-            </div>
-            <div class="skills-grid">
-                <div class="skill-category">
-                    <h3>Design</h3>
-                    <div class="skill-list">
-                        <div class="skill-item">
-                            <span class="skill-name">Figma</span>
-                            <div class="skill-bar">
-                                <div class="skill-progress" style="width: 95%"></div>
-                            </div>
-                        </div>
-                        <div class="skill-item">
-                            <span class="skill-name">UI/UX Design</span>
-                            <div class="skill-bar">
-                                <div class="skill-progress" style="width: 90%"></div>
-                            </div>
-                        </div>
-                        <div class="skill-item">
-                            <span class="skill-name">Design Systems</span>
-                            <div class="skill-bar">
-                                <div class="skill-progress" style="width: 85%"></div>
-                            </div>
-                        </div>
-                        <div class="skill-item">
-                            <span class="skill-name">Prototyping</span>
-                            <div class="skill-bar">
-                                <div class="skill-progress" style="width: 88%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="skill-category">
-                    <h3>Development</h3>
-                    <div class="skill-list">
-                        <div class="skill-item">
-                            <span class="skill-name">React</span>
-                            <div class="skill-bar">
-                                <div class="skill-progress" style="width: 88%"></div>
-                            </div>
-                        </div>
-                        <div class="skill-item">
-                            <span class="skill-name">JavaScript</span>
-                            <div class="skill-bar">
-                                <div class="skill-progress" style="width: 90%"></div>
-                            </div>
-                        </div>
-                        <div class="skill-item">
-                            <span class="skill-name">Python</span>
-                            <div class="skill-bar">
-                                <div class="skill-progress" style="width: 85%"></div>
-                            </div>
-                        </div>
-                        <div class="skill-item">
-                            <span class="skill-name">Web Design</span>
-                            <div class="skill-bar">
-                                <div class="skill-progress" style="width: 92%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="skill-category">
-                    <h3>AI & Creative</h3>
-                    <div class="skill-list">
-                        <div class="skill-item">
-                            <span class="skill-name">Machine Learning</span>
-                            <div class="skill-bar">
-                                <div class="skill-progress" style="width: 82%"></div>
-                            </div>
-                        </div>
-                        <div class="skill-item">
-                            <span class="skill-name">Creative Coding</span>
-                            <div class="skill-bar">
-                                <div class="skill-progress" style="width: 87%"></div>
-                            </div>
-                        </div>
-                        <div class="skill-item">
-                            <span class="skill-name">Data Visualization</span>
-                            <div class="skill-bar">
-                                <div class="skill-progress" style="width: 80%"></div>
-                            </div>
-                        </div>
-                        <div class="skill-item">
-                            <span class="skill-name">Problem Solving</span>
-                            <div class="skill-bar">
-                                <div class="skill-progress" style="width: 95%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="contact">
-        <div class="container">
-            <div class="section-header">
-                <h2>Let's Connect</h2>
-                <div class="header-line"></div>
-            </div>
-            <div class="contact-content">
-                <p class="contact-description">Have a project in mind or want to collaborate? I'd love to hear from you!</p>
-                <div class="contact-methods">
-                    <a href="mailto:your.email@example.com" class="contact-card">
-                        <h3>Email</h3>
-                        <p>your.email@example.com</p>
-                    </a>
-                    <a href="https://linkedin.com" target="_blank" class="contact-card">
-                        <h3>LinkedIn</h3>
-                        <p>Connect with me</p>
-                    </a>
-                    <a href="https://github.com/nehajatla" target="_blank" class="contact-card">
-                        <h3>GitHub</h3>
-                        <p>See my code</p>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2024 Neha. All rights reserved. | Crafted with ❤️</p>
-            <div class="footer-links">
-                <a href="#">Privacy</a>
-                <a href="#">Terms</a>
-                <a href="#">Sitemap</a>
-            </div>
-        </div>
-    </footer>
+        </section>
+    </main>
 
     <script src="script.js"></script>
 </body>
