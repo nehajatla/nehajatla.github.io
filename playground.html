@@ -1,58 +1,770 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Playground — Museum Canvas</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playground — Museum Canvas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+  /* ============================================================
+     BASE / RESET
+     ============================================================ */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #FAF7F2;        /* gallery wall background */
+    --ink: #1C1916;
+    --ink-soft: #6B6258;
+    --ink-ghost: #AFA89F;
+    --periwinkle: #8F94FB;   /* custom cursor + accent color */
+    --periwinkle-dim: rgba(143,148,251,0.16);
+    --serif: 'Instrument Serif', Georgia, serif;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--cream);
+    font-family: var(--sans);
+    color: var(--ink);
+    cursor: none; /* native cursor hidden — periwinkle dot used instead */
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  /* ============================================================
+     NAV — sits above the tilted stage, unaffected by parallax
+     ============================================================ */
+  .nav-container {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 300;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 48px;
+    background: rgba(250,247,242,0.78);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 0.5px solid rgba(28,25,22,0.07);
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    font-family: var(--serif);
+    font-size: 19px;
+    color: var(--ink);
+  }
+
+  .nav-links { display: flex; gap: 34px; }
+
+  .nav-links a {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-ghost);
+    position: relative;
+    transition: color 0.2s;
+  }
+
+  .nav-links a.active { color: var(--ink); }
+
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -3px; left: 0; right: 0;
+    height: 1px;
+    background: var(--periwinkle);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+  }
+
+  .nav-links a:hover { color: var(--ink); }
+  .nav-links a:hover::after,
+  .nav-links a.active::after { transform: scaleX(1); }
+
+  /* ============================================================
+     PERSPECTIVE ROOT
+     This element establishes the 3D space. Its child (#stage)
+     is what actually rotates, so the perspective vanishing
+     point stays fixed at the center of the viewport.
+     ============================================================ */
+  #perspectiveRoot {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    perspective: 1400px; /* lower = more dramatic tilt, higher = subtler */
+  }
+
+  /* ============================================================
+     STAGE — the whole-viewport tilt layer.
+     Rotated by JS based on cursor position relative to screen
+     center. This is what makes the ENTIRE environment feel like
+     it's responding to the cursor, not just individual frames.
+     ============================================================ */
+  #stage {
+    position: absolute;
+    inset: -10%; /* slightly oversized so tilted edges never show a gap */
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+
+  /* faint gallery-wall texture, purely decorative, lives on the stage
+     so it tilts together with everything else */
+  #stage::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    background:
+      radial-gradient(circle at 18% 22%, rgba(28,25,22,0.018) 0%, transparent 50%),
+      radial-gradient(circle at 82% 74%, rgba(28,25,22,0.018) 0%, transparent 50%);
+  }
+
+  /* ============================================================
+     CANVAS — the infinite pannable surface, nested inside the
+     tilted stage. Drag/inertia translate THIS element only, so
+     panning and tilting are fully independent transforms and
+     never fight or stutter against each other.
+     ============================================================ */
+  #canvas {
+    position: absolute;
+    top: 10%; left: 10%;
+    width: 100%; height: 100%;
+    will-change: transform;
+  }
+
+  /* ============================================================
+     ARTWORK FRAME
+     Scale is driven live by JS (cursor proximity) via inline
+     transform — CSS just defines the resting visual style.
+     ============================================================ */
+  .frame {
+    position: absolute;
+    background: #fff;
+    padding: 20px 20px 0 20px;
+    border-radius: 5px;
+    box-shadow:
+      0 2px 3px rgba(28,25,22,0.05),
+      0 14px 36px rgba(28,25,22,0.10),
+      0 36px 72px rgba(28,25,22,0.07);
+    border: 1px solid rgba(28,25,22,0.06);
+    user-select: none;
+    -webkit-user-select: none;
+    transform: translate(-50%, -50%) scale(1); /* base; JS overrides scale */
+    transition: box-shadow 0.3s ease;
+  }
+
+  .frame-img-wrap {
+    width: 100%;
+    height: calc(100% - 60px);
+    overflow: hidden;
+    border-radius: 2px;
+  }
+
+  .frame-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+    background: linear-gradient(135deg, #e3ded4, #efe9de);
+  }
+
+  .frame-caption {
+    height: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 9px 2px 18px;
+  }
+
+  .frame-title {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .frame-sub {
+    font-size: 11px;
+    color: var(--ink-ghost);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ============================================================
+     CUSTOM PERIWINKLE CURSOR
+     A single clean dot — pure position follower with a soft glow.
+     Proximity scaling logic lives in JS below.
+     ============================================================ */
+  #cursor {
+    position: fixed;
+    top: 0; left: 0;
+    width: 14px; height: 14px;
+    margin-left: -7px;
+    margin-top: -7px;
+    border-radius: 50%;
+    background: var(--periwinkle);
+    box-shadow: 0 0 0 6px var(--periwinkle-dim);
+    pointer-events: none;
+    z-index: 9999;
+    transition: width 0.15s ease, height 0.15s ease,
+                margin 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  #cursor.dragging {
+    width: 10px; height: 10px;
+    margin-left: -5px;
+    margin-top: -5px;
+    box-shadow: 0 0 0 10px var(--periwinkle-dim);
+  }
+
+  /* ============================================================
+     HINT
+     ============================================================ */
+  #hint {
+    position: fixed;
+    bottom: 30px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-ghost);
+    z-index: 250;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: opacity 0.6s ease;
+  }
+
+  #hint .hint-line {
+    width: 26px; height: 1px;
+    background: var(--ink-ghost);
+    animation: hintPulse 1.8s ease-in-out infinite;
+  }
+
+  @keyframes hintPulse {
+    0%, 100% { opacity: 0.3; transform: scaleX(1); }
+    50%      { opacity: 1;   transform: scaleX(1.5); }
+  }
+
+  #hint.faded { opacity: 0; }
+
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+  @media (max-width: 640px) {
+    .nav-container { padding: 18px 22px; }
+    .nav-links { gap: 18px; }
+    .nav-links a { font-size: 10px; }
+  }
+
+  /* Respect reduced-motion: disable tilt + proximity scale jitter */
+  @media (prefers-reduced-motion: reduce) {
+    #stage { transform: none !important; }
+  }
+</style>
 </head>
 <body class="playground-body">
 
-    <nav class="nav-container">
-        <a href="index.html" class="nav-logo">
-            <svg width="28" height="28" viewBox="0 0 32 32" fill="none" style="margin-right: 12px;">
-                <circle cx="16" cy="16" r="15" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
-                <path d="M11 22V10L21 22V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span>neha.</span>
-        </a>
-        <div class="nav-links">
-            <a href="index.html">Work</a>
-            <a href="playground.html" class="active">Playground</a>
-            <a href="about.html">About</a>
-        </div>
-    </nav>
-
-    <div class="museum-viewport" id="museumViewport">
-        <div class="museum-canvas" id="museumCanvas">
-            
-            <div class="museum-card stagger-high">
-                <div class="media-placeholder tint-rose"></div>
-                <div class="museum-caption">
-                    <span class="art-title">Nava Natyam Identity</span>
-                    <span class="art-meta">Creative Direction, 2026</span>
-                </div>
-            </div>
-
-            <div class="museum-card stagger-med text-card">
-                <p class="card-quote">"Movement is data structured in real-time space."</p>
-                <span class="art-meta">Choreographic Notation Study</span>
-            </div>
-
-            <div class="museum-card stagger-low">
-                <div class="media-placeholder tint-sage"></div>
-                <div class="museum-caption">
-                    <span class="art-title">Generative Geometry Architecture</span>
-                    <span class="art-meta">p5.js Render Experiments</span>
-                </div>
-            </div>
-
-        </div>
+  <nav class="nav-container">
+    <a href="index.html" class="nav-logo">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none" style="margin-right: 12px;">
+        <circle cx="16" cy="16" r="15" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
+        <path d="M11 22V10L21 22V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>neha.</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Work</a>
+      <a href="playground.html" class="active">Playground</a>
+      <a href="about.html">About</a>
     </div>
+  </nav>
 
-    <script src="script.js"></script>
+  <!-- 3D perspective root — establishes the vanishing point -->
+  <div id="perspectiveRoot">
+    <!-- Stage — tilts toward the cursor (whole-viewport parallax) -->
+    <div id="stage">
+      <!-- Canvas — pans via drag/inertia, nested inside the tilt -->
+      <div id="canvas"></div>
+    </div>
+  </div>
+
+  <!-- Custom periwinkle cursor -->
+  <div id="cursor"></div>
+
+  <!-- Drag hint -->
+  <div id="hint">
+    <div class="hint-line"></div>
+    <span>Click & drag to explore</span>
+    <div class="hint-line"></div>
+  </div>
+
+<script>
+/* ================================================================
+   ╔══════════════════════════════════════════════════════════╗
+   ║   ⭐ ARTWORK DATA TEMPLATE — EDIT THIS ARRAY ⭐            ║
+   ║                                                            ║
+   ║   This is the ONLY section you need to touch to add your  ║
+   ║   own art. Each object = one frame on the wall.            ║
+   ║                                                            ║
+   ║   imagePath : path or URL to your image                   ║
+   ║              (leave as "" to show a placeholder gradient)  ║
+   ║   title     : short title shown beneath the frame          ║
+   ║   caption   : medium / year / short description            ║
+   ║   ratio     : "portrait" | "landscape" | "square"          ║
+   ║              (controls the frame's aspect ratio)            ║
+   ║                                                            ║
+   ║   Add as many objects as you like — the wall tiles them    ║
+   ║   infinitely regardless of array length, and mixes          ║
+   ║   orientations automatically based on each item's ratio.   ║
+   ╚══════════════════════════════════════════════════════════╝
+   ================================================================ */
+  const ARTWORK_DATA = [
+    {
+      imagePath: "path/to/your-artwork-1.jpg",
+      title: "Artwork Title One",
+      caption: "Oil on canvas, 2024",
+      ratio: "portrait"
+    },
+    {
+      imagePath: "path/to/your-artwork-2.jpg",
+      title: "Artwork Title Two",
+      caption: "Digital, 2023",
+      ratio: "landscape"
+    },
+    {
+      imagePath: "path/to/your-artwork-3.jpg",
+      title: "Artwork Title Three",
+      caption: "Ink sketch, 2024",
+      ratio: "square"
+    },
+    {
+      imagePath: "path/to/your-artwork-4.jpg",
+      title: "Artwork Title Four",
+      caption: "Mixed media, 2022",
+      ratio: "portrait"
+    },
+    {
+      imagePath: "path/to/your-artwork-5.jpg",
+      title: "Artwork Title Five",
+      caption: "Watercolor, 2023",
+      ratio: "landscape"
+    },
+    {
+      imagePath: "path/to/your-artwork-6.jpg",
+      title: "Artwork Title Six",
+      caption: "Acrylic on board, 2024",
+      ratio: "square"
+    },
+    {
+      imagePath: "path/to/your-artwork-7.jpg",
+      title: "Artwork Title Seven",
+      caption: "Photography, 2024",
+      ratio: "portrait"
+    },
+    {
+      imagePath: "path/to/your-artwork-8.jpg",
+      title: "Artwork Title Eight",
+      caption: "Charcoal, 2023",
+      ratio: "landscape"
+    }
+  ];
+  /* ============== END OF EDITABLE TEMPLATE SECTION ============== */
+
+
+  /* ================================================================
+     CONFIG — layout & feel tuning. Safe to adjust.
+     ================================================================ */
+  const CONFIG = {
+    /* ── SPACING ──
+       Widened further + frames made bigger so only ~5-7 are visible
+       per screen at default zoom. Increase cell values for an even
+       sparser wall; decrease frameBaseSize to fit more on screen. */
+    cellWidth: 640,
+    cellHeight: 560,
+
+    frameBaseSize: 320,    // base frame size before ratio/jitter applied (BIGGER now)
+    jitterPos: 80,         // random positional offset within a cell (px)
+    jitterScale: 0.16,     // random size variance (0.16 = ±16%)
+    bufferCells: 1,        // extra rings rendered beyond viewport edges
+
+    friction: 0.945,       // inertia decay per frame (closer to 1 = glidier)
+    minVelocity: 0.03,     // velocity threshold to stop the inertia loop
+
+    /* ── PROXIMITY SCALING (cursor reactivity on individual frames) ──
+       Frames within `proximityRadius` px of the cursor grow toward
+       `maxScale`; frames beyond it rest at `minScale`. `smoothing`
+       controls how quickly each frame's scale eases toward its
+       target each frame (lower = floatier/more elastic). */
+    proximityRadius: 460,
+    maxScale: 1.14,
+    minScale: 0.95,
+    smoothing: 0.07,
+
+    /* ── WHOLE-VIEWPORT TILT (3D parallax) ──
+       maxTilt: maximum rotation in degrees applied to #stage when
+       the cursor is at the very edge of the screen.
+       tiltSmoothing: easing factor for the tilt itself — lower
+       feels heavier/more elastic, higher feels snappier. */
+    maxTilt: 7,
+    tiltSmoothing: 0.06
+  };
+
+  /* ================================================================
+     DETERMINISTIC PSEUDO-RANDOM
+     Ensures each grid cell always looks the same (stable layout)
+     instead of re-randomizing every render.
+     ================================================================ */
+  function seededRandom(x, y, salt) {
+    const s = Math.sin(x * 127.1 + y * 311.7 + salt * 74.7) * 43758.5453;
+    return s - Math.floor(s);
+  }
+
+  /* ================================================================
+     STATE
+     ================================================================ */
+  const stage = document.getElementById('stage');
+  const canvas = document.getElementById('canvas');
+  const cursorEl = document.getElementById('cursor');
+  const hint = document.getElementById('hint');
+
+  let originX = 0, originY = 0;     // current pan offset (canvas translate)
+  let velX = 0, velY = 0;           // inertia velocity
+  let isDragging = false;
+  let lastX = 0, lastY = 0;
+  let lastMoveTime = 0;
+  let hasDraggedOnce = false;
+
+  // Raw cursor position in *screen* space (for the dot + proximity calc)
+  let cursorScreenX = window.innerWidth / 2;
+  let cursorScreenY = window.innerHeight / 2;
+
+  // Current + target tilt angles (degrees), eased independently of pan
+  let tiltX = 0, tiltY = 0;       // current, animated each frame
+  let targetTiltX = 0, targetTiltY = 0; // computed from cursor position
+
+  // Key = "cellX,cellY" -> { el, scale, cx, cy } for per-frame animation
+  const renderedCells = new Map();
+
+  /* ================================================================
+     ASPECT RATIO → WIDTH/HEIGHT
+     ================================================================ */
+  function getFrameDims(ratio, scaleVariance) {
+    const base = CONFIG.frameBaseSize * (1 + scaleVariance);
+    switch (ratio) {
+      case 'portrait':  return { w: base * 0.74, h: base * 1.22 };
+      case 'landscape': return { w: base * 1.32, h: base * 0.82 };
+      case 'square':
+      default:          return { w: base, h: base };
+    }
+  }
+
+  /* ================================================================
+     CREATE A FRAME for a given infinite grid cell (cellX, cellY).
+     Cell coords map to ARTWORK_DATA via hashed modulo so the
+     pattern never obviously repeats but stays stable on re-render.
+     Orientation mix happens automatically since each art object
+     in ARTWORK_DATA carries its own `ratio`.
+     ================================================================ */
+  function createFrame(cellX, cellY) {
+    const dataLen = ARTWORK_DATA.length;
+    const hash = Math.abs((cellX * 928371 + cellY * 73291) % dataLen);
+    const art = ARTWORK_DATA[hash];
+
+    const rx = seededRandom(cellX, cellY, 1);
+    const ry = seededRandom(cellX, cellY, 2);
+    const rs = seededRandom(cellX, cellY, 3);
+
+    const jitterX = (rx - 0.5) * 2 * CONFIG.jitterPos;
+    const jitterY = (ry - 0.5) * 2 * CONFIG.jitterPos;
+    const scaleVariance = (rs - 0.5) * 2 * CONFIG.jitterScale;
+
+    const { w, h } = getFrameDims(art.ratio, scaleVariance);
+
+    const baseX = cellX * CONFIG.cellWidth + jitterX;
+    const baseY = cellY * CONFIG.cellHeight + jitterY;
+
+    const el = document.createElement('div');
+    el.className = 'frame';
+    el.style.width = w + 'px';
+    el.style.height = h + 'px';
+    el.style.left = baseX + 'px';
+    el.style.top = baseY + 'px';
+
+    const imgWrap = document.createElement('div');
+    imgWrap.className = 'frame-img-wrap';
+
+    const img = document.createElement('img');
+    img.className = 'frame-img';
+    img.draggable = false;
+    img.alt = art.title;
+    if (art.imagePath) {
+      img.src = art.imagePath;
+      img.onerror = () => { img.style.opacity = '0'; };
+    }
+    imgWrap.appendChild(img);
+
+    const caption = document.createElement('div');
+    caption.className = 'frame-caption';
+    caption.innerHTML =
+      '<div class="frame-title">' + art.title + '</div>' +
+      '<div class="frame-sub">' + art.caption + '</div>';
+
+    el.appendChild(imgWrap);
+    el.appendChild(caption);
+
+    return {
+      el,
+      cx: baseX,   // wall-space center, used for proximity distance calc
+      cy: baseY,
+      scale: CONFIG.minScale // current animated scale, eased toward target
+    };
+  }
+
+  /* ================================================================
+     RENDER VISIBLE CELLS
+     Mounts/unmounts frames based on current pan offset so the wall
+     feels infinite without unbounded DOM growth.
+     ================================================================ */
+  function renderVisibleCells() {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    const left   = -originX;
+    const top    = -originY;
+    const right  = left + vw;
+    const bottom = top + vh;
+
+    const minCellX = Math.floor(left   / CONFIG.cellWidth)  - CONFIG.bufferCells;
+    const maxCellX = Math.ceil (right  / CONFIG.cellWidth)  + CONFIG.bufferCells;
+    const minCellY = Math.floor(top    / CONFIG.cellHeight) - CONFIG.bufferCells;
+    const maxCellY = Math.ceil (bottom / CONFIG.cellHeight) + CONFIG.bufferCells;
+
+    const neededKeys = new Set();
+
+    for (let cy = minCellY; cy <= maxCellY; cy++) {
+      for (let cx = minCellX; cx <= maxCellX; cx++) {
+        const key = cx + ',' + cy;
+        neededKeys.add(key);
+        if (!renderedCells.has(key)) {
+          const frame = createFrame(cx, cy);
+          canvas.appendChild(frame.el);
+          renderedCells.set(key, frame);
+        }
+      }
+    }
+
+    for (const [key, frame] of renderedCells) {
+      if (!neededKeys.has(key)) {
+        frame.el.remove();
+        renderedCells.delete(key);
+      }
+    }
+  }
+
+  /* ================================================================
+     APPLY CANVAS TRANSFORM (pan position only — independent of tilt)
+     ================================================================ */
+  function applyCanvasTransform() {
+    canvas.style.transform = 'translate3d(' + originX + 'px, ' + originY + 'px, 0)';
+  }
+
+  /* ================================================================
+     ⭐ WHOLE-VIEWPORT TILT — 3D PARALLAX LOGIC ⭐
+     Computes a target rotation for #stage based on cursor position
+     relative to the screen center, then eases the current tilt
+     toward that target every frame. This transform lives on #stage,
+     completely separate from #canvas's pan transform — so dragging
+     and tilting composite cleanly with zero stutter.
+     Tweak CONFIG.maxTilt / tiltSmoothing above to adjust the feel.
+     ================================================================ */
+  function updateTiltTarget() {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    // Normalize cursor position to -1..1 relative to screen center
+    const nx = (cursorScreenX / vw) * 2 - 1;
+    const ny = (cursorScreenY / vh) * 2 - 1;
+
+    // Horizontal cursor movement -> rotate around Y axis (tilts left/right)
+    // Vertical cursor movement   -> rotate around X axis (tilts up/down)
+    // Inverted on X so the wall tilts "into" the cursor, not away from it.
+    targetTiltY = nx * CONFIG.maxTilt;
+    targetTiltX = -ny * CONFIG.maxTilt;
+  }
+
+  function applyTiltTransform() {
+    // Ease current tilt toward target (lerp) for elastic, floaty motion
+    tiltX += (targetTiltX - tiltX) * CONFIG.tiltSmoothing;
+    tiltY += (targetTiltY - tiltY) * CONFIG.tiltSmoothing;
+
+    stage.style.transform =
+      'rotateX(' + tiltX.toFixed(3) + 'deg) rotateY(' + tiltY.toFixed(3) + 'deg)';
+  }
+
+  /* ================================================================
+     PROXIMITY SCALING — individual frame reactivity to cursor
+     ================================================================ */
+  function updateProximityScaling() {
+    for (const frame of renderedCells.values()) {
+      // Frame center in screen space = wall position + current pan offset
+      const screenX = frame.cx + originX;
+      const screenY = frame.cy + originY;
+
+      const dx = screenX - cursorScreenX;
+      const dy = screenY - cursorScreenY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      const t = Math.min(dist / CONFIG.proximityRadius, 1); // 0 = on cursor, 1 = at/beyond radius
+      const targetScale = CONFIG.maxScale + (CONFIG.minScale - CONFIG.maxScale) * t;
+
+      frame.scale += (targetScale - frame.scale) * CONFIG.smoothing;
+
+      frame.el.style.transform = 'translate(-50%, -50%) scale(' + frame.scale.toFixed(4) + ')';
+    }
+  }
+
+  /* ================================================================
+     MAIN ANIMATION LOOP
+     Runs continuously so tilt + proximity scaling stay smooth even
+     when the cursor moves without dragging.
+     ================================================================ */
+  function mainLoop() {
+    applyTiltTransform();
+    updateProximityScaling();
+    requestAnimationFrame(mainLoop);
+  }
+
+  /* ================================================================
+     INERTIA — glide-to-stop after releasing a drag
+     ================================================================ */
+  let inertiaRAF = null;
+
+  function inertiaStep() {
+    originX += velX;
+    originY += velY;
+    velX *= CONFIG.friction;
+    velY *= CONFIG.friction;
+
+    applyCanvasTransform();
+    renderVisibleCells();
+
+    if (Math.abs(velX) > CONFIG.minVelocity || Math.abs(velY) > CONFIG.minVelocity) {
+      inertiaRAF = requestAnimationFrame(inertiaStep);
+    } else {
+      inertiaRAF = null;
+    }
+  }
+
+  function stopInertia() {
+    if (inertiaRAF) {
+      cancelAnimationFrame(inertiaRAF);
+      inertiaRAF = null;
+    }
+  }
+
+  /* ================================================================
+     POINTER EVENTS (mouse + touch unified)
+     ================================================================ */
+  function onPointerDown(e) {
+    isDragging = true;
+    stopInertia();
+    lastX = e.clientX;
+    lastY = e.clientY;
+    lastMoveTime = performance.now();
+    velX = 0; velY = 0;
+    cursorEl.classList.add('dragging');
+
+    if (!hasDraggedOnce) {
+      hasDraggedOnce = true;
+      hint.classList.add('faded');
+    }
+  }
+
+  function onPointerMove(e) {
+    // Update cursor dot position + tilt target every move (drag or not)
+    cursorScreenX = e.clientX;
+    cursorScreenY = e.clientY;
+    cursorEl.style.transform = 'translate(' + e.clientX + 'px, ' + e.clientY + 'px)';
+    updateTiltTarget();
+
+    if (!isDragging) return;
+
+    const now = performance.now();
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    const dt = Math.max(now - lastMoveTime, 1);
+
+    originX += dx;
+    originY += dy;
+
+    velX = (dx / dt) * 16;
+    velY = (dy / dt) * 16;
+
+    lastX = e.clientX;
+    lastY = e.clientY;
+    lastMoveTime = now;
+
+    // Pan updates #canvas only — tilt updates #stage only.
+    // Independent transforms, applied independently: no stutter.
+    applyCanvasTransform();
+    renderVisibleCells();
+  }
+
+  function onPointerUp() {
+    if (!isDragging) return;
+    isDragging = false;
+    cursorEl.classList.remove('dragging');
+
+    if (Math.abs(velX) > CONFIG.minVelocity || Math.abs(velY) > CONFIG.minVelocity) {
+      inertiaRAF = requestAnimationFrame(inertiaStep);
+    }
+  }
+
+  window.addEventListener('pointerdown', onPointerDown);
+  window.addEventListener('pointermove', onPointerMove);
+  window.addEventListener('pointerup', onPointerUp);
+  window.addEventListener('pointercancel', onPointerUp);
+  window.addEventListener('pointerleave', onPointerUp);
+  window.addEventListener('dragstart', e => e.preventDefault());
+
+  /* ================================================================
+     RESIZE
+     ================================================================ */
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(renderVisibleCells, 120);
+  });
+
+  /* ================================================================
+     INIT
+     ================================================================ */
+  function init() {
+    originX = -CONFIG.cellWidth * 1.2;
+    originY = -CONFIG.cellHeight * 1.2;
+    applyCanvasTransform();
+    renderVisibleCells();
+    mainLoop(); // start the continuous tilt + proximity-scaling loop
+  }
+
+  init();
+</script>
 </body>
 </html>
