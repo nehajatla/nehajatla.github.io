@@ -238,7 +238,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    transition: opacity 0.6s ease;
+    /* Permanent — no opacity transition, never fades on interaction */
   }
 
   #hint .hint-line {
@@ -251,8 +251,6 @@
     0%, 100% { opacity: 0.3; transform: scaleX(1); }
     50%      { opacity: 1;   transform: scaleX(1.5); }
   }
-
-  #hint.faded { opacity: 0; }
 
   /* ============================================================
      RESPONSIVE
@@ -374,7 +372,7 @@
          Keep this moderate (0.3-0.45) — it nudges density, it does
          NOT collapse positions together. */
     clusterChance: 0.5,
-    clusterBias: 0.4,
+    clusterBias: 0.55,
 
     /* ── GAP CELLS ──
        skipChance: probability a cell is left empty, creating loose
@@ -420,7 +418,6 @@
   let isDragging = false;
   let lastX = 0, lastY = 0;
   let lastMoveTime = 0;
-  let hasDraggedOnce = false;
   let inertiaActive = false;
 
   // parallaxX/Y = the secondary cursor-driven shift, eased toward target.
@@ -735,11 +732,6 @@
     lastMoveTime = performance.now();
     velX = 0; velY = 0;
     cursorEl.classList.add('dragging');
-
-    if (!hasDraggedOnce) {
-      hasDraggedOnce = true;
-      hint.classList.add('faded');
-    }
   }
 
   function onPointerMove(e) {
@@ -805,11 +797,6 @@
 
     originX -= e.deltaX * CONFIG.scrollSensitivity;
     originY -= e.deltaY * CONFIG.scrollSensitivity;
-
-    if (!hasDraggedOnce) {
-      hasDraggedOnce = true;
-      hint.classList.add('faded');
-    }
   }
 
   window.addEventListener('wheel', onWheel, { passive: false });
