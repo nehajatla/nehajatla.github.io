@@ -14,7 +14,7 @@
   <nav class="nav">
     <a href="index.html" class="nav-logo">neha.</a>
     <ul class="nav-links">
-      <li><a href="work.html">Work</a></li>
+      <li><a href="index.html#work" id="nav-work">Work</a></li>
       <li><a href="playground.html">Playground</a></li>
       <li><a href="about.html">About</a></li>
     </ul>
@@ -22,10 +22,70 @@
 
   <main class="home-hero">
     <span class="hero-eyebrow">CS, AI &amp; Design @ Duke</span>
-    <h1 class="hero-title">Hi, I'm Neha.</h1>
+    <h1 class="hero-title">hi, i'm neha</h1>
     <p class="hero-subtitle">Building at the intersection of software, machine learning, and design.</p>
-    <a class="home-cta" href="work.html">View my work <span aria-hidden="true">→</span></a>
+    <div class="scroll-cue" aria-hidden="true">
+      <span>Scroll</span>
+      <div class="scroll-cue-line"></div>
+    </div>
   </main>
 
+  <!-- ================================================================
+       THE PAINT STORE — projects grouped into three aisles. Markup for
+       each aisle's swatch grid is rendered by paintstore.js from the
+       PROJECTS data array (see that file to add/edit projects).
+       ================================================================ -->
+  <section id="work">
+    <div class="work-intro">
+      <span class="hero-eyebrow">Selected Work</span>
+      <h2 class="work-heading">The paint store.</h2>
+      <p class="work-sub">Every project as a paint swatch — pull one off the rack to see the full case study. Color signals discipline before you read a word.</p>
+    </div>
+
+    <div class="aisle" data-aisle="build">
+      <div class="aisle-header">
+        <h3 class="aisle-name">Build</h3>
+        <p class="aisle-desc">Engineering, AI, full-stack systems, data engineering.</p>
+      </div>
+      <div class="swatch-grid" id="grid-build"></div>
+    </div>
+
+    <div class="aisle" data-aisle="design">
+      <div class="aisle-header">
+        <h3 class="aisle-name">Design</h3>
+        <p class="aisle-desc">Product design, UX/UI, branding, visual systems, motion.</p>
+      </div>
+      <div class="swatch-grid" id="grid-design"></div>
+    </div>
+
+    <div class="aisle" data-aisle="explore">
+      <div class="aisle-header">
+        <h3 class="aisle-name">Explore</h3>
+        <p class="aisle-desc">Research, prototypes, experiments, strategy, case studies.</p>
+      </div>
+      <div class="swatch-grid" id="grid-explore"></div>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       CASE STUDY OVERLAY — one shared shell, populated per-project by
+       paintstore.js when a swatch is opened.
+       ================================================================ -->
+  <div class="case-overlay" id="case-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="case-topbar">
+      <button class="case-back" id="case-back">← Back to work</button>
+      <button class="case-close" id="case-close" aria-label="Close case study">✕</button>
+    </div>
+
+    <div class="case-hero" id="case-hero">
+      <p class="case-hero-label" id="case-hero-label"></p>
+      <h2 class="case-hero-title" id="case-hero-title"></h2>
+      <p class="case-hero-meta" id="case-hero-meta"></p>
+    </div>
+
+    <div class="case-body" id="case-body"></div>
+  </div>
+
+  <script src="paintstore.js"></script>
 </body>
 </html>

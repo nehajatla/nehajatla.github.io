@@ -17,6 +17,7 @@
   --violet: #7454CC;
   --orchid: #D484DB;
   --magenta: #DE4386;
+  --meadow: #6E8F72;
 
   --periwinkle-dim: rgba(143, 148, 251, 0.16);
   --orchid-dim: rgba(212, 132, 219, 0.16);
@@ -24,6 +25,7 @@
   --amber-dim: rgba(230, 177, 73, 0.18);
   --violet-dim: rgba(116, 84, 204, 0.16);
   --magenta-dim: rgba(222, 67, 134, 0.16);
+  --meadow-dim: rgba(110, 143, 114, 0.16);
 
   --border: rgba(33, 32, 31, 0.08);
   --border-strong: rgba(33, 32, 31, 0.16);
@@ -147,12 +149,6 @@ a {
 /* ==========================================================================
    HERO
    ========================================================================== */
-.hero {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: calc(var(--nav-h) + 9rem) 4rem 5rem;
-}
-
 .hero-eyebrow {
   display: block;
   font-size: 0.78rem;
@@ -182,13 +178,13 @@ a {
 }
 
 /* ==========================================================================
-   HOME HERO — centered landing (index.html)
+   HOME HERO — centered landing, scrolls straight into #work
    ========================================================================== */
 .home-hero {
-  min-height: calc(100vh - var(--nav-h));
+  min-height: 100vh;
   max-width: 900px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: var(--nav-h) 2rem 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -198,6 +194,7 @@ a {
 
 .home-hero .hero-title {
   max-width: none;
+  text-transform: lowercase;
 }
 
 .home-hero .hero-subtitle {
@@ -205,205 +202,385 @@ a {
   margin-right: auto;
 }
 
-.home-cta {
-  display: inline-flex;
+/* Subtle downward scroll cue — no CTA link, just an eye-guide */
+.scroll-cue {
+  margin-top: 3.5rem;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.65rem;
-  margin-top: 2.5rem;
-  font-size: 0.85rem;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  color: var(--ink);
-  padding-bottom: 4px;
-  border-bottom: 1px solid var(--border-emphasis);
-  transition: border-color 0.3s var(--ease), color 0.3s var(--ease);
+  gap: 0.75rem;
+  color: var(--ink-ghost);
 }
 
-.home-cta:hover {
-  color: var(--accent);
-  border-color: var(--accent);
+.scroll-cue span {
+  font-size: 0.66rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.scroll-cue-line {
+  width: 1px;
+  height: 42px;
+  background: linear-gradient(to bottom, transparent, var(--ink-ghost));
+  animation: scrollPulse 1.9s ease-in-out infinite;
+}
+
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.35; transform: scaleY(0.82); }
+  50%      { opacity: 1;    transform: scaleY(1); }
 }
 
 /* ==========================================================================
-   PROJECT LIST — editorial, asymmetrical rhythm
+   WORK — "the paint store" intro
    ========================================================================== */
-.work-index {
+#work {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 4rem 10rem;
+  padding: 6rem 4rem 8rem;
   border-top: 1px solid var(--border-hairline);
 }
 
-.project-row {
-  position: relative;
-  display: grid;
-  grid-template-columns: 64px minmax(0, 1fr) minmax(0, 1.1fr) auto;
-  align-items: start;
-  column-gap: 3rem;
-  padding: 3.25rem 2rem;
-  border-bottom: 1px solid var(--border-hairline);
-  text-decoration: none;
-  color: var(--ink);
-  overflow: hidden;
-  transition: background-color 0.55s var(--ease), padding 0.5s var(--ease);
+.work-intro {
+  max-width: 620px;
+  margin-bottom: 5rem;
 }
 
-.project-row::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  background: radial-gradient(circle at 8% 50%, var(--cat-glow, var(--accent-halo)), transparent 65%);
-  transition: opacity 0.55s var(--ease);
-  pointer-events: none;
+.work-intro .hero-eyebrow {
+  margin-bottom: 1.25rem;
 }
 
-.project-row:hover {
-  background-color: var(--surface-card);
-  padding-left: 2.75rem;
-  padding-right: 2.75rem;
-}
-
-.project-row:hover::before {
-  opacity: 1;
-}
-
-/* Editorial asymmetry — every other row nudges inward on wide viewports */
-.project-row:nth-child(even) {
-  margin-left: 4vw;
-}
-
-.project-index {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 1.1rem;
-  color: var(--ink-ghost);
-  padding-top: 0.2rem;
-}
-
-.project-heading {
-  min-width: 0;
-}
-
-.project-title {
+.work-heading {
   font-family: var(--font-serif);
   font-weight: 400;
-  font-size: 1.85rem;
-  line-height: 1.2;
+  font-size: clamp(2.2rem, 4vw, 3rem);
+  line-height: 1.15;
   color: var(--ink-deep);
 }
 
-.project-meta {
-  display: block;
-  margin-top: 0.6rem;
-  font-size: 0.8rem;
-  letter-spacing: 0.03em;
-  color: var(--ink-muted);
-}
-
-.project-desc {
-  min-width: 0;
-  font-size: 0.98rem;
-  font-weight: 300;
+.work-sub {
+  margin-top: 1.5rem;
+  font-size: 1rem;
   color: var(--ink-soft);
-  line-height: 1.75;
-  padding-top: 0.3rem;
-}
-
-.project-side {
-  display: flex;
-  align-items: center;
-  gap: 1.4rem;
-  padding-top: 0.35rem;
-}
-
-.tag {
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  padding: 0.4rem 0.95rem;
-  border-radius: 20px;
-  color: var(--cat-color, var(--ink-soft));
-  background: var(--cat-glow, var(--surface-sunk));
-}
-
-.project-arrow {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.4rem;
-  height: 1.4rem;
-  opacity: 0;
-  transform: translateX(-10px);
-  color: var(--ink);
-  transition: transform 0.45s var(--ease), opacity 0.45s var(--ease);
-}
-
-.project-row:hover .project-arrow {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-/* Category → color mapping (cat-* colors map 1:1 to the base hue dims) */
-.project-row[data-category="swe"] {
-  --cat-color: var(--cat-swe);
-  --cat-glow: var(--tangerine-dim);
-}
-
-.project-row[data-category="uiux"] {
-  --cat-color: var(--cat-uiux);
-  --cat-glow: var(--orchid-dim);
-}
-
-.project-row[data-category="creative"] {
-  --cat-color: var(--cat-creative);
-  --cat-glow: var(--amber-dim);
-}
-
-.project-row[data-category="case"] {
-  --cat-color: var(--cat-case);
-  --cat-glow: var(--magenta-dim);
+  line-height: 1.7;
 }
 
 /* ==========================================================================
-   CLOSING CTA
+   AISLES — Build / Design / Explore
    ========================================================================== */
-.work-closing {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 4rem 10rem;
+.aisle {
+  padding: 4.5rem 0;
+  border-top: 1px solid var(--border-hairline);
+}
+
+.aisle:first-of-type {
+  padding-top: 0;
+  border-top: none;
+}
+
+.aisle-header {
   display: flex;
-  align-items: baseline;
   justify-content: space-between;
+  align-items: baseline;
   gap: 2rem;
+  margin-bottom: 2.75rem;
   flex-wrap: wrap;
 }
 
-.work-closing p {
+.aisle-name {
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: 1.5rem;
+  font-size: 2.1rem;
+  color: var(--ink-deep);
+}
+
+.aisle-desc {
+  max-width: 36ch;
+  font-size: 0.92rem;
+  color: var(--ink-muted);
+  text-align: right;
+}
+
+/* ==========================================================================
+   SWATCHES — tactile paint-sample cards
+   ========================================================================== */
+.swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 2.25rem;
+  perspective: 1600px;
+}
+
+.swatch {
+  position: relative;
+  min-height: 340px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem 1.5rem 1.25rem;
+  border-radius: 8px;
+  background: var(--swatch-bg, var(--surface-sunk));
+  box-shadow: 0 1px 2px rgba(33, 32, 31, 0.06);
+  cursor: pointer;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 0.55s var(--ease), box-shadow 0.55s var(--ease);
+  outline: none;
+}
+
+.swatch:hover,
+.swatch:focus-visible {
+  transform: translateY(-14px) scale(1.035) rotateX(4deg);
+  box-shadow:
+    0 34px 54px -14px rgba(33, 32, 31, 0.22),
+    0 12px 22px -8px rgba(33, 32, 31, 0.12);
+}
+
+.swatch-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.swatch-code {
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(33, 32, 31, 0.38);
+}
+
+.swatch-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: flex-end;
+}
+
+.chip {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.22rem 0.55rem;
+  border-radius: 20px;
+  color: #fff;
+  background: var(--chip-color, var(--ink-muted));
+  white-space: nowrap;
+}
+
+/* Reveal block — always occupies its space, fades/slides in on hover
+   so nothing else on the card has to shift */
+.swatch-reveal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin: 1.25rem 0;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+}
+
+.swatch:hover .swatch-reveal,
+.swatch:focus-visible .swatch-reveal {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.swatch-meta {
+  font-size: 0.78rem;
   color: var(--ink-soft);
 }
 
-.work-closing a {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
-  font-size: 0.85rem;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  color: var(--ink);
-  padding-bottom: 4px;
-  border-bottom: 1px solid var(--border-emphasis);
-  transition: border-color 0.3s var(--ease), color 0.3s var(--ease);
+.swatch-teaser {
+  font-size: 0.92rem;
+  color: var(--ink-deep);
+  line-height: 1.55;
 }
 
-.work-closing a:hover {
-  color: var(--accent);
-  border-color: var(--accent);
+.swatch-tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.tech-pill {
+  font-size: 0.66rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 20px;
+  background: rgba(33, 32, 31, 0.08);
+  color: var(--ink-soft);
+}
+
+.swatch-impact {
+  font-size: 0.78rem;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+.swatch-cta {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.swatch-bottom {
+  border-top: 1px solid rgba(33, 32, 31, 0.12);
+  padding-top: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.swatch-title {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  line-height: 1.15;
+  color: var(--ink-deep);
+}
+
+.swatch-finish {
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-style: italic;
+  color: var(--ink-muted);
+}
+
+/* ==========================================================================
+   CASE STUDY OVERLAY
+   ========================================================================== */
+.case-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: var(--surface-page);
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.98);
+  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+  overflow-y: auto;
+}
+
+.case-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+body.overlay-open {
+  overflow: hidden;
+}
+
+.case-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 4rem;
+  background: rgba(250, 248, 245, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border-hairline);
+}
+
+.case-back {
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s var(--ease);
+}
+
+.case-back:hover {
+  color: var(--ink);
+}
+
+.case-close {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  border: 1px solid var(--border-emphasis);
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ink);
+  font-size: 1rem;
+  transition: background 0.3s var(--ease), transform 0.4s var(--ease);
+}
+
+.case-close:hover {
+  background: var(--surface-sunk);
+  transform: rotate(90deg);
+}
+
+.case-hero {
+  padding: 5.5rem 4rem;
+  background: var(--case-wash, var(--surface-sunk));
+}
+
+.case-hero-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 1rem;
+}
+
+.case-hero-title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  line-height: 1.1;
+  color: var(--ink-deep);
+  max-width: 20ch;
+}
+
+.case-hero-meta {
+  margin-top: 1.5rem;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+}
+
+.case-body {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 5rem 4rem 8rem;
+}
+
+.case-section {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 3rem;
+  padding: 3rem 0;
+  border-top: 1px solid var(--border-hairline);
+}
+
+.case-section:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.case-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--case-accent, var(--ink-muted));
+}
+
+.case-text {
+  font-size: 1.02rem;
+  color: var(--ink-soft);
+  line-height: 1.8;
+  max-width: 60ch;
 }
 
 /* ==========================================================================
@@ -411,28 +588,26 @@ a {
    ========================================================================== */
 @media (max-width: 900px) {
   .nav { padding: 0 1.75rem; }
-  .hero { padding: calc(var(--nav-h) + 4rem) 1.75rem 3rem; }
-  .work-index { padding: 0 1.75rem 6rem; }
-  .work-closing { padding: 0 1.75rem 6rem; }
 
-  .project-row {
+  #work { padding: 4rem 1.75rem 5rem; }
+
+  .aisle-header { flex-direction: column; align-items: flex-start; }
+  .aisle-desc { text-align: left; }
+
+  .case-topbar,
+  .case-hero,
+  .case-body {
+    padding-left: 1.75rem;
+    padding-right: 1.75rem;
+  }
+
+  .case-section {
     grid-template-columns: 1fr;
-    row-gap: 1rem;
-    padding: 2.25rem 0.5rem;
+    gap: 0.75rem;
   }
 
-  .project-row:hover {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
-  }
-
-  .project-row:nth-child(even) {
-    margin-left: 0;
-  }
-
-  .project-index { display: none; }
-
-  .project-side {
-    padding-top: 0.5rem;
+  .swatch:hover,
+  .swatch:focus-visible {
+    transform: translateY(-8px) scale(1.02);
   }
 }
