@@ -1,0 +1,36 @@
+@import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
+
+body {
+  background: #ededed;
+  margin: 0;
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: none; /* native cursor hidden — periwinkle dot used instead, matching the portfolio wall's cursor */
+}
+
+canvas {
+  max-height: 100vh;
+  max-width: 100vw;
+  height: auto;
+  width: auto;
+}
+
+#container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+
+h1 {
+  font-family: Rubik;
+  font-size: 100px;
+  font-weight: 800;
+  line-height: 1em;
+  position: absolute;
+  color: #cfe8ff;
+}

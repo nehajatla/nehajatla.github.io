@@ -181,6 +181,16 @@
     background: linear-gradient(135deg, #e3ded4, #efe9de);
   }
 
+  /* Live/interactive slot — pointer-events stay enabled (unlike img/video
+     above) so visitors can actually hover/click inside it to play. */
+  .frame-embed {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border: none;
+    background: #ededed;
+  }
+
   /* Caption now sits directly on the cream background, below the
      image, with no enclosing box — just text floating under the art */
   .frame-caption {
@@ -325,12 +335,15 @@
    ================================================================ */
   const ARTWORK_DATA = [
 
+    /* Index 0 always lands on cell (0,0) — dead center of the wall,
+       visible immediately on load with no scrolling needed. */
+    { video: "assets/video/circle-animation.mp4", title: "Circle Animation", caption: "Work in progress. Prototyped in Figma", ratio: "portrait" },
+
     /* ── LANDSCAPE SLOTS (5 total) ───────────────────────────── */
     { imagePath: "assets/art/7-redhouse.jpg", title: "Lone Red Cottage", caption: "Picture I took in Iceland", ratio: "landscape" },
-    { video: "assets/video/avatar-rhydhun-logo.mp4", title: "Avatar Logo Reveal for Rhydhun", caption: "Hover to play! Created with Adobe After Effects. Rhydhun = Duke's Competitive Bollywood Fusion Dance Team", ratio: "video" },
+    { video: "assets/video/avatar-rhydhun-logo.mp4", title: "Avatar Logo Reveal for Rhydhun (Competitive Dance Team)", caption: "Hover to play! Created with Adobe After Effects + Blender", ratio: "video" },
+    { embed: "assets/embeds/strings/index.html?v=4", title: "Storm Strings", caption: "Play with it. Adapted from Liam Egan's CodePen, used under MIT License.", ratio: "video", sizeScale: 1.2 },
     { imagePath: "assets/art/10-holocaust.jpg", title: "Sifting Through Silence", caption: "Sand holds horrors endured; aged hands remember so it never repeats", ratio: "landscape" },
-    { imagePath: "assets/art/your-artwork-04.jpg", title: "Artwork Title 04", caption: "Medium, Year", ratio: "landscape" },
-    { imagePath: "assets/art/your-artwork-05.jpg", title: "Artwork Title 05", caption: "Medium, Year", ratio: "landscape" },
 
     /* ── PORTRAIT SLOTS (10 total) ───────────────────────────── */
     { imagePath: "assets/art/1-watercolor-girl.jpg", title: "Watercolor Ink Portrait", caption: "2020", ratio: "portrait" },
@@ -340,9 +353,7 @@
     { imagePath: "assets/art/5-purple-woman.jpg", title: "Purple Shawl", caption: "2020", ratio: "portrait" },
     { imagePath: "assets/art/6-BW-woman.jpg", title: "Pencil Sketch Black and White", caption: "2021", ratio: "portrait" },
     { imagePath: "assets/art/8-brúarfoss.jpg", title: "Brúarfoss", caption: "Taken on my Iphone 16", ratio: "portrait" },
-    { imagePath: "assets/art/9-wat-arun.jpg", title: "Wat Arun", caption: "I <3 architecture", ratio: "portrait" },
-    { imagePath: "assets/art/your-artwork-14.jpg", title: "Artwork Title 14", caption: "Medium, Year", ratio: "portrait" },
-    { imagePath: "assets/art/your-artwork-15.jpg", title: "Artwork Title 15", caption: "Medium, Year", ratio: "portrait" }
+    { imagePath: "assets/art/9-wat-arun.jpg", title: "Wat Arun", caption: "I <3 architecture", ratio: "portrait" }
 
   ];
   /* ============== END OF EDITABLE TEMPLATE SECTION ============== */
@@ -421,6 +432,22 @@
   const cursorEl = document.getElementById('cursor');
   const hint = document.getElementById('hint');
 
+  // Embedded interactive tiles (e.g. Storm Strings) run a real, continuous
+  // physics simulation whether or not they're actually visible — the wall
+  // keeps several mounted at once in a scroll buffer around the viewport,
+  // so left unattended that's multiple full sims competing for one frame
+  // budget and reads as global jank. Tell each one to pause/resume based
+  // on genuine on-screen visibility.
+  const embedVisibilityObserver = 'IntersectionObserver' in window
+    ? new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          const win = entry.target.contentWindow;
+          if (!win) return;
+          win.postMessage({ type: entry.isIntersecting ? 'storm-strings-resume' : 'storm-strings-pause' }, '*');
+        });
+      }, { root: null, rootMargin: '0px', threshold: 0 })
+    : null;
+
   // originX/Y = the manual drag/inertia pan offset
   let originX = 0, originY = 0;
   let velX = 0, velY = 0;
@@ -497,7 +524,8 @@
 
     const scaleVariance = (rs - 0.5) * 2 * CONFIG.jitterScale;
 
-    const { w: imgW, h: imgH } = getFrameDims(art.ratio, scaleVariance);
+    let { w: imgW, h: imgH } = getFrameDims(art.ratio, scaleVariance);
+    if (art.sizeScale) { imgW *= art.sizeScale; imgH *= art.sizeScale; }
     const totalH = imgH + CONFIG.captionHeight;
 
     const scaledW = imgW * CONFIG.maxScale;
@@ -538,6 +566,8 @@
     imgWrap.className = 'frame-img-wrap';
     imgWrap.style.height = imgH + 'px';
 
+    let embedEl = null;
+
     if (art.video) {
       // Video slot — paused by default, plays only while the cursor
       // is actually over it. Muted/inline so it never fights the
@@ -555,6 +585,39 @@
       imgWrap.addEventListener('mouseleave', () => { video.pause(); });
 
       imgWrap.appendChild(video);
+    } else if (art.embed) {
+      // Live interactive slot in an iframe. Two flavors:
+      //  - Self-hosted (e.g. Storm Strings): mounted immediately, kept
+      //    alive/paused by embedVisibilityObserver, and relays real
+      //    pointer position up via postMessage so the wall's one cursor
+      //    dot can track it seamlessly (see the 'message' listener below).
+      //  - External, e.g. a Figma prototype (art.external: true): we
+      //    can't control or listen to a cross-origin embed at all, so
+      //    instead of "hover to play" we load it fresh on hover and tear
+      //    it down on leave (art.hoverToLoad), and fall back to a plain
+      //    enter/leave opacity toggle for the wall's cursor — less exact
+      //    than the postMessage relay, but avoids it freezing in place.
+      const iframe = document.createElement('iframe');
+      iframe.className = 'frame-embed';
+      iframe.title = art.title;
+      if (art.allowFullscreen) iframe.allowFullscreen = true;
+
+      if (art.hoverToLoad) {
+        imgWrap.addEventListener('mouseenter', () => { iframe.src = art.embed; });
+        imgWrap.addEventListener('mouseleave', () => { iframe.src = 'about:blank'; });
+      } else {
+        iframe.src = art.embed;
+        iframe.loading = 'lazy';
+        if (embedVisibilityObserver) embedVisibilityObserver.observe(iframe);
+      }
+
+      if (art.external) {
+        imgWrap.addEventListener('mouseenter', () => { cursorEl.style.opacity = '0'; });
+        imgWrap.addEventListener('mouseleave', () => { cursorEl.style.opacity = '1'; });
+      }
+
+      imgWrap.appendChild(iframe);
+      embedEl = iframe;
     } else {
       const img = document.createElement('img');
       img.className = 'frame-img';
@@ -577,7 +640,7 @@
     el.appendChild(imgWrap);
     el.appendChild(caption);
 
-    const frame = { el, cx: baseX, cy: baseY, w: imgW, h: totalH, scale: CONFIG.minScale, isNear: false };
+    const frame = { el, cx: baseX, cy: baseY, w: imgW, h: totalH, scale: CONFIG.minScale, isNear: false, embedEl };
     writeFrameTransform(frame);
     return frame;
   }
@@ -643,6 +706,7 @@
 
     for (const [key, frame] of renderedCells) {
       if (!neededKeys.has(key)) {
+        if (frame.embedEl && embedVisibilityObserver) embedVisibilityObserver.unobserve(frame.embedEl);
         frame.el.remove();
         renderedCells.delete(key);
       }
@@ -718,6 +782,27 @@
       writeFrameTransform(frame);
     }
   }
+
+  // The wall's single cursor dot keeps tracking across an embedded
+  // iframe's boundary via a postMessage relay from inside it (see the
+  // 'message' listener further down) rather than any DOM hide/show
+  // trickery — there is only ever one cursor element, so there is
+  // nothing to desync or leave stuck behind.
+  window.addEventListener('message', (e) => {
+    if (!e.data || e.data.type !== 'storm-strings-pointer') return;
+    for (const frame of renderedCells.values()) {
+      if (frame.embedEl && frame.embedEl.contentWindow === e.source) {
+        const rect = frame.embedEl.getBoundingClientRect();
+        const absX = rect.left + e.data.x;
+        const absY = rect.top + e.data.y;
+        cursorScreenX = absX;
+        cursorScreenY = absY;
+        cursorEl.style.transform = 'translate3d(' + (absX - 7) + 'px, ' + (absY - 7) + 'px, 0)';
+        updateParallaxTarget();
+        break;
+      }
+    }
+  });
 
   /* ================================================================
      UNIFIED MAIN LOOP
