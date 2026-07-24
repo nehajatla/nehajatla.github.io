@@ -25,7 +25,12 @@ console.clear();
 // No local dot here means nothing can ever get left behind/"stuck" when
 // the pointer exits, because there's nothing rendered in this document
 // to forget to hide.
+//
+// Opened directly (not embedded), none of that applies — `.embedded` is
+// never added, so the CSS falls back to the normal native cursor instead
+// of hiding it with nothing to replace it.
 if (window.parent !== window) {
+  document.body.classList.add('embedded');
   document.addEventListener('pointermove', (e) => {
     window.parent.postMessage({ type: 'storm-strings-pointer', x: e.clientX, y: e.clientY }, '*');
   });

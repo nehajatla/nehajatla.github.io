@@ -8,7 +8,13 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  cursor: none; /* native cursor hidden — periwinkle dot used instead, matching the portfolio wall's cursor */
+}
+
+/* Only hide the native cursor when embedded in the portfolio wall, which
+   relays a replacement (the wall's own periwinkle dot) via postMessage —
+   see script.js. Opened standalone, the normal cursor is used instead. */
+body.embedded {
+  cursor: none;
 }
 
 canvas {
