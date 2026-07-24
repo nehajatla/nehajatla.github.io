@@ -172,6 +172,15 @@
     background: linear-gradient(135deg, #e3ded4, #efe9de);
   }
 
+  .frame-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+    background: linear-gradient(135deg, #e3ded4, #efe9de);
+  }
+
   /* Caption now sits directly on the cream background, below the
      image, with no enclosing box — just text floating under the art */
   .frame-caption {
@@ -318,7 +327,7 @@
 
     /* ── LANDSCAPE SLOTS (5 total) ───────────────────────────── */
     { imagePath: "assets/art/7-redhouse.jpg", title: "Lone Red Cottage", caption: "Picture I took in Iceland", ratio: "landscape" },
-    { imagePath: "assets/art/your-artwork-02.jpg", title: "Artwork Title 02", caption: "Medium, Year", ratio: "landscape" },
+    { video: "assets/video/avatar-rhydhun-logo.mp4", title: "Avatar Rhydhun Logo Reveal", caption: "Hover to play! Created with Adobe After Effects", ratio: "video" },
     { imagePath: "assets/art/your-artwork-03.jpg", title: "Artwork Title 03", caption: "Medium, Year", ratio: "landscape" },
     { imagePath: "assets/art/your-artwork-04.jpg", title: "Artwork Title 04", caption: "Medium, Year", ratio: "landscape" },
     { imagePath: "assets/art/your-artwork-05.jpg", title: "Artwork Title 05", caption: "Medium, Year", ratio: "landscape" },
@@ -446,6 +455,8 @@
       // True 4:3 portrait (height:width = 4:3 = 1.333)
       case 'portrait':  return { w: base * 0.86, h: base * 1.1467 };
       case 'landscape': return { w: base * 1.28, h: base * 0.84 };
+      // True 16:9 — sized for the video slot(s)
+      case 'video':     return { w: base * 1.6,  h: base * 0.9 };
       case 'square':
       default:          return { w: base, h: base };
     }
@@ -527,16 +538,35 @@
     imgWrap.className = 'frame-img-wrap';
     imgWrap.style.height = imgH + 'px';
 
-    const img = document.createElement('img');
-    img.className = 'frame-img';
-    img.draggable = false;
-    img.loading = 'lazy';
-    img.alt = art.title;
-    if (art.imagePath) {
-      img.src = art.imagePath;
-      img.onerror = () => { img.style.opacity = '0'; };
+    if (art.video) {
+      // Video slot — paused by default, plays only while the cursor
+      // is actually over it. Muted/inline so it never fights the
+      // silent, cursor-hidden feel of the rest of the wall.
+      const video = document.createElement('video');
+      video.className = 'frame-video';
+      video.src = art.video;
+      video.muted = true;
+      video.loop = true;
+      video.playsInline = true;
+      video.preload = 'auto';
+      video.draggable = false;
+
+      imgWrap.addEventListener('mouseenter', () => { video.play().catch(() => {}); });
+      imgWrap.addEventListener('mouseleave', () => { video.pause(); });
+
+      imgWrap.appendChild(video);
+    } else {
+      const img = document.createElement('img');
+      img.className = 'frame-img';
+      img.draggable = false;
+      img.loading = 'lazy';
+      img.alt = art.title;
+      if (art.imagePath) {
+        img.src = art.imagePath;
+        img.onerror = () => { img.style.opacity = '0'; };
+      }
+      imgWrap.appendChild(img);
     }
-    imgWrap.appendChild(img);
 
     const caption = document.createElement('div');
     caption.className = 'frame-caption';
