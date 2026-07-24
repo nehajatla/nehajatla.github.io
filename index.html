@@ -31,40 +31,15 @@
   </main>
 
   <!-- ================================================================
-       THE PAINT STORE — projects grouped into three aisles. Markup for
-       each aisle's swatch grid is rendered by paintstore.js from the
-       PROJECTS data array (see that file to add/edit projects).
+       WORK — two-column staggered card grid, rendered by paintstore.js
+       from the PROJECTS data array (see that file to add/edit projects).
        ================================================================ -->
   <section id="work">
     <div class="work-intro">
-      <span class="hero-eyebrow">Selected Work</span>
-      <h2 class="work-heading">The paint store.</h2>
-      <p class="work-sub">Every project as a paint swatch — pull one off the rack to see the full case study. Color signals discipline before you read a word.</p>
+      <h2 class="work-heading">Selected Work</h2>
     </div>
 
-    <div class="aisle" data-aisle="build">
-      <div class="aisle-header">
-        <h3 class="aisle-name">Build</h3>
-        <p class="aisle-desc">Engineering, AI, full-stack systems, data engineering.</p>
-      </div>
-      <div class="swatch-grid" id="grid-build"></div>
-    </div>
-
-    <div class="aisle" data-aisle="design">
-      <div class="aisle-header">
-        <h3 class="aisle-name">Design</h3>
-        <p class="aisle-desc">Product design, UX/UI, branding, visual systems, motion.</p>
-      </div>
-      <div class="swatch-grid" id="grid-design"></div>
-    </div>
-
-    <div class="aisle" data-aisle="explore">
-      <div class="aisle-header">
-        <h3 class="aisle-name">Explore</h3>
-        <p class="aisle-desc">Research, prototypes, experiments, strategy, case studies.</p>
-      </div>
-      <div class="swatch-grid" id="grid-explore"></div>
-    </div>
+    <div class="card-grid" id="card-grid"></div>
   </section>
 
   <!-- ================================================================
