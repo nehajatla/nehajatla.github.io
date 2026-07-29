@@ -341,8 +341,8 @@
 
     /* ── LANDSCAPE SLOTS (5 total) ───────────────────────────── */
     { imagePath: "assets/art/7-redhouse.jpg", title: "Lone Red Cottage", caption: "Picture I took in Iceland", ratio: "landscape" },
-    { video: "assets/video/avatar-rhydhun-logo.mp4", title: "Avatar Logo Reveal for Rhydhun (Competitive Dance Team)", caption: "Hover to play! Created with Adobe After Effects + Blender", ratio: "video" },
-    { embed: "assets/embeds/strings/index.html?v=5", title: "Storm Strings", caption: "Play with it. Adapted from Liam Egan's CodePen, used under MIT License.", ratio: "video", sizeScale: 1.2 },
+    { video: "assets/video/avatar-rhydhun-logo.mp4", title: "Avatar Logo Reveal for Rhydhun (Competitive Dance)", caption: "Hover to play! Created with Adobe After Effects + Blender", ratio: "video" },
+    { embed: "assets/embeds/strings/index.html?v=22", title: "Storm Strings", caption: "Play with it. Adapted from Liam Egan.", ratio: "video", sizeScale: 1.0, fixedFrame: true },
     { imagePath: "assets/art/10-holocaust.jpg", title: "Sifting Through Silence", caption: "Sand holds horrors endured; aged hands remember so it never repeats", ratio: "landscape" },
 
     /* ── PORTRAIT SLOTS (10 total) ───────────────────────────── */
@@ -522,14 +522,21 @@
     const rs = seededRandom(cellX, cellY, 3);
     const rc = seededRandom(cellX, cellY, 4); // decides cluster membership
 
-    const scaleVariance = (rs - 0.5) * 2 * CONFIG.jitterScale;
+    // art.fixedFrame items skip both size jitter and hover-zoom (see
+    // updateProximityScaling), so their on-screen size never varies —
+    // which lets the no-overlap budget below use their real max size
+    // (exactly 1x) instead of always assuming the worst case (max jitter
+    // + full hover zoom), so they can safely run larger than a normal
+    // tile without any risk of spilling into a neighboring cell.
+    const scaleVariance = art.fixedFrame ? 0 : (rs - 0.5) * 2 * CONFIG.jitterScale;
+    const budgetScale = art.fixedFrame ? 1 : CONFIG.maxScale;
 
     let { w: imgW, h: imgH } = getFrameDims(art.ratio, scaleVariance);
     if (art.sizeScale) { imgW *= art.sizeScale; imgH *= art.sizeScale; }
     const totalH = imgH + CONFIG.captionHeight;
 
-    const scaledW = imgW * CONFIG.maxScale;
-    const scaledH = totalH * CONFIG.maxScale;
+    const scaledW = imgW * budgetScale;
+    const scaledH = totalH * budgetScale;
     const maxJitterX = Math.max(0, (CONFIG.cellWidth  - scaledW - CONFIG.safeMargin) / 2);
     const maxJitterY = Math.max(0, (CONFIG.cellHeight - scaledH - CONFIG.safeMargin) / 2);
 
@@ -640,7 +647,7 @@
     el.appendChild(imgWrap);
     el.appendChild(caption);
 
-    const frame = { el, cx: baseX, cy: baseY, w: imgW, h: totalH, scale: CONFIG.minScale, isNear: false, embedEl };
+    const frame = { el, cx: baseX, cy: baseY, w: imgW, h: totalH, scale: CONFIG.minScale, isNear: false, embedEl, fixedFrame: !!art.fixedFrame };
     writeFrameTransform(frame);
     return frame;
   }
@@ -761,6 +768,14 @@
     const totalY = originY + parallaxY;
 
     for (const frame of renderedCells.values()) {
+      if (frame.fixedFrame) {
+        // Locked at exactly 1x — see createFrame's budgetScale comment,
+        // the no-overlap math for this tile depends on it never zooming.
+        frame.scale = 1;
+        writeFrameTransform(frame);
+        continue;
+      }
+
       const screenX = frame.cx + totalX;
       const screenY = frame.cy + totalY;
 
