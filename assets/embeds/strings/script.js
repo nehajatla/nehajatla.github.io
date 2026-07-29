@@ -693,10 +693,10 @@ function main() {
       const angle = Math.random() * Math.PI * 2;
       splashes.push({
         x, y,
-        vx: Math.cos(angle) * (0.3 + Math.random() * 0.5),
-        vy: -Math.abs(Math.sin(angle)) * 0.4 - 0.15,
+        vx: Math.cos(angle) * (0.2 + Math.random() * 0.3),
+        vy: -Math.abs(Math.sin(angle)) * 0.3 - 0.1,
         life: 0,
-        maxLife: 240 + Math.random() * 160,
+        maxLife: 220 + Math.random() * 140,
         char: RAIN_CHARS[Math.floor(Math.random() * RAIN_CHARS.length)]
       });
     }
