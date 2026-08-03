@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Playground — Museum Canvas</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
@@ -54,7 +55,7 @@
     top: 0; left: 0; right: 0;
     z-index: 300;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     padding: 22px 48px;
     background: rgba(250,247,242,0.78);
@@ -284,13 +285,6 @@
 <body>
 
   <nav class="nav-container">
-    <a href="index.html" class="nav-logo">
-      <svg width="28" height="28" viewBox="0 0 32 32" fill="none" style="margin-right: 12px;">
-        <circle cx="16" cy="16" r="15" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
-        <path d="M11 22V10L21 22V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <span>neha.</span>
-    </a>
     <div class="nav-links">
       <a href="index.html#work">Work</a>
       <a href="playground.html" class="active">Playground</a>
@@ -342,6 +336,7 @@
     /* ── LANDSCAPE SLOTS (5 total) ───────────────────────────── */
     { imagePath: "assets/art/7-redhouse.jpg", title: "Lone Red Cottage", caption: "Picture I took in Iceland", ratio: "landscape" },
     { video: "assets/video/avatar-rhydhun-logo.mp4", title: "Avatar Logo Reveal for Rhydhun (Competitive Dance)", caption: "Hover to play! Created with Adobe After Effects + Blender", ratio: "video" },
+    { video: "assets/video/storm-strings.mp4?v=2", title: "Storm Strings", caption: "Hover to play! Adapted from Liam Egan.", ratio: "landscape", sizeScale: 1.4 },
     { imagePath: "assets/art/10-holocaust.jpg", title: "Sifting Through Silence", caption: "Sand holds horrors endured; aged hands remember so it never repeats", ratio: "landscape" },
 
     /* ── PORTRAIT SLOTS (10 total) ───────────────────────────── */
@@ -364,8 +359,8 @@
   const CONFIG = {
     /* Spacing — cellWidth/cellHeight define the base grid each
        frame's anchor sits on before clustering/jitter is applied. */
-    cellWidth: 520,
-    cellHeight: 580,
+    cellWidth: 640,
+    cellHeight: 700,
 
     frameBaseSize: 300,
     jitterScale: 0.2,       // size variance only

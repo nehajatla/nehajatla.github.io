@@ -27,10 +27,11 @@ body {
   font-weight: 300;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  cursor: none; /* native arrow hidden site-wide — periwinkle dot used everywhere, matching playground.html */
 }
 img { display: block; max-width: 100%; }
 a { color: inherit; text-decoration: none; }
-button { font-family: inherit; cursor: pointer; border: none; background: none; }
+button { font-family: inherit; cursor: none; border: none; background: none; }
 
 /* ── NAV ──────────────────────────────────────────────────── */
 .nav {
@@ -39,7 +40,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   height: var(--nav-h);
   z-index: 100;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   padding: 0 var(--pad-x);
   background: rgba(250,247,242,0.82);
@@ -53,6 +54,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   font-size: 20px;
   font-weight: 400;
   color: var(--ink);
+  display: flex;
+  align-items: center;
   transition: opacity 0.2s;
 }
 .nav-logo:hover { opacity: 0.5; }
@@ -85,42 +88,142 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .nav-links a:hover::after,
 .nav-links a.active::after { transform: scaleX(1); }
 
-/* ── HERO ─────────────────────────────────────────────────── */
-.home-hero {
-  min-height: 100vh;
-  padding: calc(var(--nav-h) + 80px) var(--pad-x) 60px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+/* ── HERO ─────────────────────────────────────────────────────────
+   Lotus ASCII hero — ported from the user's standalone reference file
+   as closely as possible. Two changes were technically required (not
+   stylistic): the file's :root color variables are scoped to #hero-lotus
+   instead of :root, since it reuses names (--cream, --ink-ghost) that
+   already mean something different site-wide (light cream vs. this
+   section's near-black); and the standalone file's `body { min-height:
+   220vh }` is dropped since that was blank scroll padding for a demo
+   with nothing else on the page — this site already has a real Work
+   section providing scroll height below the hero.
+   ──────────────────────────────────────────────────────────────── */
+#hero-lotus {
+  --cream: #030204;
+  --ink-hi: #F6F4F1;
+  --ink-lo: rgba(255,255,255,0.55);
+  --ink-ghost: rgba(255,255,255,0.4);
+  --periwinkle: #8F94FB;
+  --periwinkle-halo: rgba(143,148,251,0.35);
+  --orchid: #D484DB;
+  --orchid-dim: rgba(212,132,219,0.4);
+  --tangerine: #F5792C;
+  --tangerine-dim: rgba(245,121,44,0.4);
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-body: 'Inter', sans-serif;
+  --ease-soft: cubic-bezier(0.16,1,0.3,1);
+
+  position: relative;
+  background: var(--cream);
+  cursor: none;
+  font-family: var(--font-body);
 }
 
-.hero-eyebrow {
-  display: block;
-  font-size: 10px;
-  font-weight: 400;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--ink-ghost);
-  margin-bottom: 22px;
+#hero-lotus #lattice-bg {
+  position: fixed; inset: 0; height: 100vh; margin: 0; padding: 0;
+  font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 11px; line-height: 1.05;
+  color: #fff; opacity: 0.05; white-space: pre; text-align: center; pointer-events: none;
+}
+#hero-lotus #hero {
+  height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: clamp(6px, 1.3vh, 16px);
+  padding: 2vh 2rem; text-align: center; overflow: hidden;
+}
+#hero-lotus .fade-up { opacity: 0; animation: lotusFadeUp 1.1s var(--ease-soft) both; }
+@keyframes lotusFadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+/* Explicit position+z-index above #hero-fade (z-index:2) — without this,
+   these being plain static/non-positioned content meant the positioned
+   fade painted over them regardless of its own z-index number, which is
+   what was hiding "hi, i'm neha" once the fade got tall enough to
+   spatially overlap the text. */
+#hero-lotus h1, #hero-lotus .eyebrow, #hero-lotus #flower-stage, #hero-lotus #cue {
+  position: relative;
+  z-index: 3;
+}
+#hero-lotus .eyebrow { font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-ghost); animation-delay: 0.1s; }
+#hero-lotus #flower-stage { width: clamp(190px, 30vh, 260px); height: clamp(190px, 30vh, 260px); flex-shrink: 0; }
+#hero-lotus #flower-stage pre { margin: 0; padding: 0; font-family: 'SF Mono', Menlo, Consolas, monospace; white-space: pre; }
+#hero-lotus #sat-a { position: absolute; left: 6%; top: 2%; font-size: clamp(5px, 1.05vh, 7px); line-height: 1; color: var(--tangerine); opacity: 0.65; text-shadow: 0 0 10px var(--tangerine-dim); transform: translate(-60%, -30%); }
+#hero-lotus #sat-b { position: absolute; left: 94%; top: 96%; font-size: clamp(5px, 0.95vh, 6px); line-height: 1; color: var(--orchid); opacity: 0.6; text-shadow: 0 0 10px var(--orchid-dim); transform: translate(-40%, -60%); }
+#hero-lotus #flower-cells { position: absolute; inset: 0; opacity: 0; animation: lotusBloomOpen 1.6s var(--ease-soft) 0.15s both, lotusGlowPulse 5s ease-in-out infinite; }
+#hero-lotus #flower-cells span { position: absolute; font-family: 'SF Mono', Menlo, Consolas, monospace; line-height: 1; user-select: none; }
+@keyframes lotusBloomOpen { from { opacity: 0; transform: scale(0.78); } to { opacity: 1; transform: scale(1); } }
+@keyframes lotusGlowPulse { 0%, 100% { filter: brightness(1) drop-shadow(0 0 18px var(--periwinkle-halo)); } 50% { filter: brightness(1.12) drop-shadow(0 0 30px rgba(222,67,134,0.3)); } }
+#hero-lotus h1 { margin: 0; font-family: var(--font-serif); font-weight: 400; font-size: clamp(1.8rem, 5vw, 3.4rem); color: var(--ink-hi); animation-delay: 0.3s; }
+#hero-lotus h1 em { font-style: italic; color: var(--periwinkle); text-shadow: 0 0 22px var(--periwinkle-halo); }
+
+.neha-particles {
+  position: absolute;
+  top: 50%; left: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+.neha-particles span {
+  font-family: 'SF Mono', Menlo, Consolas, monospace;
+  line-height: 1;
+  user-select: none;
+}
+#hero-lotus p { margin: 0; max-width: 480px; font-weight: 300; font-size: clamp(0.85rem, 1.6vh, 1.05rem); line-height: 1.55; color: var(--ink-lo); animation-delay: 0.45s; }
+#hero-lotus p em { font-style: italic; color: var(--orchid); }
+#hero-lotus #cue { display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--ink-ghost); margin-top: 2px; animation: lotusCueBounce 1.8s var(--ease-soft) infinite; }
+#hero-lotus #cue span { font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase; }
+@keyframes lotusCueBounce { 0%, 100% { transform: translateY(0); opacity: 0.4; } 50% { transform: translateY(6px); opacity: 0.85; } }
+#hero-lotus #cursor {
+  position: fixed; top: 0; left: 0; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--periwinkle); box-shadow: 0 0 0 6px var(--periwinkle-halo);
+  pointer-events: none; z-index: 9999;
+  transform: translate3d(-100px,-100px,0);
 }
 
-.hero-title {
-  font-family: var(--caslon);
-  font-size: clamp(3.5rem, 7vw, 7rem);
-  font-weight: 400;
-  line-height: 1.02;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  margin-bottom: 22px;
+.ascii-orb {
+  position: absolute;
+  width: 70px;
+  height: 70px;
+  pointer-events: none;
+}
+.ascii-orb span {
+  position: absolute;
+  top: 50%; left: 50%;
+  font-family: 'SF Mono', Menlo, Consolas, monospace;
+  line-height: 1;
+  user-select: none;
+  will-change: transform, opacity;
 }
 
-.hero-subtitle {
-  font-size: 15px;
-  color: var(--ink-soft);
-  line-height: 1.75;
-  max-width: 400px;
-  font-weight: 300;
-  margin-bottom: 52px;
+/* ── HERO → WORK dithered fade ────────────────────────────── */
+#hero-fade {
+  position: absolute;
+  left: 0; right: 0;
+  /* Extends 80px past the hero/Work boundary (into Work's own top
+     padding, well before its "Selected Work" heading starts) so the
+     fade genuinely bleeds into the Work section instead of resolving
+     to flat white right at the seam. #hero-lotus has no overflow:hidden,
+     so this is free to render past its parent's edge. */
+  bottom: -80px;
+  height: clamp(300px, 42vh, 460px);
+  /* Static fallback — renders immediately even before/if JS runs.
+     lotus-hero.js's buildFadeGradient() overrides this with a smoother
+     many-stop version, but this guarantees a visible fade either way.
+     Plain black -> cream, no color tint. */
+  background: linear-gradient(
+    to bottom,
+    #030204 0%,
+    rgb(10, 9, 10) 45%,
+    rgb(35, 34, 34) 62%,
+    rgb(110, 108, 106) 80%,
+    rgb(200, 196, 190) 92%,
+    #FAF8F5 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #hero-lotus #cue, #hero-lotus #flower-cells { animation: none !important; }
+  #hero-lotus .fade-up { animation: none !important; opacity: 1 !important; transform: none !important; }
+  #hero-lotus #cursor { display: none !important; }
+  body { cursor: auto !important; }
 }
 
 .scroll-cue {
@@ -190,7 +293,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 /* ── WORK CARD ────────────────────────────────────────────── */
 .work-card {
   margin-bottom: 80px;
-  cursor: pointer;
+  cursor: none;
   display: flex;
   flex-direction: column;
 }
@@ -280,6 +383,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   z-index: 200;
   background: var(--cream);
   overflow-y: auto;
+  overflow-x: hidden; /* safety net for the full-bleed embed's 100vw breakout below */
   display: flex;
   flex-direction: column;
   opacity: 0;
@@ -357,10 +461,27 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 .case-body {
   padding: 0 var(--pad-x) 120px;
-  max-width: 740px;
+  max-width: 1080px;
   font-size: 15px;
   line-height: 1.82;
   color: var(--ink-soft);
+  /* Split-page layout — two explicit columns (.case-col), not CSS
+     multi-column auto-flow, so specific sections can be deliberately
+     placed left vs. right rather than however the balancer happens to
+     split the text. Anything NOT wrapped in a .case-col (e.g. a lone
+     "coming soon" paragraph on other case studies) just falls into the
+     first grid track on its own — still valid, just single-column. */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 56px;
+  align-items: start;
+}
+
+/* Spans both tracks — used for the full-bleed embed so it isn't confined
+   to whichever column it's authored inside. */
+.case-body > .case-embed,
+.case-body > h3 {
+  grid-column: 1 / -1;
 }
 
 .case-body h3 {
@@ -369,6 +490,9 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   font-weight: 400;
   color: var(--ink);
   margin: 48px 0 14px;
+}
+.case-body .case-col > h3:first-child {
+  margin-top: 0;
 }
 
 .case-body p  { margin-bottom: 20px; }
@@ -379,6 +503,34 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   width: 100%;
   border-radius: 4px;
   margin: 36px 0;
+}
+
+.case-body .case-embed {
+  width: 100%;
+  aspect-ratio: 800 / 450;
+  margin: 20px 0 36px;
+}
+.case-body .case-embed iframe {
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+}
+
+/* Breaks out of .case-body's max-width:740px AND its padding to span the
+   full viewport width, regardless of how deeply nested it is — the
+   classic 100vw/left:50%/negative-margin technique. .case-overlay's
+   overflow-x:hidden above is the safety net against the sub-pixel
+   scrollbar mismatch this trick is known for. */
+.case-body .case-embed.full-bleed {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+.case-body .case-embed.full-bleed iframe {
+  border-radius: 0;
 }
 
 /* ── RESPONSIVE ───────────────────────────────────────────── */

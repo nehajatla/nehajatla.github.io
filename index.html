@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Neha Jatla — CS, AI &amp; Design @ Duke</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="work.css">
+  <link rel="stylesheet" href="work.css?v=17">
 </head>
 <body>
 
   <nav class="nav">
-    <a href="index.html" class="nav-logo">neha.</a>
     <ul class="nav-links">
       <li><a href="index.html#work" id="nav-work">Work</a></li>
       <li><a href="playground.html">Playground</a></li>
@@ -20,15 +20,41 @@
     </ul>
   </nav>
 
-  <main class="home-hero">
-    <span class="hero-eyebrow">CS, AI &amp; Design @ Duke</span>
-    <h1 class="hero-title">hi, i'm neha</h1>
-    <p class="hero-subtitle">Building at the intersection of software, machine learning, and design.</p>
-    <div class="scroll-cue" aria-hidden="true">
-      <span>Scroll</span>
-      <div class="scroll-cue-line"></div>
+  <div id="hero-lotus">
+    <pre id="lattice-bg"></pre>
+
+    <div id="hero">
+      <div id="flower-stage">
+        <pre id="sat-a"></pre>
+        <pre id="sat-b"></pre>
+        <div id="flower-cells"></div>
+      </div>
+
+      <h1 class="fade-up">hi, i'm <em>neha</em></h1>
+      <div class="fade-up eyebrow">CS, AI &amp; Design @ Duke</div>
+
+      <div id="cue">
+        <span>Scroll</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 8l8 8 8-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
     </div>
-  </main>
+
+    <!-- Interactive ASCII orbs — small clusters of shifting characters
+         that scatter/brighten when the periwinkle cursor gets near.
+         Populated by lotus-hero.js. -->
+    <div class="ascii-orb" id="orb-1" style="top:9%; left:10%;"></div>
+    <div class="ascii-orb" id="orb-2" style="top:8%; right:9%;"></div>
+    <div class="ascii-orb" id="orb-3" style="top:38%; left:5%;"></div>
+    <div class="ascii-orb" id="orb-4" style="top:36%; right:5%;"></div>
+    <div class="ascii-orb" id="orb-5" style="bottom:9%; left:12%;"></div>
+    <div class="ascii-orb" id="orb-6" style="bottom:8%; right:10%;"></div>
+
+    <!-- Dithered ASCII gradient bridging the near-black hero into the
+         cream Work section below, instead of a hard color cut. -->
+    <div id="hero-fade"></div>
+
+    <div id="cursor"></div>
+  </div>
 
   <!-- ================================================================
        WORK — two-column staggered card grid, rendered by paintstore.js
@@ -62,5 +88,6 @@
   </div>
 
   <script src="paintstore.js"></script>
+  <script src="lotus-hero.js?v=8"></script>
 </body>
 </html>

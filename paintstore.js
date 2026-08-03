@@ -24,168 +24,85 @@
 
 const PROJECTS = [
 
-  /* 01 — Lovable */
-  {
-    id:      'lovable',
-    context: 'LOVABLE · 2025',
-    title:   'Lovable',
-    desc:    'SWE & product work at AI-native app builder.',
-    color:   '#FF4D00',
-    image:   '',
-    tall:    false,
-    tags:    ['SWE', 'Product', 'AI'],
-    body: `
-      <p>Coming soon — thumbnail and case study in progress.</p>
-    `
-  },
-
-  /* 02 — MetLife */
+  /* 01 — MetLife */
   {
     id:      'metlife',
     context: 'METLIFE · 2024',
     title:   'MetLife',
-    desc:    'Software engineering and data analytics internship.',
+    desc:    'AI product strategy and design for an enterprise LLM platform.',
     color:   '#0066FF',
     image:   '',
     tall:    false,
-    tags:    ['SWE', 'Data Analytics'],
+    tags:    ['AI', 'Product Strategy', 'Design'],
     body: `
-      <p>Coming soon — thumbnail and case study in progress.</p>
+      <p><strong>Role:</strong> AI Product Strategy & Design Intern</p>
+
+      <p><strong>Work:</strong> Designing an end to end AI video generation product from scratch as part of MetLife's enterprise LLM platform, making real decisions about user flow, interaction patterns, and interface clarity under actual production constraints.</p>
+
+      <p><em>More details can be accessed upon request.</em></p>
     `
   },
 
-  /* 03 — Cognition Product Design */
+  /* 02 — Cognition Brand & Product Design */
   {
     id:      'cognition',
-    context: 'COGNITION · 2024',
-    title:   'Cognition — Product Design',
-    desc:    'Designing the interface for an AI coding agent.',
-    color:   '#8B00FF',
+    context: 'COGNITION · AUG 2025 TO JAN 2026',
+    title:   'Cognition: Brand & Product Design',
+    desc:    'Brand identity and UI/UX for a neurotech BCI startup.',
+    color:   '#111111',
     image:   '',
     tall:    false,
-    tags:    ['Product Design', 'UX', 'AI'],
+    tags:    ['Product Design', 'Brand', 'UX'],
     body: `
-      <p>Coming soon — thumbnail and case study in progress.</p>
+      <div class="case-col">
+        <p><strong>Team:</strong> Product Design (me), Joseph Ayinde (Co-Founder & CEO), and other founding team members<br>
+        <strong>Role:</strong> Product Design Intern</p>
+
+        <p>As Product Design Intern at Cognition, an early stage neurotechnology startup building personalized brain computer interfaces, I worked directly with Joseph Ayinde, Co-Founder & CEO, and the founding team to develop new design ideas and iterations, translating complex EEG signal data into intuitive UI and UX flows during a formative period for the company's visual identity.</p>
+
+        <h3>Logo & Brand</h3>
+        <p>Working with an early stage company meant starting from a blank slate rather than an existing system. In sessions with Joseph and the team, I explored several logo directions, ranging from more literal neural or wave inspired marks to simpler geometric forms, before the team converged on a minimal, monochromatic identity. The black and white palette was chosen deliberately to keep the brand feeling clinical, trustworthy, and precise, qualities that mattered for a product dealing with sensitive biometric data.</p>
+
+        <h3>Brand Guidelines</h3>
+        <p>Given the startup's early phase, guidelines were still informal rather than a fully documented system. Conversations with Joseph functioned as a lightweight internal guide covering logo usage, spacing, and how strictly to hold to the black and white constraint, meant primarily to keep design decisions consistent as the founding team moved quickly across features.</p>
+      </div>
+
+      <div class="case-col">
+        <h3>Typography</h3>
+        <p>The typography leaned toward a clean, geometric sans serif, something neutral enough to let the black and white palette carry visual weight without competing for attention. This fit a product built around trust and clarity, where data legibility mattered more than personality in the type choice.</p>
+
+        <h3>Website & Mobile</h3>
+        <p>I designed UI and UX flows that made raw EEG signal data legible within a strict black and white system, tackling information hierarchy challenges specific to a product where the underlying data is invisible by default. Without color available as a signal for alerts, trends, or data states, I relied on contrast, weight, and spacing, using shading and line weight variation to distinguish signal strength or session status instead of a color coded system.</p>
+
+        <h3>Process</h3>
+        <ul>
+          <li><strong>Discovery:</strong> meeting with Joseph and the team to understand the product vision and the desired brand feel</li>
+          <li><strong>Exploration:</strong> concepting several logo and visual directions within a monochromatic black and white constraint</li>
+          <li><strong>Refinement:</strong> narrowing directions through feedback loops with Joseph and the founding team</li>
+          <li><strong>Systemization:</strong> establishing lightweight internal rules for logo usage and spacing to keep the system consistent as the team moved quickly</li>
+          <li><strong>Application:</strong> extending the monochromatic system into UI flows for visualizing EEG signal data across web and mobile</li>
+        </ul>
+      </div>
+
+      <h3>Brand Guidelines (Figma)</h3>
+      <div class="case-embed full-bleed">
+        <iframe src="https://embed.figma.com/design/rBHWMZ88aoCs960yApReYo/Cognition-Brand-Guidelines--WIP-?node-id=0-1&embed-host=share" allowfullscreen></iframe>
+      </div>
     `
   },
 
-  /* 04 — Rhydhun */
-  {
-    id:      'rhydhun',
-    context: 'DUKE RHYDHUN · 2023–PRESENT',
-    title:   'Rhydhun — Brand & Motion',
-    desc:    'Instagram identity and video motion for Duke\'s fusion dance team.',
-    color:   '#FF0080',
-    image:   '',
-    tall:    true,
-    tags:    ['Brand', 'Motion', 'Social Media'],
-    body: `
-      <p>Coming soon — thumbnail and case study in progress.</p>
-    `
-  },
-
-  /* 05 — Duke Eatz */
-  {
-    id:      'duke-eatz',
-    context: 'DUKE EATZ · 2024',
-    title:   'Duke Eatz',
-    desc:    'Campus food discovery app — design and engineering.',
-    color:   '#FF8C00',
-    image:   '',
-    tall:    false,
-    tags:    ['Product Design', 'SWE', 'Mobile'],
-    body: `
-      <p>Coming soon — thumbnail and case study in progress.</p>
-    `
-  },
-
-  /* 06 — Spotify */
-  {
-    id:      'spotify',
-    context: 'SPOTIFY · CASE STUDY',
-    title:   'Spotify — Case Study & Data',
-    desc:    'UX case study combined with streaming data analysis.',
-    color:   '#1DB954',
-    image:   '',
-    tall:    false,
-    tags:    ['UX Research', 'Data', 'Case Study'],
-    body: `
-      <p>Coming soon — thumbnail and case study in progress.</p>
-    `
-  },
-
-  /* 07 — CHWgo */
-  {
-    id:      'chwgo',
-    context: 'APPSEED · 2023',
-    title:   'CHWgo',
-    desc:    'Community health worker platform for Puerto Rico.',
-    color:   '#00B4D8',
-    image:   '',
-    tall:    false,
-    tags:    ['Product Design', 'Social Impact', 'Mobile'],
-    body: `
-      <p>Coming soon — thumbnail and case study in progress.</p>
-    `
-  },
-
-  /* 08 — Jonas RX */
-  {
-    id:      'jonas-rx',
-    context: 'JONAS RX · 2024',
-    title:   'Jonas RX',
-    desc:    'Healthcare software design and engineering.',
-    color:   '#E63946',
-    image:   '',
-    tall:    false,
-    tags:    ['SWE', 'Healthcare', 'Design'],
-    body: `
-      <p>Coming soon — thumbnail and case study in progress.</p>
-    `
-  },
-
-  /* 09 — Duke EHR */
-  {
-    id:      'duke-ehr',
-    context: 'DUKE AI HEALTH · 2024',
-    title:   'Duke EHR — LLM Pipeline',
-    desc:    'Natural-language SQL interface for clinical health records.',
-    color:   '#023E8A',
-    image:   '',
-    tall:    false,
-    tags:    ['SWE', 'LLMs', 'SQL', 'Healthcare'],
-    body: `
-      <p>Coming soon — thumbnail and case study in progress.</p>
-    `
-  },
-
-  /* 10 — Apple Watch Digests */
-  {
-    id:      'apple-watch',
-    context: 'CONCEPT · 2025',
-    title:   'Apple Watch Digests',
-    desc:    'World Cup live digest experience on Apple Watch.',
-    color:   '#1C1C1E',
-    image:   '',
-    tall:    true,
-    tags:    ['Product Design', 'Concept', 'Wearables'],
-    body: `
-      <p>Coming soon — thumbnail and case study in progress.</p>
-    `
-  },
-
-  /* 11 — RTC SWE + Data Analytics */
+  /* 03 — RTC SWE + Data Analytics */
   {
     id:      'rtc',
     context: 'REWRITING THE CODE · 2023',
-    title:   'RTC — SWE & Data Analytics',
+    title:   'RTC: SWE & Data Analytics',
     desc:    'Software engineering and data analytics with Rewriting the Code.',
     color:   '#7209B7',
     image:   '',
     tall:    false,
     tags:    ['SWE', 'Data Analytics'],
     body: `
-      <p>Coming soon — thumbnail and case study in progress.</p>
+      <p>Coming soon: thumbnail and case study in progress.</p>
     `
   },
 
