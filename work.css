@@ -11,7 +11,7 @@
   --ink-ghost:  #555555;
   --periwinkle: #6574fc;
   --border:     rgba(0,0,0,0.10);
-  --caslon:     "Big Caslon", "Adobe Caslon Pro", Georgia, "Times New Roman", serif;
+  --caslon:     "Cormorant Garamond", "Big Caslon", "Adobe Caslon Pro", Georgia, serif;
   --sans:       'Inter', system-ui, sans-serif;
   --nav-h:      66px;
   --pad-x:      52px;
@@ -76,6 +76,21 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
 }
 .nav-links a:hover,
 .nav-links a.active { color: var(--ink); }
+
+/* Highlight rectangle behind each nav word — see the page script for the
+   color-pairing logic. Lives inside the link (not on the shared #cursor
+   dot) and is positioned/z-indexed so the link's own text always paints
+   on top of it without any z-index fight against the cursor or
+   interference from .nav's backdrop-filter blur. */
+.nav-links a .nav-hl {
+  position: absolute;
+  inset: -6px -8px;
+  border-radius: 3px;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.nav-links a.nav-hover .nav-hl { opacity: 1; }
 
 /* ── HERO ─────────────────────────────────────────────────── */
 .home-hero {
@@ -189,7 +204,7 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
    viewport aspect ratio. The size here is just an unstyled-flash
    fallback before that first runs. */
 .grid-piece-label {
-  font-family: "Instrument Serif", Georgia, serif;
+  font-family: "Cormorant Garamond", Georgia, serif;
   font-weight: 400;
   font-size: 1.7rem;
   line-height: 1.12;
@@ -237,17 +252,7 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   background: var(--periwinkle);
   pointer-events: none; z-index: 9999;
   transform: translate3d(-100px,-100px,0);
-  transition: background 0.2s ease, width 0.2s ease, height 0.2s ease, border-radius 0.2s ease;
-}
-/* Hovering a nav link (Work / Playground / About) morphs the dot into a
-   rectangle in the complementary color of whatever the cursor's current
-   color is (see complementaryColor() in the page script), sized and
-   positioned in JS to exactly match that link's own text box — not a
-   fixed size tracking the raw mouse position, which used to stick out
-   past the (much smaller) nav text and read as a colored line under the
-   word rather than a highlight framing it. */
-#cursor.cursor-rect {
-  border-radius: 3px;
+  transition: background 0.2s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -351,15 +356,27 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   aspect-ratio: 16 / 9;
 }
 
-.card-thumb img {
+.card-thumb img,
+.card-thumb-video {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
   transition: transform 0.6s var(--ease);
 }
-.work-card:hover .card-thumb img {
+.work-card:hover .card-thumb img,
+.work-card:hover .card-thumb-video {
   transform: scale(1.03);
+}
+
+/* Live embed thumbnails (e.g. a Figma prototype) — fills the card the
+   same as an image would, but stays real content behind an iframe
+   boundary rather than a screenshot. */
+.card-thumb--embed iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
 }
 
 /* Logo thumbnails (e.g. MetLife) — the source is a brand mark, not a
@@ -405,14 +422,25 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   border-radius: 20px;
 }
 
-/* Hover overlay — subtle darkening + arrow */
+/* Hover overlay arrow — its own small dark chip behind it now (instead
+   of relying on the old full-image gradient scrim for contrast), since
+   the caption moved off the image entirely below. */
 .card-thumb::after {
   content: '↗';
   position: absolute;
-  top: 16px;
-  right: 18px;
-  font-size: 18px;
-  color: rgba(255,255,255,0.9);
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #fff;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 50%;
   opacity: 0;
   transform: translate(-4px, 4px);
   transition: opacity 0.25s, transform 0.25s;
@@ -422,16 +450,10 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   transform: translate(0, 0);
 }
 
-/* Caption — now an overlay label sitting on top of the picture (bottom
-   edge), not a separate block stacked below it. A gradient scrim behind
-   the text keeps it legible over whatever color/image is underneath,
-   regardless of how light or busy that picture is. */
+/* Caption — sits below the image on the plain cream page background, no
+   dark scrim needed since it's no longer overlaid on the picture. */
 .card-caption {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  z-index: 1;
-  padding: 44px 20px 18px;
-  background: linear-gradient(to top, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.32) 45%, rgba(0,0,0,0) 100%);
+  padding: 16px 2px 0;
 }
 
 .card-context {
@@ -439,7 +461,7 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   font-weight: 400;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.75);
+  color: var(--ink-ghost);
   margin-bottom: 8px;
 }
 
@@ -448,15 +470,15 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   font-size: clamp(1.25rem, 2vw, 1.65rem);
   font-weight: 400;
   line-height: 1.15;
-  color: #fff;
+  color: var(--ink);
   margin-bottom: 7px;
   transition: opacity 0.2s;
 }
-.work-card:hover .card-title { opacity: 0.85; }
+.work-card:hover .card-title { opacity: 0.7; }
 
 .card-desc {
   font-size: 13px;
-  color: rgba(255,255,255,0.8);
+  color: var(--ink-ghost);
   line-height: 1.55;
 }
 

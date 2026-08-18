@@ -20,6 +20,17 @@
    hoverImage  optional — an animated file (gif) shown only while the
                card is hovered; `image` stays as the static poster frame
                the rest of the time, so the animation doesn't autoplay
+   embed    optional — a live iframe URL (e.g. a Figma prototype) shown
+            as the thumbnail instead of `image`; stays fully interactive,
+            so clicking/dragging inside it plays the prototype rather
+            than opening the case study (clicking the caption below it
+            still opens the case study as normal)
+   video    optional — path to an .mp4 shown as the thumbnail instead of
+            `image`; muted/looping, plays only while the card is
+            hovered (same "doesn't autoplay at rest" idea as
+            hoverImage). Pair with `image` as the poster frame shown the
+            rest of the time — if `image` is "", the video's own first
+            frame is used instead.
    tall     true = portrait aspect ratio (phone mockups etc)
    wide     true = landscape 16:9 aspect ratio
    logo     true = image is a brand mark, not a photo — shown small and
@@ -124,6 +135,7 @@ const PROJECTS = [
     desc:    'Coming soon.',
     color:   '#D9C6A0',
     image:   '',
+    video:   'work/Legends.mp4',
     tall:    false,
     wide:    true,
     tags:    ['Coming Soon'],
@@ -171,7 +183,38 @@ const PROJECTS = [
     thumb.className = 'card-thumb' + (p.logo ? ' card-thumb--logo' : '');
     thumb.style.background = p.logo ? '#fff' : p.color;
 
-    if (p.image) {
+    if (p.video) {
+      /* Muted/looping, plays only on hover — mirrors hoverImage's "don't
+         autoplay at rest" rule but for a real video file instead of a
+         gif. Browsers require muted for autoplay to be allowed at all,
+         which is exactly the effect we want here anyway (silent
+         thumbnail preview, not a video with sound playing itself). */
+      const video = document.createElement('video');
+      video.className = 'card-thumb-video';
+      video.src = p.video;
+      if (p.image) video.poster = p.image;
+      video.muted = true;
+      video.loop = true;
+      video.playsInline = true;
+      video.preload = 'metadata';
+      thumb.appendChild(video);
+      thumb.addEventListener('mouseenter', () => { video.play().catch(() => {}); });
+      thumb.addEventListener('mouseleave', () => { video.pause(); video.currentTime = 0; });
+    } else if (p.embed) {
+      /* A live, fully-interactive embed (e.g. a Figma prototype) instead
+         of a static image. Clicks/drags inside an iframe never bubble to
+         the parent page (cross-document boundary), so this naturally
+         plays the prototype instead of opening the case study — no
+         pointer-events wrangling needed, just sizing (see
+         .card-thumb--embed in work.css). */
+      thumb.classList.add('card-thumb--embed');
+      const iframe = document.createElement('iframe');
+      iframe.src = p.embed;
+      iframe.loading = 'lazy';
+      iframe.allowFullscreen = true;
+      iframe.title = p.title;
+      thumb.appendChild(iframe);
+    } else if (p.image) {
       const img = document.createElement('img');
       img.src     = p.image;
       img.alt     = p.title;
@@ -194,8 +237,10 @@ const PROJECTS = [
       thumb.appendChild(placeholder);
     }
 
-    /* Caption — overlaid as a label on top of the picture, not stacked
-       below it, so the image can run full-bleed and bigger. */
+    card.appendChild(thumb);
+
+    /* Caption — sits below the image on the plain cream page background,
+       not overlaid on a dark scrim. */
     const caption = document.createElement('div');
     caption.className = 'card-caption';
     caption.innerHTML = `
@@ -203,9 +248,8 @@ const PROJECTS = [
       <h3 class="card-title">${p.title}</h3>
       <p class="card-desc">${p.desc}</p>
     `;
-    thumb.appendChild(caption);
+    card.appendChild(caption);
 
-    card.appendChild(thumb);
     grid.appendChild(card);
 
     /* Open overlay */

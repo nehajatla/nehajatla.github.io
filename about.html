@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="styles.css?v=7">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -44,84 +44,70 @@
         const baseColor = savedColor || getComputedStyle(cursorEl).backgroundColor;
         if (savedColor) cursorEl.style.background = savedColor;
 
-        // True HSL complement (hue rotated 180°, same saturation/
-        // lightness) of whichever palette color the cursor currently is —
-        // shown on the rectangle that replaces the dot over a nav link.
-        function complementaryColor(hex) {
-          hex = hex.replace('#', '');
-          const r = parseInt(hex.substr(0, 2), 16) / 255, g = parseInt(hex.substr(2, 2), 16) / 255, b = parseInt(hex.substr(4, 2), 16) / 255;
-          const max = Math.max(r, g, b), min = Math.min(r, g, b);
-          let h, s, l = (max + min) / 2;
-          if (max === min) { h = s = 0; } else {
-            const d = max - min;
-            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-            if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
-            else if (max === g) h = (b - r) / d + 2;
-            else h = (r - g) / d + 4;
-            h /= 6;
-          }
-          h = (h + 0.5) % 1;
-          function hue2rgb(p, q, t) {
-            if (t < 0) t += 1;
-            if (t > 1) t -= 1;
-            if (t < 1 / 6) return p + (q - p) * 6 * t;
-            if (t < 1 / 2) return q;
-            if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-            return p;
-          }
-          let r2, g2, b2;
-          if (s === 0) { r2 = g2 = b2 = l; } else {
-            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-            const p = 2 * l - q;
-            r2 = hue2rgb(p, q, h + 1 / 3);
-            g2 = hue2rgb(p, q, h);
-            b2 = hue2rgb(p, q, h - 1 / 3);
-          }
-          const toHex = (v) => Math.round(v * 255).toString(16).padStart(2, '0');
-          return '#' + toHex(r2) + toHex(g2) + toHex(b2);
-        }
+        // Hand-picked pairings (not a computed complement) — each hero
+        // palette color hovering the nav gets the word set in that same
+        // color, on a rectangle in its specific paired color: dark blue
+        // <-> coral pink, yellow -> dark blue, medium pink <-> lilac
+        // purple, cyan <-> deeper orangey-pink/red.
+        const HOVER_PAIRS = {
+          '#4B8AFF': '#FD9191',
+          '#FD9191': '#4B8AFF',
+          '#FFE99B': '#4B8AFF',
+          '#FF178B': '#EB95FF',
+          '#EB95FF': '#FF178B',
+          '#6AEEFF': '#FF4B51',
+          '#FF4B51': '#6AEEFF'
+        };
         function rgbToHex(rgb) {
           const m = rgb.match(/\d+/g);
           if (!m) return '#6574fc';
           return '#' + m.slice(0, 3).map((v) => (+v).toString(16).padStart(2, '0')).join('');
         }
+        function hoverBg(hex) {
+          return HOVER_PAIRS[hex.toUpperCase()] || '#4B8AFF';
+        }
 
-        // The rectangle is sized to the hovered link's own text box (plus
-        // a little padding), not a fixed size tracking the raw mouse
-        // position — a fixed size taller than the 11px nav text stuck out
-        // visibly past the word, reading as a colored line under it
-        // instead of a highlight framing it.
-        const PAD_X = 8, PAD_Y = 6;
-        let wasOverNav = false;
+        // The highlight rectangle lives inside each link (a span inserted
+        // before its text), not on the shared #cursor dot — #cursor sits
+        // at z-index:9999 site-wide, and .nav-container has
+        // backdrop-filter:blur(14px); putting the rectangle behind nav to
+        // let the text show through ran it straight through that blur and
+        // turned a crisp rectangle into a soft glow. A span painted
+        // inside the link never touches the blur, and — since it's
+        // absolutely positioned with z-index:-1 while the link's own text
+        // is plain in-flow inline content, which always paints above
+        // negative-z-index positioned siblings — the text sits on top of
+        // it automatically.
+        document.querySelectorAll('.nav-links a').forEach((link) => {
+          const hl = document.createElement('span');
+          hl.className = 'nav-hl';
+          link.prepend(hl);
+        });
+
+        // Checked via real pointer position on move, not mouseenter/
+        // mouseleave — those fire spuriously when the page scrolls.
+        let lastLink = null;
         document.addEventListener('pointermove', (e) => {
-          // Checked via real pointer position on move, not mouseenter/
-          // mouseleave — those fire spuriously when the page scrolls.
           const hoverTarget = document.elementFromPoint(e.clientX, e.clientY);
           const navLink = hoverTarget && hoverTarget.closest('.nav-links a');
-          const overNav = !!navLink;
 
-          if (overNav !== wasOverNav) {
-            wasOverNav = overNav;
-            cursorEl.classList.toggle('cursor-rect', overNav);
-            if (overNav) {
-              const current = localStorage.getItem('siteCursorColor') || baseColor;
-              cursorEl.style.background = complementaryColor(current.startsWith('#') ? current : rgbToHex(current));
-            } else {
-              cursorEl.style.background = localStorage.getItem('siteCursorColor') || baseColor;
-              cursorEl.style.width = '';
-              cursorEl.style.height = '';
+          if (navLink !== lastLink) {
+            if (lastLink) {
+              lastLink.classList.remove('nav-hover');
+              lastLink.style.color = '';
             }
+            if (navLink) {
+              const current = localStorage.getItem('siteCursorColor') || baseColor;
+              const currentHex = current.startsWith('#') ? current : rgbToHex(current);
+              navLink.querySelector('.nav-hl').style.background = hoverBg(currentHex);
+              navLink.classList.add('nav-hover');
+              navLink.style.color = currentHex;
+            }
+            lastLink = navLink;
           }
 
-          if (overNav) {
-            const r = navLink.getBoundingClientRect();
-            cursorEl.style.width = (r.width + PAD_X * 2) + 'px';
-            cursorEl.style.height = (r.height + PAD_Y * 2) + 'px';
-            cursorEl.style.transform = 'translate3d(' + (r.left - PAD_X) + 'px, ' + (r.top - PAD_Y) + 'px, 0)';
-          } else {
-            cursorEl.style.transform = 'translate3d(' + (e.clientX - 10) + 'px, ' + (e.clientY - 10) + 'px, 0)';
-          }
-          cursorEl.style.scale = (!overNav && hoverTarget && hoverTarget.closest('a, button')) ? '1.7' : '1';
+          cursorEl.style.transform = 'translate3d(' + (e.clientX - 10) + 'px, ' + (e.clientY - 10) + 'px, 0)';
+          cursorEl.style.scale = (!navLink && hoverTarget && hoverTarget.closest('a, button')) ? '1.7' : '1';
         }, { passive: true });
       })();
     </script>

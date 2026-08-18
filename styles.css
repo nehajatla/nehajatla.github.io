@@ -9,7 +9,7 @@
     --border-color: rgba(33, 32, 31, 0.08);
     
     --font-sans: 'Inter', sans-serif;
-    --font-serif: 'Instrument Serif', serif;
+    --font-serif: 'Cormorant Garamond', 'Instrument Serif', serif;
 }
 
 * {
@@ -45,14 +45,7 @@ body {
     will-change: transform;
     transform: translate3d(-100px, -100px, 0);
     scale: 1;
-    transition: scale 0.15s ease, background 0.2s ease, width 0.2s ease, height 0.2s ease, border-radius 0.2s ease;
-}
-/* Hovering a nav link (Work / Playground / About) morphs the dot into a
-   rectangle in the complementary color of whatever the cursor's current
-   color is (see complementaryColor() in the page script), sized and
-   positioned in JS to exactly match that link's own text box. */
-#cursor.cursor-rect {
-    border-radius: 3px;
+    transition: scale 0.15s ease, background 0.2s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -150,12 +143,28 @@ body {
     color: var(--text-muted);
     font-weight: 400;
     cursor: none;
+    position: relative;
     transition: color 0.2s;
 }
 
 .nav-links a:hover, .nav-links a.active {
     color: var(--text-primary);
 }
+
+/* Highlight rectangle behind each nav word — see the page script for the
+   color-pairing logic. Lives inside the link (not on the shared #cursor
+   dot) and is positioned/z-indexed so the link's own text always paints
+   on top of it, with no interference from .nav-container's
+   backdrop-filter blur. */
+.nav-links a .nav-hl {
+    position: absolute;
+    inset: -6px -8px;
+    border-radius: 3px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+.nav-links a.nav-hover .nav-hl { opacity: 1; }
 
 /* --- Home Hero --- */
 .hero-section {
