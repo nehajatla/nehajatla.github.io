@@ -17,7 +17,13 @@
    desc     one-line description
    color    bold placeholder bg color (shows until real image added)
    image    path to thumbnail — leave "" for now
+   hoverImage  optional — an animated file (gif) shown only while the
+               card is hovered; `image` stays as the static poster frame
+               the rest of the time, so the animation doesn't autoplay
    tall     true = portrait aspect ratio (phone mockups etc)
+   wide     true = landscape 16:9 aspect ratio
+   logo     true = image is a brand mark, not a photo — shown small and
+            contained on a plain white field instead of covering the card
    tags     discipline tags shown in case study header
    body     HTML for full case study body
 ================================================================ */
@@ -27,12 +33,14 @@ const PROJECTS = [
   /* 01 — MetLife */
   {
     id:      'metlife',
-    context: 'METLIFE · 2024',
+    context: 'METLIFE - 2024',
     title:   'MetLife',
     desc:    'AI product strategy and design for an enterprise LLM platform.',
-    color:   '#0066FF',
-    image:   '',
+    color:   '#AEC0D6',
+    image:   'work/metlife.png',
+    logo:    true,
     tall:    false,
+    big:     true,
     tags:    ['AI', 'Product Strategy', 'Design'],
     body: `
       <p><strong>Role:</strong> AI Product Strategy & Design Intern</p>
@@ -46,12 +54,13 @@ const PROJECTS = [
   /* 02 — Cognition Brand & Product Design */
   {
     id:      'cognition',
-    context: 'COGNITION · AUG 2025 TO JAN 2026',
+    context: 'COGNITION - AUG 2025 TO JAN 2026',
     title:   'Cognition: Brand & Product Design',
     desc:    'Brand identity and UI/UX for a neurotech BCI startup.',
-    color:   '#111111',
+    color:   '#5B5D63',
     image:   '',
     tall:    false,
+    big:     true,
     tags:    ['Product Design', 'Brand', 'UX'],
     body: `
       <div class="case-col">
@@ -94,13 +103,30 @@ const PROJECTS = [
   /* 03 — RTC SWE + Data Analytics */
   {
     id:      'rtc',
-    context: 'REWRITING THE CODE · 2023',
+    context: 'REWRITING THE CODE - 2023',
     title:   'RTC: SWE & Data Analytics',
     desc:    'Software engineering and data analytics with Rewriting the Code.',
-    color:   '#7209B7',
-    image:   '',
+    color:   '#C9AFCC',
+    image:   'work/RTC-poster.jpg',
+    hoverImage: 'work/RTC.gif',
     tall:    false,
     tags:    ['SWE', 'Data Analytics'],
+    body: `
+      <p>Coming soon: thumbnail and case study in progress.</p>
+    `
+  },
+
+  /* 04 — Legends */
+  {
+    id:      'legends',
+    context: 'LEGENDS - 2024',
+    title:   'Legends',
+    desc:    'Coming soon.',
+    color:   '#D9C6A0',
+    image:   '',
+    tall:    false,
+    wide:    true,
+    tags:    ['Coming Soon'],
     body: `
       <p>Coming soon: thumbnail and case study in progress.</p>
     `
@@ -132,6 +158,8 @@ const PROJECTS = [
       'work-card',
       i % 2 === 1 ? 'work-card--offset' : '',
       p.tall       ? 'work-card--tall'   : '',
+      p.big        ? 'work-card--big'    : '',
+      p.wide       ? 'work-card--wide'   : '',
     ].filter(Boolean).join(' ');
 
     card.setAttribute('tabindex', '0');
@@ -140,8 +168,8 @@ const PROJECTS = [
 
     /* Thumbnail */
     const thumb = document.createElement('div');
-    thumb.className = 'card-thumb';
-    thumb.style.background = p.color;
+    thumb.className = 'card-thumb' + (p.logo ? ' card-thumb--logo' : '');
+    thumb.style.background = p.logo ? '#fff' : p.color;
 
     if (p.image) {
       const img = document.createElement('img');
@@ -149,9 +177,25 @@ const PROJECTS = [
       img.alt     = p.title;
       img.loading = 'lazy';
       thumb.appendChild(img);
+
+      /* hoverImage (e.g. an animated gif) only plays while hovered — a
+         gif starts animating the moment its src loads, so swapping to
+         the poster src on mouseleave is what actually "pauses" it. */
+      if (p.hoverImage) {
+        thumb.addEventListener('mouseenter', () => { img.src = p.hoverImage; });
+        thumb.addEventListener('mouseleave', () => { img.src = p.image; });
+      }
+    } else {
+      /* No real image yet — a simple centered outline standing in for
+         the mockup, so the grid still reads as "a piece with visual
+         content coming" rather than a flat swatch. */
+      const placeholder = document.createElement('div');
+      placeholder.className = 'card-thumb-placeholder';
+      thumb.appendChild(placeholder);
     }
 
-    /* Caption */
+    /* Caption — overlaid as a label on top of the picture, not stacked
+       below it, so the image can run full-bleed and bigger. */
     const caption = document.createElement('div');
     caption.className = 'card-caption';
     caption.innerHTML = `
@@ -159,9 +203,9 @@ const PROJECTS = [
       <h3 class="card-title">${p.title}</h3>
       <p class="card-desc">${p.desc}</p>
     `;
+    thumb.appendChild(caption);
 
     card.appendChild(thumb);
-    card.appendChild(caption);
     grid.appendChild(card);
 
     /* Open overlay */

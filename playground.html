@@ -20,8 +20,8 @@
     --ink: #1C1916;
     --ink-soft: #6B6258;
     --ink-ghost: #AFA89F;
-    --periwinkle: #8F94FB;
-    --periwinkle-dim: rgba(143,148,251,0.16);
+    --periwinkle: #6574fc;
+    --periwinkle-dim: rgba(101,116,252,0.16);
 
     /*
       ── CASLON TYPOGRAPHY ──
@@ -80,6 +80,7 @@
     text-transform: uppercase;
     color: var(--ink-ghost);
     position: relative;
+    cursor: none;
     transition: color 0.2s;
   }
 
@@ -236,6 +237,8 @@
     z-index: 9999;
     will-change: transform;
     transform: translate3d(-7px, -7px, 0);
+    scale: 1;
+    transition: scale 0.15s ease;
   }
 
   #cursor.dragging {
@@ -426,6 +429,14 @@
   const cursorEl = document.getElementById('cursor');
   const hint = document.getElementById('hint');
 
+  // Carries the color the cursor was left in on the homepage hero across
+  // the rest of the visit (see index.html, the only page that ever writes
+  // this key).
+  (function () {
+    const savedColor = localStorage.getItem('siteCursorColor');
+    if (savedColor && cursorEl) cursorEl.style.background = savedColor;
+  })();
+
   // Embedded interactive tiles (e.g. Storm Strings) run a real, continuous
   // physics simulation whether or not they're actually visible — the wall
   // keeps several mounted at once in a scroll buffer around the viewport,
@@ -437,7 +448,7 @@
         entries.forEach((entry) => {
           const win = entry.target.contentWindow;
           if (!win) return;
-          win.postMessage({ type: entry.isIntersecting ? 'storm-strings-resume' : 'storm-strings-pause' }, '*');
+          win.postMessage({ type: entry.isIntersecting ? 'embed-resume' : 'embed-pause' }, '*');
         });
       }, { root: null, rootMargin: '0px', threshold: 0 })
     : null;
@@ -798,7 +809,7 @@
   // trickery — there is only ever one cursor element, so there is
   // nothing to desync or leave stuck behind.
   window.addEventListener('message', (e) => {
-    if (!e.data || e.data.type !== 'storm-strings-pointer') return;
+    if (!e.data || e.data.type !== 'embed-pointer') return;
     for (const frame of renderedCells.values()) {
       if (frame.embedEl && frame.embedEl.contentWindow === e.source) {
         const rect = frame.embedEl.getBoundingClientRect();
@@ -862,6 +873,10 @@
     cursorScreenX = e.clientX;
     cursorScreenY = e.clientY;
     cursorEl.style.transform = 'translate3d(' + (e.clientX - 7) + 'px, ' + (e.clientY - 7) + 'px, 0)';
+    // Checked via real pointer position on move, not mouseenter/mouseleave
+    // — those fire spuriously when the canvas pans under a stationary cursor.
+    const hoverTarget = document.elementFromPoint(e.clientX, e.clientY);
+    cursorEl.style.scale = (hoverTarget && hoverTarget.closest('a, button')) ? '1.7' : '1';
     updateParallaxTarget();
 
     if (!isDragging) return;

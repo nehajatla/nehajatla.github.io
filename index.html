@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="work.css?v=17">
+  <link rel="stylesheet" href="work.css?v=37">
 </head>
 <body>
 
@@ -20,41 +20,16 @@
     </ul>
   </nav>
 
-  <div id="hero-lotus">
-    <pre id="lattice-bg"></pre>
+  <main class="home-hero">
+    <!-- Feature 1: a freeform sliding layout (not a uniform grid) whose
+         tiles read as the hero sentence at rest, positioned/sized to
+         match the reference composition exactly. Click a tile to (a)
+         load its color onto the cursor and (b) slide it into an open
+         neighboring slot, in whichever directions that tile allows. -->
+    <div class="hero-grid" id="hero-grid"></div>
+  </main>
 
-    <div id="hero">
-      <div id="flower-stage">
-        <pre id="sat-a"></pre>
-        <pre id="sat-b"></pre>
-        <div id="flower-cells"></div>
-      </div>
-
-      <h1 class="fade-up">hi, i'm <em>neha</em></h1>
-      <div class="fade-up eyebrow">CS, AI &amp; Design @ Duke</div>
-
-      <div id="cue">
-        <span>Scroll</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 8l8 8 8-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
-    </div>
-
-    <!-- Interactive ASCII orbs — small clusters of shifting characters
-         that scatter/brighten when the periwinkle cursor gets near.
-         Populated by lotus-hero.js. -->
-    <div class="ascii-orb" id="orb-1" style="top:9%; left:10%;"></div>
-    <div class="ascii-orb" id="orb-2" style="top:8%; right:9%;"></div>
-    <div class="ascii-orb" id="orb-3" style="top:38%; left:5%;"></div>
-    <div class="ascii-orb" id="orb-4" style="top:36%; right:5%;"></div>
-    <div class="ascii-orb" id="orb-5" style="bottom:9%; left:12%;"></div>
-    <div class="ascii-orb" id="orb-6" style="bottom:8%; right:10%;"></div>
-
-    <!-- Dithered ASCII gradient bridging the near-black hero into the
-         cream Work section below, instead of a hard color cut. -->
-    <div id="hero-fade"></div>
-
-    <div id="cursor"></div>
-  </div>
+  <div id="cursor"></div>
 
   <!-- ================================================================
        WORK — two-column staggered card grid, rendered by paintstore.js
@@ -87,7 +62,423 @@
     <div class="case-body" id="case-body"></div>
   </div>
 
-  <script src="paintstore.js"></script>
-  <script src="lotus-hero.js?v=8"></script>
+  <script src="paintstore.js?v=4"></script>
+  <script>
+    // Custom periwinkle-dot cursor — native arrow hidden site-wide via
+    // CSS (see work.css), matching about.html / playground.html. Position
+    // is eased toward the real pointer each frame (rather than snapping
+    // straight to it on every event) so the dot trails smoothly instead
+    // of teleporting on fast mouse movements. No hover-grow — it stays a
+    // plain, constant-size dot everywhere.
+    (function () {
+      const cursorEl = document.getElementById('cursor');
+      if (!cursorEl) return;
+
+      // Whatever color the cursor was left in here carries across the
+      // rest of the visit — about.html and playground.html read this same
+      // key on load (see their own cursor scripts) so it survives
+      // navigation. Only this page ever writes to it (see the tile click
+      // handlers below).
+      const savedColor = localStorage.getItem('siteCursorColor');
+      if (savedColor) cursorEl.style.background = savedColor;
+
+      let targetX = -100, targetY = -100, curX = -100, curY = -100, started = false;
+
+      document.addEventListener('pointermove', (e) => {
+        targetX = e.clientX;
+        targetY = e.clientY;
+        if (!started) { curX = targetX; curY = targetY; started = true; }
+      }, { passive: true });
+
+      function trail() {
+        curX += (targetX - curX) * 0.1;
+        curY += (targetY - curY) * 0.1;
+        cursorEl.style.transform = 'translate3d(' + (curX - 10) + 'px, ' + (curY - 10) + 'px, 0)';
+        requestAnimationFrame(trail);
+      }
+      requestAnimationFrame(trail);
+    })();
+  </script>
+  <script>
+    // Feature 1 — a freeform layout (not a uniform grid) matching the
+    // reference composition's exact tile sizes/positions, authored in a
+    // 1280x660 design space and scaled uniformly to fit the container.
+    // Reads at rest: neha / is a / product designer / with a love for /
+    // visual craft, / prototyping, / self-expression. — all seven tiles
+    // carry text now; none are left blank.
+    //
+    // Movement isn't a generic row/col grid here — each tile lives on a
+    // named "slot", and slots are wired to their neighbors only where the
+    // reference layout actually leaves room to slide (e.g. "is a" only
+    // has a slot below it, so it only ever goes down even though its
+    // rule nominally allows up/down). Clicking a tile checks its current
+    // slot's neighbors in clockwise order (up, right, down, left),
+    // filtered to whichever directions that tile is allowed, and slides
+    // into the first empty one.
+    //
+    // "CS, AI & design @ Duke" sits on the static background layer at
+    // "product designer"'s home slot, underneath it — invisible until
+    // that tile slides left/right and off of it.
+    (function () {
+      const cursorEl = document.getElementById('cursor');
+      const grid = document.getElementById('hero-grid');
+      if (!cursorEl || !grid) return;
+
+      // Content occupies x=115..1003 (neha's left edge to the cyan
+      // column's right edge, which the eye/lotus icon tiles now share —
+      // see s5/eyeSlot/lotusSlot below) — 1118 mirrors the 115px left
+      // inset on the right so the composition centers itself in
+      // .hero-grid instead of hugging the left side.
+      const DESIGN_W = 1118, DESIGN_H = 655;
+      const ALL_DIRS = ['up', 'right', 'down', 'left'];
+
+      // id -> { x, y, w, h, empty, neighbors: { dir: slotId } }. Every pair
+      // of tiles that actually sits edge-to-edge in the rest layout (and
+      // the a1-a4/s1-s4 grid they slide through) is spaced by exactly
+      // GAP px, so the white sliver between any two squares reads the same
+      // everywhere. "product designer" spans two of the 140px tile columns
+      // plus the gap between them (140 + 9 + 140 = 289), instead of an
+      // arbitrary width.
+      const GAP = 9;
+      const CELL = 140;
+      const SLOTS = {
+        neha:       { x: 115, y: 16,  w: 292, h: 291 },
+        isaHome:    { x: 416, y: 16,  w: 146, h: 71,  neighbors: { down: 'isaAlt' } },
+        isaAlt:     { x: 416, y: 87,  w: 146, h: 71,  neighbors: { up: 'isaHome' }, empty: true },
+        // x lines up with the a2/s2 column below (267 + CELL + GAP) so
+        // "product designer" sits directly above prototyping +
+        // self-expression, sharing their left edge — not just matching
+        // their combined width.
+        loveHome:   { x: 267 + CELL + GAP, y: 165, w: CELL * 2 + GAP, h: 142, neighbors: { right: 'loveAlt' } },
+        loveAlt:    { x: 267 + CELL + GAP + (CELL * 2 + GAP) + GAP, y: 165, w: CELL * 2 + GAP, h: 142, neighbors: { left: 'loveHome' }, empty: true },
+
+        // Bottom row (the last three tiles: visual craft / prototyping /
+        // self-expression, plus the empty 4th slot) paired with an empty
+        // row directly above it — together they form a full 2x4 sliding
+        // grid so each tile can move up, down, left, or right and cycle
+        // through the open slots, instead of only sliding sideways.
+        a1:         { x: 267,               y: 316, w: CELL, h: CELL, neighbors: { down: 's1', right: 'a2' }, empty: true },
+        a2:         { x: 267 + CELL + GAP,  y: 316, w: CELL, h: CELL, neighbors: { down: 's2', left: 'a1', right: 'a3' }, empty: true },
+        a3:         { x: 267 + (CELL + GAP) * 2, y: 316, w: CELL, h: CELL, neighbors: { down: 's3', left: 'a2', right: 'a4' }, empty: true },
+        a4:         { x: 267 + (CELL + GAP) * 3, y: 316, w: CELL, h: CELL, neighbors: { down: 's4', left: 'a3' }, empty: true },
+        s1:         { x: 267,               y: 316 + CELL + GAP, w: CELL, h: CELL, neighbors: { up: 'a1', right: 's2' } },
+        s2:         { x: 267 + CELL + GAP,  y: 316 + CELL + GAP, w: CELL, h: CELL, neighbors: { up: 'a2', left: 's1', right: 's3' } },
+        s3:         { x: 267 + (CELL + GAP) * 2, y: 316 + CELL + GAP, w: CELL, h: CELL, neighbors: { up: 'a3', left: 's2', right: 's4' } },
+        s4:         { x: 267 + (CELL + GAP) * 3, y: 316 + CELL + GAP, w: CELL, h: CELL, neighbors: { up: 'a4', left: 's3' }, empty: true },
+
+        // The cyan tile's column — GAP past the a/s grid's 4th column so
+        // it reads as the same gutter width as everywhere else. It's
+        // fully locked now: the eye and lotus icon tiles permanently
+        // occupy the slots directly above and below it (see eyeSlot/
+        // lotusSlot below), so there's nowhere left for it to slide.
+        s5:         { x: 267 + (CELL + GAP) * 4, y: 318, w: CELL, h: CELL }
+      };
+
+      // Eye (above) and lotus (below) sit directly in the cyan tile's own
+      // column, each on its own colored square background — a fixed
+      // 3-cell vertical stack, none of which move.
+      const eyeSlot = { x: SLOTS.s5.x, y: 16, w: CELL, h: CELL };
+      const lotusSlot = { x: SLOTS.s5.x, y: SLOTS.s5.y + CELL + GAP, w: CELL, h: CELL };
+
+      // Each tile starts on a named slot. "neha" has no neighbors wired
+      // up at all, so it's structurally locked regardless of dirs.
+      const TILES = [
+        { slot: 'neha',     color: '#FD9191', text: 'neha', dirs: [] },
+        { slot: 'isaHome',  color: '#4B8AFF', text: 'is a', dirs: ['up', 'down'] },
+        { slot: 'loveHome', color: '#FFE99B', text: 'product designer', dirs: ['left', 'right'], fontSize: 42 },
+        { slot: 's1',       color: '#FF4B51', text: 'visual craft,', dirs: ALL_DIRS },
+        { slot: 's2',       color: '#EB95FF', text: 'prototyping,', dirs: ALL_DIRS },
+        { slot: 's3',       color: '#FF178B', text: 'self-expression.', dirs: ALL_DIRS },
+        { slot: 's5',       color: '#6AEEFF', text: 'with\na\nlove\nfor', dirs: ALL_DIRS, align: 'left' }
+      ];
+
+      const stage = document.createElement('div');
+      stage.className = 'hero-stage';
+      grid.appendChild(stage);
+
+      // "CS, AI & design @ Duke" is revealed by sliding the "product
+      // designer" tile away from its home slot.
+      const reveal = document.createElement('div');
+      reveal.className = 'grid-reveal';
+      reveal.innerHTML = 'CS, AI & design @ <a href="https://www.duke.edu/" target="_blank" rel="noopener" class="grid-reveal-link">Duke</a>';
+      stage.appendChild(reveal);
+
+      const pieceLayer = document.createElement('div');
+      pieceLayer.className = 'grid-piece-layer';
+      stage.appendChild(pieceLayer);
+
+      // Eye (above) and lotus (below) sit directly in the cyan tile's own
+      // column, each on its own colored square background (pink behind
+      // the eye, purple behind the lotus) — a locked 3-cell stack. Unlike
+      // the other tiles, these don't broadcast color on every click:
+      // clicking a tile elsewhere only updates `currentCursorColor`;
+      // clicking the eye or lotus itself is what actually transfers that
+      // color onto it.
+      let currentCursorColor = cursorEl.style.background || getComputedStyle(cursorEl).backgroundColor;
+
+      const SVG_NS = 'http://www.w3.org/2000/svg';
+      const iconsSvg = document.createElementNS(SVG_NS, 'svg');
+      iconsSvg.setAttribute('class', 'hero-icons');
+      iconsSvg.setAttribute('viewBox', `0 0 ${DESIGN_W} ${DESIGN_H}`);
+      iconsSvg.setAttribute('preserveAspectRatio', 'none');
+      stage.appendChild(iconsSvg);
+
+      function svgEl(tag, attrs) {
+        const el = document.createElementNS(SVG_NS, tag);
+        for (const k in attrs) el.setAttribute(k, attrs[k]);
+        return el;
+      }
+
+      // Eye tile — pink square background, fixed yellow iris, blue pupil
+      // that tracks the cursor (see the pointermove listener below) and
+      // repaints to currentCursorColor on click.
+      iconsSvg.appendChild(svgEl('rect', { x: eyeSlot.x, y: eyeSlot.y, width: eyeSlot.w, height: eyeSlot.h, fill: '#FF178B' }));
+      const EYE_CX = eyeSlot.x + eyeSlot.w / 2, EYE_CY = eyeSlot.y + eyeSlot.h / 2;
+      const EYE_R = 52.5, PUPIL_R = 28.5;
+      const PUPIL_TRAVEL = EYE_R - PUPIL_R;
+      iconsSvg.appendChild(svgEl('circle', { cx: EYE_CX, cy: EYE_CY, r: EYE_R, fill: '#FFE99B' }));
+      const eyePupil = svgEl('circle', { cx: EYE_CX - 23, cy: EYE_CY - 7, r: PUPIL_R, fill: '#4B8AFF' });
+      iconsSvg.appendChild(eyePupil);
+      const eyeHit = svgEl('rect', { x: eyeSlot.x, y: eyeSlot.y, width: eyeSlot.w, height: eyeSlot.h, class: 'hero-icon-hit' });
+      iconsSvg.appendChild(eyeHit);
+      eyeHit.addEventListener('click', () => {
+        eyePupil.setAttribute('fill', currentCursorColor);
+      });
+
+      // Lotus tile — purple square background, five overlapping petals,
+      // authored (and left untouched below) around their own natural
+      // center at roughly (1134.8, 627); a single group transform
+      // re-centers the whole bloom into lotusSlot without needing to
+      // hand-edit any curve. Each petal keeps its own opacity but all
+      // five repaint to currentCursorColor together on click.
+      iconsSvg.appendChild(svgEl('rect', { x: lotusSlot.x, y: lotusSlot.y, width: lotusSlot.w, height: lotusSlot.h, fill: '#EB95FF' }));
+      const LOTUS_NATURAL_CENTER = { x: 1134.82, y: 627 };
+      const lotusDX = (lotusSlot.x + lotusSlot.w / 2) - LOTUS_NATURAL_CENTER.x;
+      const lotusDY = (lotusSlot.y + lotusSlot.h / 2) - LOTUS_NATURAL_CENTER.y;
+      const lotusGroup = svgEl('g', { transform: `translate(${lotusDX}, ${lotusDY})` });
+      iconsSvg.appendChild(lotusGroup);
+
+      const LOTUS_PETAL_D = [
+        { d: 'M1154 628.197C1154.36 607.886 1134.62 580 1134.62 580C1134.62 580 1116 607.994 1116 628.197C1116 661.467 1134.62 674 1134.62 674C1134.62 674 1153.4 661.467 1154 628.197Z', opacity: 0.94 },
+        { d: 'M1188.16 632.243C1192.71 619.095 1190.48 606.344 1190.48 606.344C1190.48 606.344 1148.65 611.881 1136.26 647.642C1132.93 657.239 1133.94 673.54 1133.94 673.54C1133.94 673.54 1175.77 668.004 1188.16 632.243Z', opacity: 0.56 },
+        { d: 'M1132.16 647.642C1136.71 660.79 1134.48 673.54 1134.48 673.54C1134.48 673.54 1092.65 668.004 1080.26 632.243C1076.93 622.646 1077.94 606.344 1077.94 606.344C1077.94 606.344 1119.77 611.881 1132.16 647.642Z', opacity: 0.56 },
+        { d: 'M1097 617.231C1097 603.316 1103.29 592 1103.29 592C1103.29 592 1141 610.923 1141 648.769C1141 658.926 1134.71 674 1134.71 674C1134.71 674 1097 655.077 1097 617.231Z', opacity: 0.8 },
+        { d: 'M1172 617.231C1172 603.316 1165.71 592 1165.71 592C1165.71 592 1128 610.923 1128 648.769C1128 658.926 1134.29 674 1134.29 674C1134.29 674 1172 655.077 1172 617.231Z', opacity: 0.8 }
+      ];
+      const lotusPetals = LOTUS_PETAL_D.map(({ d, opacity }) => {
+        const petal = svgEl('path', { d, fill: '#6AEEFF', 'fill-opacity': opacity });
+        lotusGroup.appendChild(petal);
+        return petal;
+      });
+      const lotusHit = svgEl('rect', { x: lotusSlot.x, y: lotusSlot.y, width: lotusSlot.w, height: lotusSlot.h, class: 'hero-icon-hit' });
+      iconsSvg.appendChild(lotusHit);
+      lotusHit.addEventListener('click', () => {
+        lotusPetals.forEach((petal) => petal.setAttribute('fill', currentCursorColor));
+      });
+
+      // Pupil follows the real cursor, clamped so it never leaves the iris.
+      document.addEventListener('pointermove', (e) => {
+        const stageRect = stage.getBoundingClientRect();
+        const designX = (e.clientX - stageRect.left) / scale;
+        const designY = (e.clientY - stageRect.top) / scale;
+        let dx = designX - EYE_CX, dy = designY - EYE_CY;
+        const dist = Math.hypot(dx, dy);
+        if (dist > PUPIL_TRAVEL) {
+          dx = (dx / dist) * PUPIL_TRAVEL;
+          dy = (dy / dist) * PUPIL_TRAVEL;
+        }
+        eyePupil.setAttribute('cx', EYE_CX + dx);
+        eyePupil.setAttribute('cy', EYE_CY + dy);
+      }, { passive: true });
+
+      // The two decorative squares nested inside "neha" (blue, then
+      // smaller yellow) — each cycles independently through a few
+      // percentage-based spots within the tile when clicked, same as the
+      // full-size tiles slide between slots. Blue's 4 corner spots (a
+      // clockwise loop around the tile) each get a midpoint inserted
+      // between them, so one click only carries it halfway to the next
+      // corner and the following click finishes the move — a two-step
+      // glide instead of a single jump. Yellow keeps the simple 4-spot
+      // cycle, each one now solved to sit exactly centered inside blue's
+      // corresponding corner spot (blue's spot i, not just its resting
+      // position), rather than the old fixed offset that only looked
+      // centered by coincidence in the default pose.
+      const BLUE_W = 48.46, BLUE_H = 48.63;
+      const BLUE_CORNERS = [
+        { left: 0,     top: 29.2 },
+        { left: 51.54, top: 29.2 },
+        { left: 51.54, top: 0 },
+        { left: 0,     top: 0 }
+      ];
+      const blueSpots = [];
+      for (let i = 0; i < BLUE_CORNERS.length; i++) {
+        const cur = BLUE_CORNERS[i];
+        const next = BLUE_CORNERS[(i + 1) % BLUE_CORNERS.length];
+        blueSpots.push({ left: cur.left + '%', top: cur.top + '%', width: BLUE_W + '%', height: BLUE_H + '%' });
+        blueSpots.push({ left: ((cur.left + next.left) / 2) + '%', top: ((cur.top + next.top) / 2) + '%', width: BLUE_W + '%', height: BLUE_H + '%' });
+      }
+
+      const YELLOW_W = 24.32, YELLOW_H = 24.4;
+      const yellowSpots = BLUE_CORNERS.map((c) => ({
+        left: (c.left + (BLUE_W - YELLOW_W) / 2) + '%',
+        top: (c.top + (BLUE_H - YELLOW_H) / 2) + '%',
+        width: YELLOW_W + '%',
+        height: YELLOW_H + '%'
+      }));
+
+      const NESTED = [
+        { color: '#4B8AFF', spots: blueSpots },
+        { color: '#FFE99B', spots: yellowSpots }
+      ];
+
+      const occupant = {}; // slotId -> tile object (only for occupied slots)
+      TILES.forEach((tile) => {
+        occupant[tile.slot] = tile;
+        const piece = document.createElement('div');
+        piece.className = 'grid-piece' + (tile.slot === 'neha' ? ' grid-piece--neha' : '');
+        piece.style.background = tile.color;
+
+        // The reference nests a smaller blue square, then a smaller
+        // yellow square, inside "neha" — decorative color blocks, no
+        // text, positioned by percentage so they scale with the tile.
+        // Each is independently clickable and cycles through its own
+        // spots (see NESTED above).
+        if (tile.slot === 'neha') {
+          NESTED.forEach((nested) => {
+            const el = document.createElement('div');
+            el.className = 'grid-piece-nested';
+            el.style.background = nested.color;
+            nested.spotIndex = 0;
+            nested.el = el;
+            applyNestedSpot(nested);
+            piece.appendChild(el);
+
+            el.addEventListener('click', (e) => {
+              e.stopPropagation();
+              cursorEl.style.background = nested.color;
+              currentCursorColor = nested.color;
+              localStorage.setItem('siteCursorColor', nested.color);
+
+              el.classList.remove('pressed');
+              void el.offsetWidth;
+              el.classList.add('pressed');
+              setTimeout(() => el.classList.remove('pressed'), 150);
+
+              nested.spotIndex = (nested.spotIndex + 1) % nested.spots.length;
+              applyNestedSpot(nested);
+            });
+          });
+        }
+
+        if (tile.text) {
+          const label = document.createElement('span');
+          label.className = 'grid-piece-label' + (tile.slot === 'neha' ? ' grid-piece-label--neha' : '');
+          label.textContent = tile.text;
+          if (tile.align === 'left') {
+            label.style.textAlign = 'left';
+            piece.style.justifyContent = 'flex-start';
+          }
+          piece.appendChild(label);
+          tile.labelEl = label;
+        }
+        pieceLayer.appendChild(piece);
+        tile.el = piece;
+      });
+
+      // Font sizes are driven straight off `scale` (design px * scale),
+      // not vw units — vw tracks viewport width only, so on a narrow-but-
+      // short window (where .hero-grid's actual size is capped by the
+      // 178vh rule instead) vw-sized text kept overflowing tiles that had
+      // shrunk to fit the height. Tying it to the same scale the tiles
+      // themselves use makes overflow impossible at any aspect ratio.
+      const LABEL_FONT_DESIGN = 30;
+      const NEHA_FONT_DESIGN = 108;
+      const REVEAL_FONT_DESIGN = 21;
+
+      function applyNestedSpot(nested) {
+        const spot = nested.spots[nested.spotIndex];
+        nested.el.style.left = spot.left;
+        nested.el.style.top = spot.top;
+        nested.el.style.width = spot.width;
+        nested.el.style.height = spot.height;
+      }
+
+      let scale = 1;
+      function layout() {
+        const rect = grid.getBoundingClientRect();
+        scale = rect.width / DESIGN_W;
+        stage.style.height = (DESIGN_H * scale) + 'px';
+        positionInSlot(reveal, SLOTS.loveHome);
+        reveal.style.fontSize = (REVEAL_FONT_DESIGN * scale) + 'px';
+        TILES.forEach((tile) => {
+          positionInSlot(tile.el, SLOTS[tile.slot]);
+          if (tile.labelEl) {
+            const base = tile.slot === 'neha' ? NEHA_FONT_DESIGN : (tile.fontSize || LABEL_FONT_DESIGN);
+            tile.labelEl.style.fontSize = (base * scale) + 'px';
+          }
+        });
+      }
+      function positionInSlot(el, slot) {
+        el.style.left = (slot.x * scale) + 'px';
+        el.style.top = (slot.y * scale) + 'px';
+        el.style.width = (slot.w * scale) + 'px';
+        el.style.height = (slot.h * scale) + 'px';
+      }
+
+      // Filtered to both the tile's own allowed directions AND the slot
+      // graph's actual wired neighbors — a tile never considers a
+      // direction the reference layout has no room for. Not a fixed
+      // up-right-down-left scan every time (that read as "always tries
+      // up first, so it's confined to a clockwise pattern") — each tile
+      // remembers where it left off and starts the next click's search
+      // from the following direction, so repeated clicks fan out across
+      // whichever slot is actually next open rather than looping back to
+      // the same preferred direction.
+      function firstEmptySlot(tile) {
+        const neighbors = SLOTS[tile.slot].neighbors;
+        if (!neighbors) return null;
+        const start = tile.dirCursor || 0;
+        for (let i = 0; i < ALL_DIRS.length; i++) {
+          const dir = ALL_DIRS[(start + i) % ALL_DIRS.length];
+          if (!tile.dirs.includes(dir)) continue;
+          const targetId = neighbors[dir];
+          if (!targetId) continue;
+          if (!occupant[targetId]) {
+            tile.dirCursor = (start + i + 1) % ALL_DIRS.length;
+            return targetId;
+          }
+        }
+        tile.dirCursor = (start + 1) % ALL_DIRS.length;
+        return null;
+      }
+
+      pieceLayer.addEventListener('click', (e) => {
+        const el = e.target.closest('.grid-piece');
+        if (!el) return;
+        const tile = TILES.find((t) => t.el === el);
+        if (!tile) return;
+
+        cursorEl.style.background = tile.color;
+        currentCursorColor = tile.color;
+        localStorage.setItem('siteCursorColor', tile.color);
+
+        el.classList.remove('pressed');
+        void el.offsetWidth; // restart the animation on repeat clicks
+        el.classList.add('pressed');
+        setTimeout(() => el.classList.remove('pressed'), 150);
+
+        const toSlotId = firstEmptySlot(tile);
+        if (!toSlotId) return; // boxed in, or locked — pick up color only, stay put
+
+        delete occupant[tile.slot];
+        tile.slot = toSlotId;
+        occupant[toSlotId] = tile;
+        positionInSlot(el, SLOTS[toSlotId]);
+      });
+
+      layout();
+      window.addEventListener('resize', layout);
+    })();
+  </script>
 </body>
 </html>

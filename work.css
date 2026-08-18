@@ -9,7 +9,7 @@
   --ink:        #000000;
   --ink-soft:   #000000;
   --ink-ghost:  #555555;
-  --periwinkle: #8F94FB;
+  --periwinkle: #6574fc;
   --border:     rgba(0,0,0,0.10);
   --caslon:     "Big Caslon", "Adobe Caslon Pro", Georgia, "Times New Roman", serif;
   --sans:       'Inter', system-ui, sans-serif;
@@ -71,6 +71,7 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   text-transform: uppercase;
   color: var(--ink-ghost);
   position: relative;
+  cursor: none;
   transition: color 0.2s;
 }
 .nav-links a::after {
@@ -88,141 +89,161 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
 .nav-links a:hover::after,
 .nav-links a.active::after { transform: scaleX(1); }
 
-/* ── HERO ─────────────────────────────────────────────────────────
-   Lotus ASCII hero — ported from the user's standalone reference file
-   as closely as possible. Two changes were technically required (not
-   stylistic): the file's :root color variables are scoped to #hero-lotus
-   instead of :root, since it reuses names (--cream, --ink-ghost) that
-   already mean something different site-wide (light cream vs. this
-   section's near-black); and the standalone file's `body { min-height:
-   220vh }` is dropped since that was blank scroll padding for a demo
-   with nothing else on the page — this site already has a real Work
-   section providing scroll height below the hero.
-   ──────────────────────────────────────────────────────────────── */
-#hero-lotus {
-  --cream: #030204;
-  --ink-hi: #F6F4F1;
-  --ink-lo: rgba(255,255,255,0.55);
-  --ink-ghost: rgba(255,255,255,0.4);
-  --periwinkle: #8F94FB;
-  --periwinkle-halo: rgba(143,148,251,0.35);
-  --orchid: #D484DB;
-  --orchid-dim: rgba(212,132,219,0.4);
-  --tangerine: #F5792C;
-  --tangerine-dim: rgba(245,121,44,0.4);
-  --font-serif: 'Instrument Serif', Georgia, serif;
-  --font-body: 'Inter', sans-serif;
-  --ease-soft: cubic-bezier(0.16,1,0.3,1);
-
+/* ── HERO ─────────────────────────────────────────────────── */
+.home-hero {
   position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 2vh 2rem;
+  text-align: center;
   background: var(--cream);
-  cursor: none;
-  font-family: var(--font-body);
 }
 
-#hero-lotus #lattice-bg {
-  position: fixed; inset: 0; height: 100vh; margin: 0; padding: 0;
-  font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 11px; line-height: 1.05;
-  color: #fff; opacity: 0.05; white-space: pre; text-align: center; pointer-events: none;
+/* Feature 1 — a freeform layout (not a uniform grid), sized/positioned to
+   match the reference composition exactly (see the SLOTS map in
+   index.html). .hero-stage's height is set in JS from the design-space
+   height times the current scale, since tiles here are variable-sized
+   rather than uniform cells filling a fixed aspect ratio. */
+.hero-grid {
+  /* Scales up to fill more of the hero on large screens, capped so the
+     660px-tall design space (see DESIGN_H in index.html) never overflows
+     a short viewport — 1280:660 ≈ 1.94, so 178vh keeps the stage under
+     ~92vh tall. */
+  width: min(1300px, 92vw, 178vh);
 }
-#hero-lotus #hero {
-  height: 100vh; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: clamp(6px, 1.3vh, 16px);
-  padding: 2vh 2rem; text-align: center; overflow: hidden;
-}
-#hero-lotus .fade-up { opacity: 0; animation: lotusFadeUp 1.1s var(--ease-soft) both; }
-@keyframes lotusFadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
-/* Explicit position+z-index above #hero-fade (z-index:2) — without this,
-   these being plain static/non-positioned content meant the positioned
-   fade painted over them regardless of its own z-index number, which is
-   what was hiding "hi, i'm neha" once the fade got tall enough to
-   spatially overlap the text. */
-#hero-lotus h1, #hero-lotus .eyebrow, #hero-lotus #flower-stage, #hero-lotus #cue {
+
+.hero-stage {
   position: relative;
-  z-index: 3;
+  width: 100%;
 }
-#hero-lotus .eyebrow { font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-ghost); animation-delay: 0.1s; }
-#hero-lotus #flower-stage { width: clamp(190px, 30vh, 260px); height: clamp(190px, 30vh, 260px); flex-shrink: 0; }
-#hero-lotus #flower-stage pre { margin: 0; padding: 0; font-family: 'SF Mono', Menlo, Consolas, monospace; white-space: pre; }
-#hero-lotus #sat-a { position: absolute; left: 6%; top: 2%; font-size: clamp(5px, 1.05vh, 7px); line-height: 1; color: var(--tangerine); opacity: 0.65; text-shadow: 0 0 10px var(--tangerine-dim); transform: translate(-60%, -30%); }
-#hero-lotus #sat-b { position: absolute; left: 94%; top: 96%; font-size: clamp(5px, 0.95vh, 6px); line-height: 1; color: var(--orchid); opacity: 0.6; text-shadow: 0 0 10px var(--orchid-dim); transform: translate(-40%, -60%); }
-#hero-lotus #flower-cells { position: absolute; inset: 0; opacity: 0; animation: lotusBloomOpen 1.6s var(--ease-soft) 0.15s both, lotusGlowPulse 5s ease-in-out infinite; }
-#hero-lotus #flower-cells span { position: absolute; font-family: 'SF Mono', Menlo, Consolas, monospace; line-height: 1; user-select: none; }
-@keyframes lotusBloomOpen { from { opacity: 0; transform: scale(0.78); } to { opacity: 1; transform: scale(1); } }
-@keyframes lotusGlowPulse { 0%, 100% { filter: brightness(1) drop-shadow(0 0 18px var(--periwinkle-halo)); } 50% { filter: brightness(1.12) drop-shadow(0 0 30px rgba(222,67,134,0.3)); } }
-#hero-lotus h1 { margin: 0; font-family: var(--font-serif); font-weight: 400; font-size: clamp(1.8rem, 5vw, 3.4rem); color: var(--ink-hi); animation-delay: 0.3s; }
-#hero-lotus h1 em { font-style: italic; color: var(--periwinkle); text-shadow: 0 0 22px var(--periwinkle-halo); }
 
-.neha-particles {
+.grid-piece-layer {
   position: absolute;
-  top: 50%; left: 50%;
-  opacity: 0;
+  inset: 0;
+}
+
+/* Lotus + eye icon tiles, locked into the cyan tile's own column — the
+   background squares/shapes are non-interactive; only the transparent
+   .hero-icon-hit rect stacked on top of each one is actually clickable,
+   so the whole tile (not just the thin ink of the artwork) responds. */
+.hero-icons {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
 }
-.neha-particles span {
-  font-family: 'SF Mono', Menlo, Consolas, monospace;
-  line-height: 1;
-  user-select: none;
+.hero-icons path,
+.hero-icons circle,
+.hero-icons > rect:not(.hero-icon-hit) {
+  transition: fill 0.3s ease;
 }
-#hero-lotus p { margin: 0; max-width: 480px; font-weight: 300; font-size: clamp(0.85rem, 1.6vh, 1.05rem); line-height: 1.55; color: var(--ink-lo); animation-delay: 0.45s; }
-#hero-lotus p em { font-style: italic; color: var(--orchid); }
-#hero-lotus #cue { display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--ink-ghost); margin-top: 2px; animation: lotusCueBounce 1.8s var(--ease-soft) infinite; }
-#hero-lotus #cue span { font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase; }
-@keyframes lotusCueBounce { 0%, 100% { transform: translateY(0); opacity: 0.4; } 50% { transform: translateY(6px); opacity: 0.85; } }
-#hero-lotus #cursor {
+.hero-icons circle {
+  /* No cx/cy transition — the pupil should snap to the cursor immediately
+     each frame, not visibly trail behind it. */
+  transition: fill 0.3s ease;
+}
+.hero-icon-hit {
+  fill: transparent;
+  pointer-events: auto;
+  cursor: none;
+}
+
+.grid-piece {
+  position: absolute;
+  box-sizing: border-box;
+  cursor: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 20px;
+  transform: scale(1);
+  transition: left 0.55s cubic-bezier(0.65, 0, 0.35, 1), top 0.55s cubic-bezier(0.65, 0, 0.35, 1), transform 0.15s ease;
+}
+.grid-piece:hover { filter: brightness(1.06); }
+.grid-piece.pressed { transform: scale(0.92); }
+
+.grid-piece--neha {
+  padding: 6px;
+}
+
+/* Nested squares inside "neha" — the reference's blue-then-yellow color
+   blocks sitting behind the word itself (DOM order: painted before the
+   label, so underneath it). Clickable/movable now — see index.html. */
+.grid-piece-nested {
+  position: absolute;
+  box-sizing: border-box;
+  cursor: none;
+  transition: left 0.45s cubic-bezier(0.65, 0, 0.35, 1), top 0.45s cubic-bezier(0.65, 0, 0.35, 1), transform 0.15s ease;
+}
+.grid-piece-nested:hover { filter: brightness(1.06); }
+.grid-piece-nested.pressed { transform: scale(0.9); }
+
+/* Every tile label — including "neha" — is set in the same serif face in
+   the reference; the small tiles just run at a much smaller size, not a
+   different (sans) typeface. Actual font-size is set inline by JS
+   (layout(), in index.html) as design-px * scale — the same scale the
+   tile boxes themselves use — so it can never overflow regardless of
+   viewport aspect ratio. The size here is just an unstyled-flash
+   fallback before that first runs. */
+.grid-piece-label {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-weight: 400;
+  font-size: 1.7rem;
+  line-height: 1.12;
+  color: var(--ink);
+  text-align: center;
+  white-space: pre-line;
+  pointer-events: none;
+  position: relative;
+}
+
+/* "neha" is a giant standalone word filling most of its tile — same face,
+   just scaled way up. */
+.grid-piece-label--neha {
+  font-size: 5.6rem;
+  text-align: center;
+}
+
+/* Hidden reveal — sits on the static background layer at the "product
+   designer" tile's starting slot, painted before (so underneath) the
+   piece layer. Only visible once that tile slides away from it. */
+.grid-reveal {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  font-family: "Inter", sans-serif;
+  font-size: 0.78rem; /* fallback — JS sets the real size (REVEAL_FONT_DESIGN * scale) */
+  color: var(--ink);
+  text-align: center;
+  pointer-events: none;
+}
+
+.grid-reveal-link {
+  color: #00539B;
+  cursor: none;
+  pointer-events: auto;
+  transition: opacity 0.2s;
+}
+.grid-reveal-link:hover { opacity: 0.7; }
+
+#cursor {
   position: fixed; top: 0; left: 0; width: 20px; height: 20px; border-radius: 50%;
-  background: var(--periwinkle); box-shadow: 0 0 0 6px var(--periwinkle-halo);
+  background: var(--periwinkle);
   pointer-events: none; z-index: 9999;
   transform: translate3d(-100px,-100px,0);
-}
-
-.ascii-orb {
-  position: absolute;
-  width: 70px;
-  height: 70px;
-  pointer-events: none;
-}
-.ascii-orb span {
-  position: absolute;
-  top: 50%; left: 50%;
-  font-family: 'SF Mono', Menlo, Consolas, monospace;
-  line-height: 1;
-  user-select: none;
-  will-change: transform, opacity;
-}
-
-/* ── HERO → WORK dithered fade ────────────────────────────── */
-#hero-fade {
-  position: absolute;
-  left: 0; right: 0;
-  /* Extends 80px past the hero/Work boundary (into Work's own top
-     padding, well before its "Selected Work" heading starts) so the
-     fade genuinely bleeds into the Work section instead of resolving
-     to flat white right at the seam. #hero-lotus has no overflow:hidden,
-     so this is free to render past its parent's edge. */
-  bottom: -80px;
-  height: clamp(300px, 42vh, 460px);
-  /* Static fallback — renders immediately even before/if JS runs.
-     lotus-hero.js's buildFadeGradient() overrides this with a smoother
-     many-stop version, but this guarantees a visible fade either way.
-     Plain black -> cream, no color tint. */
-  background: linear-gradient(
-    to bottom,
-    #030204 0%,
-    rgb(10, 9, 10) 45%,
-    rgb(35, 34, 34) 62%,
-    rgb(110, 108, 106) 80%,
-    rgb(200, 196, 190) 92%,
-    #FAF8F5 100%
-  );
-  pointer-events: none;
-  z-index: 2;
+  transition: background 0.2s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #hero-lotus #cue, #hero-lotus #flower-cells { animation: none !important; }
-  #hero-lotus .fade-up { animation: none !important; opacity: 1 !important; transform: none !important; }
-  #hero-lotus #cursor { display: none !important; }
+  #cursor { display: none !important; }
   body { cursor: auto !important; }
 }
 
@@ -278,42 +299,48 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
 }
 
 /* ── CARD GRID — two columns, Emmi Wu stagger ─────────────── */
-/*
-  Left column: cards sit at normal top
-  Right column (.work-card--offset): pushed down 120px
-  This gives the organic, non-uniform gallery feel
-*/
 .card-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  column-gap: 28px;
+  column-gap: 6px;
   align-items: start;
 }
 
 /* ── WORK CARD ────────────────────────────────────────────── */
 .work-card {
-  margin-bottom: 80px;
+  margin-bottom: 6px;
   cursor: none;
   display: flex;
   flex-direction: column;
 }
 
+/* Both columns now sit at the same level — no more staggered offset. */
 .work-card--offset {
-  margin-top: 120px;
+  margin-top: 0;
 }
 
-/* Image / colour thumbnail */
+/* Image / colour thumbnail — the container the caption label overlays
+   on top of. MetLife and Cognition (.work-card--big) run noticeably
+   taller/bigger than the rest of the grid. */
 .card-thumb {
   position: relative;
   width: 100%;
   overflow: hidden;
   border-radius: 3px;
-  aspect-ratio: 3 / 2;    /* default landscape */
+  aspect-ratio: 4 / 3.4;
+}
+.work-card--big .card-thumb {
+  aspect-ratio: 4 / 5.2;
 }
 
 /* Portrait-style cards (phone mockups) */
 .work-card--tall .card-thumb {
-  aspect-ratio: 2 / 3;
+  aspect-ratio: 3 / 4;
+}
+
+/* Landscape cards — wider than the default grid cell, e.g. Legends. */
+.work-card--wide .card-thumb {
+  aspect-ratio: 16 / 9;
 }
 
 .card-thumb img {
@@ -325,6 +352,49 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
 }
 .work-card:hover .card-thumb img {
   transform: scale(1.03);
+}
+
+/* Logo thumbnails (e.g. MetLife) — the source is a brand mark, not a
+   full photo, so it sits small and contained on a plain white field
+   instead of being cropped/zoomed to cover the whole card. */
+.card-thumb--logo {
+  background: #fff !important;
+}
+.card-thumb--logo img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 22%;
+  height: 22%;
+  transform: translate(-50%, -50%);
+  object-fit: contain;
+}
+.work-card:hover .card-thumb--logo img {
+  transform: translate(-50%, -50%) scale(1.03);
+}
+
+/* Placeholder visual cue for cards without a real image yet — a simple
+   centered mockup outline (poster-shaped by default, phone-shaped on
+   tall/portrait cards) floating on the color swatch. */
+.card-thumb-placeholder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 42%;
+  aspect-ratio: 3 / 4;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 8px;
+  transition: transform 0.6s var(--ease);
+}
+.work-card:hover .card-thumb-placeholder {
+  transform: translate(-50%, -50%) scale(1.03);
+}
+.work-card--tall .card-thumb-placeholder {
+  width: 30%;
+  aspect-ratio: 9 / 19;
+  border-radius: 20px;
 }
 
 /* Hover overlay — subtle darkening + arrow */
@@ -344,10 +414,16 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   transform: translate(0, 0);
 }
 
-/* Caption — matches Emmi Wu exactly:
-   small all-caps meta, larger serif title, plain desc */
+/* Caption — now an overlay label sitting on top of the picture (bottom
+   edge), not a separate block stacked below it. A gradient scrim behind
+   the text keeps it legible over whatever color/image is underneath,
+   regardless of how light or busy that picture is. */
 .card-caption {
-  padding: 16px 0 0;
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 1;
+  padding: 44px 20px 18px;
+  background: linear-gradient(to top, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.32) 45%, rgba(0,0,0,0) 100%);
 }
 
 .card-context {
@@ -355,7 +431,7 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   font-weight: 400;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--ink-ghost);
+  color: rgba(255,255,255,0.75);
   margin-bottom: 8px;
 }
 
@@ -364,16 +440,16 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   font-size: clamp(1.25rem, 2vw, 1.65rem);
   font-weight: 400;
   line-height: 1.15;
-  color: var(--ink);
+  color: #fff;
   margin-bottom: 7px;
-  transition: color 0.2s;
+  transition: opacity 0.2s;
 }
-.work-card:hover .card-title { color: var(--ink-soft); }
+.work-card:hover .card-title { opacity: 0.85; }
 
 .card-desc {
   font-size: 13px;
-  color: var(--ink-soft);
-  line-height: 1.65;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.55;
 }
 
 /* ── CASE STUDY OVERLAY ───────────────────────────────────── */
@@ -538,13 +614,12 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   :root { --pad-x: 28px; }
   .card-grid { grid-template-columns: 1fr; }
   .work-card--offset { margin-top: 0; }
-  .work-card { margin-bottom: 52px; }
+  .work-card { margin-bottom: 32px; }
 }
 
 @media (max-width: 540px) {
   :root { --pad-x: 20px; }
   .nav-links { gap: 18px; }
-  .hero-title { font-size: 2.8rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

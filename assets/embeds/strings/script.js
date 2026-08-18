@@ -32,7 +32,7 @@ console.clear();
 if (window.parent !== window) {
   document.body.classList.add('embedded');
   document.addEventListener('pointermove', (e) => {
-    window.parent.postMessage({ type: 'storm-strings-pointer', x: e.clientX, y: e.clientY }, '*');
+    window.parent.postMessage({ type: 'embed-pointer', x: e.clientX, y: e.clientY }, '*');
   });
 }
 
@@ -846,10 +846,10 @@ let runloopRef = null;
 let animPaused = false;
 window.addEventListener('message', (e) => {
   if (!e.data || typeof e.data !== 'object') return;
-  if (e.data.type === 'storm-strings-pause' && !animPaused) {
+  if (e.data.type === 'embed-pause' && !animPaused) {
     animPaused = true;
     if (rafID) cancelAnimationFrame(rafID);
-  } else if (e.data.type === 'storm-strings-resume' && animPaused && runloopRef) {
+  } else if (e.data.type === 'embed-resume' && animPaused && runloopRef) {
     animPaused = false;
     rafID = requestAnimationFrame(runloopRef);
   }

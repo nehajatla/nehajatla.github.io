@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Neha — About</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="styles.css?v=6">
+    <link rel="stylesheet" href="styles.css?v=7">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
@@ -36,8 +36,19 @@
       (function () {
         const cursorEl = document.getElementById('cursor');
         if (!cursorEl) return;
+
+        // Carries the color the cursor was left in on the homepage hero
+        // across the rest of the visit (see index.html, the only page
+        // that ever writes this key).
+        const savedColor = localStorage.getItem('siteCursorColor');
+        if (savedColor) cursorEl.style.background = savedColor;
+
         document.addEventListener('pointermove', (e) => {
           cursorEl.style.transform = 'translate3d(' + (e.clientX - 10) + 'px, ' + (e.clientY - 10) + 'px, 0)';
+          // Checked via real pointer position on move, not mouseenter/
+          // mouseleave — those fire spuriously when the page scrolls.
+          const hoverTarget = document.elementFromPoint(e.clientX, e.clientY);
+          cursorEl.style.scale = (hoverTarget && hoverTarget.closest('a, button')) ? '1.7' : '1';
         }, { passive: true });
       })();
     </script>
