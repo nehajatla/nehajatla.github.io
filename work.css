@@ -74,20 +74,8 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   cursor: none;
   transition: color 0.2s;
 }
-.nav-links a::after {
-  content: '';
-  position: absolute;
-  bottom: -3px; left: 0; right: 0;
-  height: 1px;
-  background: var(--periwinkle);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.3s var(--ease);
-}
 .nav-links a:hover,
 .nav-links a.active { color: var(--ink); }
-.nav-links a:hover::after,
-.nav-links a.active::after { transform: scaleX(1); }
 
 /* ── HERO ─────────────────────────────────────────────────── */
 .home-hero {
@@ -109,11 +97,11 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
    height times the current scale, since tiles here are variable-sized
    rather than uniform cells filling a fixed aspect ratio. */
 .hero-grid {
-  /* Scales up to fill more of the hero on large screens, capped so the
-     660px-tall design space (see DESIGN_H in index.html) never overflows
-     a short viewport — 1280:660 ≈ 1.94, so 178vh keeps the stage under
-     ~92vh tall. */
-  width: min(1300px, 92vw, 178vh);
+  /* Scales up to fill most of the hero on large screens, capped so the
+     tall design space (see DESIGN_H in index.html) never overflows a
+     short viewport. Trimmed a bit smaller across the board from
+     1300px/92vw/178vh. */
+  width: min(1150px, 82vw, 158vh);
 }
 
 .hero-stage {
@@ -124,6 +112,10 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
 .grid-piece-layer {
   position: absolute;
   inset: 0;
+  /* Full-size and painted above .grid-reveal, so without this it swallows
+     clicks meant for the Duke link in the empty space product designer
+     leaves behind — individual .grid-piece tiles opt back in below. */
+  pointer-events: none;
 }
 
 /* Lotus + eye icon tiles, locked into the cyan tile's own column — the
@@ -157,12 +149,18 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   position: absolute;
   box-sizing: border-box;
   cursor: none;
+  pointer-events: auto;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 14px 20px;
   transform: scale(1);
-  transition: left 0.55s cubic-bezier(0.65, 0, 0.35, 1), top 0.55s cubic-bezier(0.65, 0, 0.35, 1), transform 0.15s ease;
+  /* width/height are transitioned too, not just left/top — tiles now
+     cross into slots with very different dimensions (e.g. "is a"'s
+     146x71 into "product designer"'s 289x142), and without this the
+     size snapped instantly while position eased, reading as a glitch
+     mid-slide instead of one continuous move. */
+  transition: left 0.55s cubic-bezier(0.65, 0, 0.35, 1), top 0.55s cubic-bezier(0.65, 0, 0.35, 1), width 0.55s cubic-bezier(0.65, 0, 0.35, 1), height 0.55s cubic-bezier(0.65, 0, 0.35, 1), transform 0.15s ease;
 }
 .grid-piece:hover { filter: brightness(1.06); }
 .grid-piece.pressed { transform: scale(0.92); }
@@ -239,7 +237,17 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   background: var(--periwinkle);
   pointer-events: none; z-index: 9999;
   transform: translate3d(-100px,-100px,0);
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, width 0.2s ease, height 0.2s ease, border-radius 0.2s ease;
+}
+/* Hovering a nav link (Work / Playground / About) morphs the dot into a
+   rectangle in the complementary color of whatever the cursor's current
+   color is (see complementaryColor() in the page script), sized and
+   positioned in JS to exactly match that link's own text box — not a
+   fixed size tracking the raw mouse position, which used to stick out
+   past the (much smaller) nav text and read as a colored line under the
+   word rather than a highlight framing it. */
+#cursor.cursor-rect {
+  border-radius: 3px;
 }
 
 @media (prefers-reduced-motion: reduce) {

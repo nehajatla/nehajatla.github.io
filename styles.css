@@ -45,7 +45,14 @@ body {
     will-change: transform;
     transform: translate3d(-100px, -100px, 0);
     scale: 1;
-    transition: scale 0.15s ease;
+    transition: scale 0.15s ease, background 0.2s ease, width 0.2s ease, height 0.2s ease, border-radius 0.2s ease;
+}
+/* Hovering a nav link (Work / Playground / About) morphs the dot into a
+   rectangle in the complementary color of whatever the cursor's current
+   color is (see complementaryColor() in the page script), sized and
+   positioned in JS to exactly match that link's own text box. */
+#cursor.cursor-rect {
+    border-radius: 3px;
 }
 
 @media (prefers-reduced-motion: reduce) {
