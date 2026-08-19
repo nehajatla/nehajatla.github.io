@@ -31,6 +31,14 @@
 
   <div id="cursor"></div>
 
+  <!-- Color drop — a single rectangle in whatever color the lotus is
+       currently holding (see getLotusColor() near the lotus click
+       handler), falling from the lotus's position then spilling left
+       into "Selected Work" as that heading scrolls into view. Fixed
+       position, so it lives outside the document flow entirely — see
+       the observer script near the bottom of the page. -->
+  <div class="color-drop" id="color-drop" aria-hidden="true"></div>
+
   <!-- ================================================================
        WORK — two-column staggered card grid, rendered by paintstore.js
        from the PROJECTS data array (see that file to add/edit projects).
@@ -257,7 +265,7 @@
         { slot: 'isaHome',  color: '#4B8AFF', text: 'is a', dirs: ALL_DIRS },
         { slot: 'loveHome', color: '#FFE99B', text: 'product designer', dirs: ALL_DIRS, fontSize: 42 },
         { slot: 's1',       color: '#FF4B51', text: 'visual craft,', dirs: ALL_DIRS },
-        { slot: 's2',       color: '#EB95FF', text: 'prototyping,', dirs: ALL_DIRS },
+        { slot: 's2',       color: '#EB95FF', text: 'proto-\ntyping,', dirs: ALL_DIRS },
         { slot: 's3',       color: '#FF178B', text: 'self-expression.', dirs: ALL_DIRS },
         { slot: 's5',       color: '#6AEEFF', text: 'with\na\nlove\nfor', dirs: [], align: 'left', padLeft: 8 }
       ];
@@ -345,6 +353,15 @@
       lotusHit.addEventListener('click', () => {
         lotusPetals.forEach((petal) => petal.setAttribute('fill', currentCursorColor));
       });
+
+      // Whatever color the lotus is currently holding (default cyan until
+      // clicked at least once) — read by the color-drop script below.
+      window.getLotusColor = function () {
+        return lotusPetals[0].getAttribute('fill') || '#6AEEFF';
+      };
+      window.getLotusRect = function () {
+        return lotusHit.getBoundingClientRect();
+      };
 
       // Pupil follows the real cursor, clamped so it never leaves the iris.
       document.addEventListener('pointermove', (e) => {
@@ -497,6 +514,12 @@
             const base = tile.slot === 'neha' ? NEHA_FONT_DESIGN : (tile.fontSize || LABEL_FONT_DESIGN);
             tile.labelEl.style.fontSize = (base * scale) + 'px';
           }
+          // Tighter side padding than the default 20px, freeing extra
+          // width for a larger font in a narrow tile (e.g. "prototyping,").
+          if (tile.padX !== undefined) {
+            tile.el.style.paddingLeft = (tile.padX * scale) + 'px';
+            tile.el.style.paddingRight = (tile.padX * scale) + 'px';
+          }
         });
       }
       function positionInSlot(el, slot) {
@@ -561,6 +584,91 @@
 
       layout();
       window.addEventListener('resize', layout);
+    })();
+  </script>
+  <script>
+    // Color drop: a single rectangle that picks up whatever color the
+    // lotus is currently holding (see getLotusColor() above), falling in
+    // from where the lotus sits, then spilling left
+    // onto "Selected Work" — the heading fades from black to that same
+    // color right as the rectangle lands on it. Re-triggers every time
+    // this scrolls back into view, always reading the lotus's current
+    // color fresh, and fades itself out afterward so nothing colored is
+    // left sitting on screen between triggers.
+    (function () {
+      const drop = document.getElementById('color-drop');
+      const heading = document.querySelector('.work-heading');
+      if (!drop || !heading || !('IntersectionObserver' in window)) return;
+
+      let resetTimer = null;
+      function clearReset() {
+        if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
+      }
+
+      const DROP_SIZE = 32; // must match .color-drop's width/height in work.css
+
+      function fall() {
+        clearReset();
+        const color = (window.getLotusColor && window.getLotusColor()) || '#6AEEFF';
+        const lotusRect = (window.getLotusRect && window.getLotusRect()) || null;
+        const headingRect = heading.getBoundingClientRect();
+        // Falls straight down from the lotus's own horizontal position —
+        // by the time this triggers the lotus itself has usually scrolled
+        // out of view above, so the vertical start is clamped to just
+        // above the viewport rather than the lotus's real (possibly very
+        // distant) offscreen top, keeping the fall a consistent speed.
+        const startLeft = lotusRect
+          ? (lotusRect.left + lotusRect.width / 2 - DROP_SIZE / 2)
+          : (headingRect.left + 110);
+        // The exact vertical line "Selected Work" sits on — the fall
+        // must stop here, centered on the circle, not just approximately
+        // near it.
+        const headingCenterY = headingRect.top + headingRect.height / 2 - DROP_SIZE / 2;
+
+        // Jump to the starting position with transitions off, then flush
+        // that instant jump before turning transitions back on — otherwise
+        // the fall-in itself would animate from wherever it last was.
+        drop.style.transition = 'none';
+        drop.style.background = color;
+        drop.style.left = startLeft + 'px';
+        drop.style.top = '-60px';
+        drop.style.opacity = '0';
+        void drop.offsetWidth;
+        drop.style.transition = '';
+
+        // Phase 1: straight down until it's level with "Selected Work",
+        // no horizontal movement yet.
+        requestAnimationFrame(() => {
+          drop.style.opacity = '1';
+          drop.style.top = headingCenterY + 'px';
+        });
+
+        // Phase 2: only once it's stopped, level with the heading, does
+        // it move left onto it — the heading picks up the color in sync
+        // with the landing. top is untouched here, so it stays locked to
+        // headingCenterY through the whole spill.
+        resetTimer = setTimeout(() => {
+          drop.style.left = (headingRect.left - 6) + 'px';
+          heading.style.color = color;
+          resetTimer = setTimeout(() => {
+            drop.style.opacity = '0'; // faded out — no bleed left behind
+          }, 550);
+        }, 620);
+      }
+
+      function reset() {
+        clearReset();
+        drop.style.opacity = '0';
+        heading.style.color = '';
+      }
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) fall();
+          else reset();
+        });
+      }, { threshold: 0.5 });
+      observer.observe(heading);
     })();
   </script>
 </body>
