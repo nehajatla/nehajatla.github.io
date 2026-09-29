@@ -7,12 +7,13 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg?v=3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="work.css?v=37">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="work.css?v=51">
 </head>
-<body>
+<body class="home">
 
   <nav class="nav">
+    <a href="index.html" class="nav-logo">Neha Jatla</a>
     <ul class="nav-links">
       <li><a href="index.html#work" id="nav-work">Work</a></li>
       <li><a href="playground.html">Playground</a></li>
@@ -21,6 +22,16 @@
   </nav>
 
   <main class="home-hero">
+    <!-- Ambient background — drifting off-white blobs + animated grain,
+         sits behind everything else in the hero (see .bg-field in
+         work.css and the grain script near the end of this file). -->
+    <div class="bg-field" aria-hidden="true">
+      <canvas class="bg-grain"></canvas>
+      <div class="bg-orb bg-orb-1"></div>
+      <div class="bg-orb bg-orb-2"></div>
+      <div class="bg-orb bg-orb-3"></div>
+    </div>
+
     <!-- Feature 1: a freeform sliding layout (not a uniform grid) whose
          tiles read as the hero sentence at rest, positioned/sized to
          match the reference composition exactly. Click a tile to (a)
@@ -30,14 +41,6 @@
   </main>
 
   <div id="cursor"></div>
-
-  <!-- Color drop — a single rectangle in whatever color the lotus is
-       currently holding (see getLotusColor() near the lotus click
-       handler), falling from the lotus's position then spilling left
-       into "Selected Work" as that heading scrolls into view. Fixed
-       position, so it lives outside the document flow entirely — see
-       the observer script near the bottom of the page. -->
-  <div class="color-drop" id="color-drop" aria-hidden="true"></div>
 
   <!-- ================================================================
        WORK — two-column staggered card grid, rendered by paintstore.js
@@ -88,59 +91,7 @@
       // navigation. Only this page ever writes to it (see the tile click
       // handlers below).
       const savedColor = localStorage.getItem('siteCursorColor');
-      const baseColor = savedColor || getComputedStyle(cursorEl).backgroundColor;
-      if (savedColor) cursorEl.style.background = savedColor;
-
-      // Hand-picked pairings (not a computed complement) — each hero
-      // palette color hovering the nav gets the word set in that same
-      // color, on a rectangle in its specific paired color: dark blue
-      // <-> coral pink, yellow -> dark blue, medium pink <-> lilac
-      // purple, cyan <-> deeper orangey-pink/red.
-      const HOVER_PAIRS = {
-        '#4B8AFF': '#FD9191',
-        '#FD9191': '#4B8AFF',
-        '#FFE99B': '#4B8AFF',
-        '#FF178B': '#EB95FF',
-        '#EB95FF': '#FF178B',
-        '#6AEEFF': '#FF4B51',
-        '#FF4B51': '#6AEEFF'
-      };
-      function rgbToHex(rgb) {
-        const m = rgb.match(/\d+/g);
-        if (!m) return '#6574fc';
-        return '#' + m.slice(0, 3).map((v) => (+v).toString(16).padStart(2, '0')).join('');
-      }
-      function hoverBg(hex) {
-        return HOVER_PAIRS[hex.toUpperCase()] || '#4B8AFF';
-      }
-
-      // The highlight rectangle lives inside each link (a span inserted
-      // before its text), not on the shared #cursor dot — #cursor sits at
-      // z-index:9999 site-wide, and .nav has backdrop-filter:blur(14px);
-      // putting the rectangle behind .nav to let the text show through
-      // ran it straight through that blur and turned a crisp rectangle
-      // into a soft glow. A span painted inside the link never touches
-      // the blur, and — since it's absolutely positioned with z-index:-1
-      // while the link's own text is plain in-flow inline content, which
-      // always paints above negative-z-index positioned siblings — the
-      // text sits on top of it automatically, no z-index tug-of-war
-      // against the cursor needed.
-      document.querySelectorAll('.nav-links a').forEach((link) => {
-        const hl = document.createElement('span');
-        hl.className = 'nav-hl';
-        link.prepend(hl);
-        link.addEventListener('mouseenter', () => {
-          const current = localStorage.getItem('siteCursorColor') || baseColor;
-          const currentHex = current.startsWith('#') ? current : rgbToHex(current);
-          hl.style.background = hoverBg(currentHex);
-          link.classList.add('nav-hover');
-          link.style.color = currentHex;
-        });
-        link.addEventListener('mouseleave', () => {
-          link.classList.remove('nav-hover');
-          link.style.color = '';
-        });
-      });
+      if (savedColor) cursorEl.style.setProperty('--cursor-glow', savedColor);
 
       let targetX = -100, targetY = -100, curX = -100, curY = -100, started = false;
 
@@ -153,7 +104,7 @@
       function trail() {
         curX += (targetX - curX) * 0.1;
         curY += (targetY - curY) * 0.1;
-        cursorEl.style.transform = 'translate3d(' + (curX - 10) + 'px, ' + (curY - 10) + 'px, 0)';
+        cursorEl.style.transform = 'translate3d(' + (curX - 20) + 'px, ' + (curY - 20) + 'px, 0)';
         requestAnimationFrame(trail);
       }
       requestAnimationFrame(trail);
@@ -266,8 +217,8 @@
         { slot: 'loveHome', color: '#FFE99B', text: 'product designer', dirs: ALL_DIRS, fontSize: 42 },
         { slot: 's1',       color: '#FF4B51', text: 'visual craft,', dirs: ALL_DIRS },
         { slot: 's2',       color: '#EB95FF', text: 'proto-\ntyping,', dirs: ALL_DIRS },
-        { slot: 's3',       color: '#FF178B', text: 'self-expression.', dirs: ALL_DIRS },
-        { slot: 's5',       color: '#6AEEFF', text: 'with\na\nlove\nfor', dirs: [], align: 'left', padLeft: 8 }
+        { slot: 's3',       color: '#FF178B', text: 'self-expression.', dirs: ALL_DIRS, fontSize: 25 },
+        { slot: 's5',       color: '#6AEEFF', text: 'with\na\nlove\nfor', dirs: [], align: 'left', padLeft: 8, fontSize: 25 }
       ];
 
       const stage = document.createElement('div');
@@ -292,7 +243,7 @@
       // clicking a tile elsewhere only updates `currentCursorColor`;
       // clicking the eye or lotus itself is what actually transfers that
       // color onto it.
-      let currentCursorColor = cursorEl.style.background || getComputedStyle(cursorEl).backgroundColor;
+      let currentCursorColor = cursorEl.style.getPropertyValue('--cursor-glow') || '#6574fc';
 
       const SVG_NS = 'http://www.w3.org/2000/svg';
       const iconsSvg = document.createElementNS(SVG_NS, 'svg');
@@ -354,14 +305,6 @@
         lotusPetals.forEach((petal) => petal.setAttribute('fill', currentCursorColor));
       });
 
-      // Whatever color the lotus is currently holding (default cyan until
-      // clicked at least once) — read by the color-drop script below.
-      window.getLotusColor = function () {
-        return lotusPetals[0].getAttribute('fill') || '#6AEEFF';
-      };
-      window.getLotusRect = function () {
-        return lotusHit.getBoundingClientRect();
-      };
 
       // Pupil follows the real cursor, clamped so it never leaves the iris.
       document.addEventListener('pointermove', (e) => {
@@ -450,7 +393,7 @@
 
             el.addEventListener('click', (e) => {
               e.stopPropagation();
-              cursorEl.style.background = nested.color;
+              cursorEl.style.setProperty('--cursor-glow', nested.color);
               currentCursorColor = nested.color;
               localStorage.setItem('siteCursorColor', nested.color);
 
@@ -564,7 +507,7 @@
         const tile = TILES.find((t) => t.el === el);
         if (!tile) return;
 
-        cursorEl.style.background = tile.color;
+        cursorEl.style.setProperty('--cursor-glow', tile.color);
         currentCursorColor = tile.color;
         localStorage.setItem('siteCursorColor', tile.color);
 
@@ -587,88 +530,40 @@
     })();
   </script>
   <script>
-    // Color drop: a single rectangle that picks up whatever color the
-    // lotus is currently holding (see getLotusColor() above), falling in
-    // from where the lotus sits, then spilling left
-    // onto "Selected Work" — the heading fades from black to that same
-    // color right as the rectangle lands on it. Re-triggers every time
-    // this scrolls back into view, always reading the lotus's current
-    // color fresh, and fades itself out afterward so nothing colored is
-    // left sitting on screen between triggers.
+    // Ambient grain — regenerates a small noise tile every ~90ms for a
+    // subtle "static" flicker, tinted off-white rather than gray so it
+    // reads as texture within the page's own background instead of TV
+    // static. Skips the loop entirely under reduced motion (paints one
+    // still frame instead).
     (function () {
-      const drop = document.getElementById('color-drop');
-      const heading = document.querySelector('.work-heading');
-      if (!drop || !heading || !('IntersectionObserver' in window)) return;
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      document.querySelectorAll('.bg-grain').forEach((canvas) => {
+        const ctx = canvas.getContext('2d');
+        const SIZE = 160;
+        canvas.width = SIZE;
+        canvas.height = SIZE;
 
-      let resetTimer = null;
-      function clearReset() {
-        if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
-      }
+        function paint() {
+          const img = ctx.createImageData(SIZE, SIZE);
+          for (let i = 0; i < img.data.length; i += 4) {
+            const v = 250 + Math.random() * 5;
+            img.data[i] = v;
+            img.data[i + 1] = v - 3;
+            img.data[i + 2] = v - 10;
+            img.data[i + 3] = Math.random() * 70;
+          }
+          ctx.putImageData(img, 0, 0);
+        }
 
-      const DROP_SIZE = 32; // must match .color-drop's width/height in work.css
+        if (reduced) { paint(); return; }
 
-      function fall() {
-        clearReset();
-        const color = (window.getLotusColor && window.getLotusColor()) || '#6AEEFF';
-        const lotusRect = (window.getLotusRect && window.getLotusRect()) || null;
-        const headingRect = heading.getBoundingClientRect();
-        // Falls straight down from the lotus's own horizontal position —
-        // by the time this triggers the lotus itself has usually scrolled
-        // out of view above, so the vertical start is clamped to just
-        // above the viewport rather than the lotus's real (possibly very
-        // distant) offscreen top, keeping the fall a consistent speed.
-        const startLeft = lotusRect
-          ? (lotusRect.left + lotusRect.width / 2 - DROP_SIZE / 2)
-          : (headingRect.left + 110);
-        // The exact vertical line "Selected Work" sits on — the fall
-        // must stop here, centered on the circle, not just approximately
-        // near it.
-        const headingCenterY = headingRect.top + headingRect.height / 2 - DROP_SIZE / 2;
-
-        // Jump to the starting position with transitions off, then flush
-        // that instant jump before turning transitions back on — otherwise
-        // the fall-in itself would animate from wherever it last was.
-        drop.style.transition = 'none';
-        drop.style.background = color;
-        drop.style.left = startLeft + 'px';
-        drop.style.top = '-60px';
-        drop.style.opacity = '0';
-        void drop.offsetWidth;
-        drop.style.transition = '';
-
-        // Phase 1: straight down until it's level with "Selected Work",
-        // no horizontal movement yet.
-        requestAnimationFrame(() => {
-          drop.style.opacity = '1';
-          drop.style.top = headingCenterY + 'px';
-        });
-
-        // Phase 2: only once it's stopped, level with the heading, does
-        // it move left onto it — the heading picks up the color in sync
-        // with the landing. top is untouched here, so it stays locked to
-        // headingCenterY through the whole spill.
-        resetTimer = setTimeout(() => {
-          drop.style.left = (headingRect.left - 6) + 'px';
-          heading.style.color = color;
-          resetTimer = setTimeout(() => {
-            drop.style.opacity = '0'; // faded out — no bleed left behind
-          }, 550);
-        }, 620);
-      }
-
-      function reset() {
-        clearReset();
-        drop.style.opacity = '0';
-        heading.style.color = '';
-      }
-
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) fall();
-          else reset();
-        });
-      }, { threshold: 0.5 });
-      observer.observe(heading);
+        let last = 0;
+        function loop(now) {
+          if (now - last > 90) { paint(); last = now; }
+          requestAnimationFrame(loop);
+        }
+        requestAnimationFrame(loop);
+      });
     })();
   </script>
 </body>

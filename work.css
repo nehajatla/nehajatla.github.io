@@ -12,7 +12,7 @@
   --periwinkle: #6574fc;
   --border:     rgba(0,0,0,0.10);
   --caslon:     "Cormorant Garamond", "Big Caslon", "Adobe Caslon Pro", Georgia, serif;
-  --sans:       'Inter', system-ui, sans-serif;
+  --sans:       'Poppins', system-ui, sans-serif;
   --nav-h:      66px;
   --pad-x:      52px;
   --ease:       cubic-bezier(0.22, 1, 0.36, 1);
@@ -30,7 +30,7 @@ body {
   cursor: none; /* native arrow hidden site-wide — periwinkle dot used everywhere, matching playground.html */
 }
 img { display: block; max-width: 100%; }
-a { color: inherit; text-decoration: none; }
+a { color: inherit; text-decoration: none; cursor: none; }
 button { font-family: inherit; cursor: none; border: none; background: none; }
 
 /* ── NAV ──────────────────────────────────────────────────── */
@@ -40,7 +40,7 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   height: var(--nav-h);
   z-index: 100;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   padding: 0 var(--pad-x);
   background: rgba(250,247,242,0.82);
@@ -77,24 +77,32 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
 .nav-links a:hover,
 .nav-links a.active { color: var(--ink); }
 
-/* Highlight rectangle behind each nav word — see the page script for the
-   color-pairing logic. Lives inside the link (not on the shared #cursor
-   dot) and is positioned/z-indexed so the link's own text always paints
-   on top of it without any z-index fight against the cursor or
-   interference from .nav's backdrop-filter blur. */
-.nav-links a .nav-hl {
+/* Lotus-gradient highlight behind each nav word on hover — a fixed
+   gradient (not per-cursor-color pairing), paired with the cursor
+   fading to white on hover (see the body:has() rule near #cursor) so it
+   reads as the cursor handing its color off to the button. Pure CSS —
+   no JS involved. */
+.nav-links a::before {
+  content: '';
   position: absolute;
   inset: -6px -8px;
   border-radius: 3px;
   z-index: -1;
   opacity: 0;
+  background: linear-gradient(90deg, #4B8AFF, #FFE99B, #EFABFF);
   transition: opacity 0.15s ease;
 }
-.nav-links a.nav-hover .nav-hl { opacity: 1; }
+.nav-links a:hover::before { opacity: 1; }
 
 /* ── HERO ─────────────────────────────────────────────────── */
 .home-hero {
+  /* z-index:0 (not just position:relative) is required here — without
+     a numeric z-index this box never establishes its own stacking
+     context, so .bg-field's z-index:-1 child resolves against the page
+     root instead of locally and ends up painted behind .home-hero's
+     entire opaque background rather than just behind its content. */
   position: relative;
+  z-index: 0;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -104,6 +112,49 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   padding: 2vh 2rem;
   text-align: center;
   background: var(--cream);
+}
+
+/* ── AMBIENT BACKGROUND — soft drifting off-white blobs + a faint
+   animated grain, layered behind this section's own content (z:-1,
+   same trick as .grid-piece-layer elsewhere) but above its solid
+   background-color, so a flat fill reads as alive instead of plain. */
+.bg-field {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.bg-field .bg-grain {
+  position: absolute;
+  inset: -2%;
+  width: 104%;
+  height: 104%;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  image-rendering: pixelated;
+}
+.bg-field .bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,253,248,0.95) 0%, rgba(255,253,248,0) 68%);
+  filter: blur(45px);
+  mix-blend-mode: overlay;
+  opacity: 0.9;
+  animation: bgOrbDrift 32s ease-in-out infinite;
+}
+.bg-orb-1 { width: 420px; height: 420px; top: -10%; left: -8%; animation-duration: 30s; }
+.bg-orb-2 { width: 360px; height: 360px; bottom: -12%; right: -6%; animation-duration: 38s; animation-delay: -6s; }
+.bg-orb-3 { width: 300px; height: 300px; top: 42%; left: 58%; animation-duration: 44s; animation-delay: -18s; }
+
+@keyframes bgOrbDrift {
+  0%   { transform: translate(0,0) scale(1); }
+  33%  { transform: translate(3%,-5%) scale(1.08); }
+  66%  { transform: translate(-4%,4%) scale(0.95); }
+  100% { transform: translate(0,0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bg-field .bg-orb { animation: none; }
 }
 
 /* Feature 1 — a freeform layout (not a uniform grid), sized/positioned to
@@ -178,6 +229,7 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   transition: left 0.55s cubic-bezier(0.65, 0, 0.35, 1), top 0.55s cubic-bezier(0.65, 0, 0.35, 1), width 0.55s cubic-bezier(0.65, 0, 0.35, 1), height 0.55s cubic-bezier(0.65, 0, 0.35, 1), transform 0.15s ease;
 }
 .grid-piece:hover { filter: brightness(1.06); }
+
 .grid-piece.pressed { transform: scale(0.92); }
 
 .grid-piece--neha {
@@ -232,7 +284,7 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   align-items: center;
   justify-content: center;
   padding: 6px;
-  font-family: "Inter", sans-serif;
+  font-family: var(--sans);
   font-size: 0.78rem; /* fallback — JS sets the real size (REVEAL_FONT_DESIGN * scale) */
   color: var(--ink);
   text-align: center;
@@ -248,12 +300,23 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
 .grid-reveal-link:hover { opacity: 0.7; }
 
 #cursor {
-  position: fixed; top: 0; left: 0; width: 20px; height: 20px; border-radius: 50%;
-  background: var(--periwinkle);
+  position: fixed; top: 0; left: 0; width: 40px; height: 40px;
+  background-image: url('favicon.svg?v=4');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
   pointer-events: none; z-index: 9999;
-  transform: translate3d(-100px,-100px,0);
-  transition: background 0.2s ease;
+  transform: translate3d(-20px,-20px,0);
+  scale: 1;
+  transition: filter 0.2s ease, scale 0.25s var(--ease, ease);
 }
+
+/* Cursor fades to white while hovering a nav link — reads as it handing
+   its color off to the button's gradient (see .nav-links a::before). */
+body:has(.nav-links a:hover) #cursor {
+  filter: brightness(0) invert(1);
+}
+
 
 @media (prefers-reduced-motion: reduce) {
   #cursor { display: none !important; }
@@ -282,25 +345,6 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   50%      { transform: scaleX(1.6); opacity: 1;   }
 }
 
-/* ── COLOR DROP — a single circle in the lotus's current color, falling
-   from the lotus then spilling left onto "Selected Work" as it scrolls
-   into view (see the observer script near the bottom of index.html, and
-   getLotusColor()/getLotusRect() near the lotus click handler).
-   position:fixed and positioned entirely via JS since both endpoints —
-   the lotus and the heading — move around. ──────────────────────────── */
-.color-drop {
-  position: fixed;
-  top: -60px;
-  left: -60px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 40;
-  transition: top 0.6s var(--ease), left 0.55s var(--ease), opacity 0.35s ease;
-}
-
 /* ── WORK SECTION ─────────────────────────────────────────── */
 #work {
   padding: 100px var(--pad-x) 140px;
@@ -321,7 +365,6 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   color: var(--ink);
   margin-bottom: 10px;
   margin-top: 14px;
-  transition: color 0.9s var(--ease);
 }
 
 .work-sub {
@@ -335,13 +378,13 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
 .card-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  column-gap: 6px;
+  column-gap: 40px;
   align-items: start;
 }
 
 /* ── WORK CARD ────────────────────────────────────────────── */
 .work-card {
-  margin-bottom: 6px;
+  margin-bottom: 64px;
   cursor: none;
   display: flex;
   flex-direction: column;
@@ -363,12 +406,12 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
   aspect-ratio: 4 / 3.4;
 }
 .work-card--big .card-thumb {
-  aspect-ratio: 4 / 5.2;
+  aspect-ratio: 1 / 1;
 }
 
 /* Portrait-style cards (phone mockups) */
 .work-card--tall .card-thumb {
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 1 / 1;
 }
 
 /* Landscape cards — wider than the default grid cell, e.g. Legends. */
@@ -678,3 +721,34 @@ button { font-family: inherit; cursor: none; border: none; background: none; }
     animation-duration: 0.01ms !important;
   }
 }
+/* ── HOME PALETTE — lotus colors, 60/30/10 ───────────────────
+   60% light pink ground · 30% deep blue (text, block shadows) · 10%
+   yellow accents (second shadow layer, link highlight, underline).
+   Scoped to body.home so the playground/about/case-study pages keep their
+   own look. Ground is a lighter tint of the lotus pink so the pink and
+   lilac hero tiles still read against it. */
+body.home {
+  --pink-ground: #F7CFFF;
+  --blue: #2F63D9;
+  --blue-ink: #1B3FA8;
+  --yellow: #FFE99B;
+  background: var(--pink-ground);
+  color: var(--blue-ink);
+}
+body.home .home-hero,
+body.home #work { background: var(--pink-ground); }
+body.home .nav {
+  background: rgba(247, 207, 255, 0.85);
+  border-bottom-color: rgba(27, 63, 168, 0.25);
+}
+body.home .nav-links a { color: rgba(27, 63, 168, 0.75); }
+body.home .nav-links a:hover,
+body.home .nav-links a.active { color: var(--blue-ink); }
+body.home .grid-reveal { color: var(--blue-ink); }
+body.home .grid-reveal-link { color: var(--blue-ink); background: var(--yellow); padding: 0 6px; }
+body.home .work-heading,
+body.home .card-title { color: var(--blue-ink); }
+body.home .work-heading { text-decoration: underline; text-decoration-color: var(--yellow); text-decoration-thickness: 6px; text-underline-offset: 6px; }
+body.home .card-context,
+body.home .card-desc { color: var(--blue); }
+body.home .card-thumb { box-shadow: 10px 10px 0 var(--blue), 20px 20px 0 var(--yellow); }

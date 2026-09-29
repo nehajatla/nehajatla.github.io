@@ -1,0 +1,919 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hero Prototype — Structured Glyph + Illustration Interactions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ================================================================
+     COLOR SYSTEM — 60/30/10, three variables only. Typeset text and
+     the hand-drawn illustrations stay outside this system (near-black
+     ink + the illustrations' own red/gold accents).
+     ================================================================ */
+  :root {
+    --color-60: #F7CFFF;
+    --color-30: #2F63D9;
+    --color-10: #FFE99B;
+    --ink: #111111;
+
+    --font-headline: "Big Caslon", "Libre Caslon Display", Georgia, serif;
+    --font-mono: "IBM Plex Mono", "JetBrains Mono", monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--color-60); }
+  body { display: flex; align-items: center; justify-content: center; }
+
+  .hero {
+    max-width: 1100px;
+    padding: 0 8vw;
+  }
+
+  .hero-line {
+    font-family: var(--font-headline);
+    font-weight: 400;
+    font-size: clamp(1.7rem, 4.6vw, 3.4rem);
+    line-height: 1.5;
+    color: var(--ink);
+    margin: 0;
+    white-space: nowrap;
+
+    opacity: 0;
+    transform: translateY(14px);
+    animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  .hero-line:nth-child(2) { animation-delay: 0.15s; }
+  .hero-line:nth-child(3) { animation-delay: 0.30s; }
+
+  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+  .word {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .word-text {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--color-10);
+    text-decoration-thickness: 0.05em;
+    text-underline-offset: 0.12em;
+    transition: opacity 0.15s linear;
+  }
+  .word canvas { position: absolute; pointer-events: none; opacity: 0; }
+
+  /* Inline illustrations — sized off the line's own font-size so image
+     and image both scale together at the clamp() breakpoints, height
+     pinned to cap-height-ish and aligned so it reads as a word, not a
+     pasted picture. */
+  .glyph-img {
+    display: inline-block;
+    height: 0.82em;
+    vertical-align: -0.12em;
+    cursor: pointer;
+    outline: none;
+  }
+  /* object-fit:contain inside a FIXED box (not width:auto) — the eye's
+     closed/open frames and the hand's wave frames each have different
+     source aspect ratios, and letting width track that would reflow
+     the whole flex-centered hero horizontally every time a frame
+     swapped (confirmed: ~16px shift, and it desynced the eye's own
+     hover-zone math against the mouse). Width is fixed to whichever
+     frame is widest relative to the shared height, so nothing ever
+     reflows and other frames just sit slightly smaller inside it. */
+  .glyph-img img { display: block; height: 100%; width: 100%; object-fit: contain; pointer-events: none; }
+  #eye-wrap { position: relative; width: 1.96em; }
+  #hand-wrap { width: 0.78em; }
+  #eye-pupils { position: absolute; inset: 0; pointer-events: none; }
+  .glyph-img:focus-visible { outline: 2px solid var(--color-10); outline-offset: 2px; border-radius: 3px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-line { animation: none; opacity: 1; transform: none; }
+    .word:hover .word-text,
+    .word:focus-visible .word-text { color: var(--color-10); transition: color 0.2s ease; }
+  }
+
+  .word:focus-visible {
+    box-shadow: 0 0 0 2px var(--color-10);
+    border-radius: 2px;
+  }
+
+  @media (max-width: 480px) {
+    .hero-line { font-size: clamp(1.15rem, 6.4vw, 1.6rem); }
+  }
+</style>
+</head>
+<body>
+
+  <main class="hero">
+    <p class="hero-line">hi, i'm neha.</p>
+    <p class="hero-line">
+      <span class="word" data-mode="halftone" tabindex="0"><span class="word-text">designer</span></span> by
+      <span class="glyph-img" id="eye-wrap" tabindex="0" role="img" aria-label="eye">
+        <img id="eye-img" src="assets/hero/eye-closed.png" alt="">
+        <canvas id="eye-pupils" aria-hidden="true"></canvas>
+      </span>,
+    </p>
+    <p class="hero-line">
+      <span class="word" data-mode="ascii" tabindex="0"><span class="word-text">engineer</span></span> by
+      <span class="glyph-img" id="hand-wrap" tabindex="0" role="img" aria-label="hand">
+        <img id="hand-img" src="assets/hero/hand-rest.png" alt="">
+      </span>.
+    </p>
+  </main>
+
+  <script>
+  (function () {
+    'use strict';
+
+    // ================================================================
+    // CONFIG — everything tunable lives here.
+    // ================================================================
+    const CONFIG = {
+      padding: 30,
+      timing: { dissolve: 150, flash: 400, shrink: 200, ripple: 500, resolve: 250 },
+      light: { x: -1, y: -1 },
+
+      halftone: {
+        spacing: 3,               // must stay <= actual stroke half-width or gaps appear
+        maxStrokeRadius: 4.2,
+        sizeScale: [0.16, 0.34, 0.52, 0.74, 1.0],
+        maxDotRadius: 2.35,
+        coreTiers: [3, 4],
+        highlightTierMin: 1,
+        highlightThreshold: 0.35,
+        coverageStep: 2           // coarse grid step (css px) for the gap-filling coverage pass
+      },
+
+      ascii: {
+        cell: 5,
+        sizeScale: [8, 12, 18],
+        thickThreshold: 3.0,
+        midThreshold: 1.4,
+        charset: '0123456789+−×÷=<>(){}[];∑∫πΔλ√∞ƒ'.split(''),
+        fragments: ['f(x)=', '∑i', 'Δt', '2π', '√n', 'λ=0.5', '∫dx'],
+        minFragmentRun: 4,
+        highlightThreshold: 0.35,
+        coverageStep: 2
+      },
+
+      ripple: { speedPxPerSec: 1500, frontWidth: 46 },
+
+      // ── Illustration assets — swap these paths for real exports; see
+      // the naming note delivered alongside this file. ─────────────────
+      assets: {
+        eye: {
+          closed: 'assets/hero/eye-closed.png',
+          openEmpty: 'assets/hero/eye-open-empty.png',
+          // Optional real frame-by-frame opening sequence — if present,
+          // these are used instead of the closed/open-empty crossfade.
+          // Leave empty to use the two-image crossfade fallback.
+          openFrames: [],
+          // Pupil rest position/size, as a FRACTION of the eye image's
+          // own rendered box — derived from the source illustration's
+          // actual pupil geometry, so it tracks correctly at any
+          // display size.
+          pupilCenterFrac: { x: 0.673, y: 0.538 },
+          pupilRadiusFrac: 0.155,
+          pupilColor: '#4B8AFF'
+        },
+        hand: {
+          rest: 'assets/hero/hand-rest.png',
+          waveFrames: [
+            'assets/hero/hand-wave-01.png',
+            'assets/hero/hand-wave-02.png',
+            'assets/hero/hand-wave-03.png',
+            'assets/hero/hand-wave-04.png'
+          ]
+        }
+      },
+
+      eye: {
+        hoverPadding: 24,     // px around the eye's box that still counts as "hovering"
+        openDuration: 250,    // ms
+        pupilMaxRadius: 5,    // px the pupil may travel from its rest center
+        pupilEase: 0.18,      // lerp factor per frame — higher = snappier
+        touchOpenHold: 2200   // ms the eye stays open after a tap before auto-closing
+      },
+
+      hand: {
+        fps: 10,              // stop-motion frame rate — NOT smoothed/tweened between frames
+        touchCycles: 2
+      }
+    };
+
+    const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const IS_TOUCH = matchMedia('(hover: none), (pointer: coarse)').matches;
+
+    function cssVar(name, fallback) {
+      const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      return v || fallback;
+    }
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function hash2(a, b) {
+      let h = (a * 374761393 + b * 668265263) | 0;
+      h = (h ^ (h >>> 13)) * 1274126177;
+      h = h ^ (h >>> 16);
+      return ((h >>> 0) % 100000) / 100000;
+    }
+
+    // ================================================================
+    // GLYPH MASK + DISTANCE FIELD (see the coverage pass below for the
+    // "no gaps anywhere" requirement — this part is unchanged in
+    // principle from a plain halftone: draw to an offscreen canvas,
+    // read the alpha mask, chamfer-transform it once per layout.)
+    // ================================================================
+    function buildMaskField(text, font, boxW, boxH, padding, dpr) {
+      const w = Math.ceil((boxW + padding * 2) * dpr);
+      const h = Math.ceil((boxH + padding * 2) * dpr);
+      const off = document.createElement('canvas');
+      off.width = w; off.height = h;
+      const ctx = off.getContext('2d');
+      ctx.scale(dpr, dpr);
+      ctx.font = font; // no "/line-height" segment — canvas font parsing can silently reject that
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillStyle = '#000';
+
+      const metrics = ctx.measureText(text);
+      const ascent = metrics.actualBoundingBoxAscent || boxH * 0.78;
+      const descent = metrics.actualBoundingBoxDescent || boxH * 0.2;
+      const baselineY = padding + ascent + (boxH - ascent - descent) / 2;
+      ctx.fillText(text, padding, baselineY);
+
+      const data = ctx.getImageData(0, 0, w, h).data;
+      const mask = new Uint8Array(w * h);
+      for (let i = 0; i < w * h; i++) mask[i] = data[i * 4 + 3] >= 40 ? 1 : 0;
+
+      return { mask, dist: chamferDistance(mask, w, h), width: w, height: h, dpr, padding };
+    }
+
+    function chamferDistance(mask, w, h) {
+      const INF = 1e6;
+      const dist = new Float32Array(w * h);
+      for (let i = 0; i < w * h; i++) dist[i] = mask[i] ? INF : 0;
+      const D1 = 1, D2 = Math.SQRT2;
+      for (let y = 0; y < h; y++) {
+        const row = y * w;
+        for (let x = 0; x < w; x++) {
+          const i = row + x;
+          if (!mask[i]) continue;
+          let d = dist[i];
+          if (x > 0) d = Math.min(d, dist[i - 1] + D1);
+          if (y > 0) d = Math.min(d, dist[i - w] + D1);
+          if (x > 0 && y > 0) d = Math.min(d, dist[i - w - 1] + D2);
+          if (x < w - 1 && y > 0) d = Math.min(d, dist[i - w + 1] + D2);
+          dist[i] = d;
+        }
+      }
+      for (let y = h - 1; y >= 0; y--) {
+        const row = y * w;
+        for (let x = w - 1; x >= 0; x--) {
+          const i = row + x;
+          if (!mask[i]) continue;
+          let d = dist[i];
+          if (x < w - 1) d = Math.min(d, dist[i + 1] + D1);
+          if (y < h - 1) d = Math.min(d, dist[i + w] + D1);
+          if (x < w - 1 && y < h - 1) d = Math.min(d, dist[i + w + 1] + D2);
+          if (x > 0 && y < h - 1) d = Math.min(d, dist[i + w - 1] + D2);
+          dist[i] = d;
+        }
+      }
+      return dist;
+    }
+
+    function sampleField(field, xCss, yCss) {
+      const px = Math.min(field.width - 1, Math.max(0, Math.round(xCss * field.dpr)));
+      const py = Math.min(field.height - 1, Math.max(0, Math.round(yCss * field.dpr)));
+      const idx = py * field.width + px;
+      return { inside: !!field.mask[idx], distCss: field.dist[idx] / field.dpr, px, py, idx };
+    }
+
+    function outwardNormal(field, px, py) {
+      const w = field.width, h = field.height, d = field.dist;
+      const xp = Math.min(w - 1, px + 1), xm = Math.max(0, px - 1);
+      const yp = Math.min(h - 1, py + 1), ym = Math.max(0, py - 1);
+      const gx = d[py * w + xp] - d[py * w + xm];
+      const gy = d[yp * w + px] - d[ym * w + px];
+      const len = Math.hypot(gx, gy) || 1;
+      return { x: -gx / len, y: -gy / len };
+    }
+    function normalizeVec(v) { const len = Math.hypot(v.x, v.y) || 1; return { x: v.x / len, y: v.y / len }; }
+
+    // ── Coverage pass — after the main structured grid is placed, walk
+    // a finer coarse grid over the whole mask and add a small extra
+    // particle anywhere no existing particle's footprint reached, so
+    // thin hairlines/serifs/joins never show a gap. ───────────────────
+    function coveragePass(particles, field, W, H, step, radiusOf) {
+      const cols = Math.ceil(W / step), rows = Math.ceil(H / step);
+      const covered = new Uint8Array(cols * rows);
+      particles.forEach((p) => {
+        const cx = Math.floor(p.x / step), cy = Math.floor(p.y / step);
+        const rad = Math.max(1, Math.ceil(radiusOf(p) / step) + 1);
+        for (let dy = -rad; dy <= rad; dy++) {
+          for (let dx = -rad; dx <= rad; dx++) {
+            const gx = cx + dx, gy = cy + dy;
+            if (gx < 0 || gy < 0 || gx >= cols || gy >= rows) continue;
+            covered[gy * cols + gx] = 1;
+          }
+        }
+      });
+      const extra = [];
+      for (let gy = 0; gy < rows; gy++) {
+        for (let gx = 0; gx < cols; gx++) {
+          if (covered[gy * cols + gx]) continue;
+          const x = gx * step + step / 2, y = gy * step + step / 2;
+          const s = sampleField(field, x, y);
+          if (!s.inside) continue;
+          extra.push({ x, y, distCss: s.distCss, px: s.px, py: s.py, isCoverage: true });
+        }
+      }
+      return extra;
+    }
+
+    // ================================================================
+    // HALFTONE — 45°-rotated dot grid + coverage pass
+    // ================================================================
+    function generateRotatedGrid(spacing, W, H) {
+      const cos = Math.SQRT1_2, sin = Math.SQRT1_2;
+      const diag = Math.sqrt(W * W + H * H);
+      const pts = [];
+      for (let v = -diag; v <= diag; v += spacing) {
+        for (let u = -diag; u <= diag; u += spacing) {
+          const x = u * cos - v * sin, y = u * sin + v * cos;
+          if (x >= -1 && x <= W + 1 && y >= -1 && y <= H + 1) pts.push({ x, y, u });
+        }
+      }
+      return pts;
+    }
+
+    function tierFor(distCss, maxStrokeRadius, sizeScale) {
+      const norm = clamp(distCss / maxStrokeRadius, 0, 1);
+      return clamp(Math.round(norm * (sizeScale.length - 1)), 0, sizeScale.length - 1);
+    }
+
+    function buildHalftoneParticles(field, W, H) {
+      const cfg = CONFIG.halftone;
+      const grid = generateRotatedGrid(cfg.spacing, W, H);
+      const light = normalizeVec(CONFIG.light);
+      const particles = [];
+
+      for (const p of grid) {
+        const s = sampleField(field, p.x, p.y);
+        if (!s.inside) continue;
+        const tier = tierFor(s.distCss, cfg.maxStrokeRadius, cfg.sizeScale);
+        const radius = cfg.sizeScale[tier] * cfg.maxDotRadius;
+        const outward = outwardNormal(field, s.px, s.py);
+        const facing = outward.x * light.x + outward.y * light.y;
+        particles.push({
+          x: p.x, y: p.y, u: p.u, tier, radius,
+          color: cfg.coreTiers.includes(tier) ? 'core' : 'outer',
+          highlight: tier >= cfg.highlightTierMin && facing > cfg.highlightThreshold
+        });
+      }
+
+      const extra = coveragePass(particles, field, W, H, cfg.coverageStep, () => cfg.sizeScale[0] * cfg.maxDotRadius * 1.4);
+      extra.forEach((e) => {
+        const outward = outwardNormal(field, e.px, e.py);
+        const facing = outward.x * light.x + outward.y * light.y;
+        particles.push({
+          x: e.x, y: e.y, u: e.x, tier: 0,
+          radius: cfg.sizeScale[0] * cfg.maxDotRadius,
+          color: 'outer',
+          highlight: facing > cfg.highlightThreshold
+        });
+      });
+
+      const us = particles.map((p) => p.u);
+      const uMin = Math.min.apply(null, us), uMax = Math.max.apply(null, us);
+      particles.forEach((p) => { p.sweepT = uMax > uMin ? (p.u - uMin) / (uMax - uMin) : 0; });
+      return particles;
+    }
+
+    // ================================================================
+    // ASCII — baseline row/column grid + coverage pass
+    // ================================================================
+    function buildAsciiParticles(field, W, H) {
+      const cfg = CONFIG.ascii;
+      const cols = Math.ceil(W / cfg.cell), rows = Math.ceil(H / cfg.cell);
+      const grid = [];
+
+      for (let r = 0; r < rows; r++) {
+        const rowCells = [];
+        for (let c = 0; c < cols; c++) {
+          const x = c * cfg.cell + cfg.cell / 2, y = r * cfg.cell + cfg.cell / 2;
+          if (x > W || y > H) { rowCells.push(null); continue; }
+          const s = sampleField(field, x, y);
+          if (!s.inside) { rowCells.push(null); continue; }
+          let tier = 0;
+          if (s.distCss >= cfg.thickThreshold) tier = 2;
+          else if (s.distCss >= cfg.midThreshold) tier = 1;
+          const outward = outwardNormal(field, s.px, s.py);
+          rowCells.push({ x, y, row: r, col: c, tier, distCss: s.distCss, px: s.px, py: s.py, outward });
+        }
+        grid.push(rowCells);
+      }
+
+      grid.forEach((rowCells, r) => {
+        let runStart = -1;
+        for (let c = 0; c <= cols; c++) {
+          const cell = rowCells[c];
+          const isCore = cell && cell.tier === 2;
+          if (isCore && runStart === -1) runStart = c;
+          if ((!isCore || c === cols) && runStart !== -1) {
+            const runLen = c - runStart;
+            if (runLen >= cfg.minFragmentRun) {
+              const frag = cfg.fragments[Math.floor(hash2(r, runStart) * cfg.fragments.length)];
+              for (let k = 0; k < frag.length && runStart + k < c; k++) {
+                const target = rowCells[runStart + k];
+                target.isFragment = true;
+                target.char = frag[k];
+              }
+            }
+            runStart = -1;
+          }
+        }
+      });
+
+      const light = normalizeVec(CONFIG.light);
+      const particles = [];
+      grid.forEach((rowCells) => rowCells.forEach((cell) => {
+        if (!cell) return;
+        if (!cell.char) cell.char = cfg.charset[Math.floor(hash2(cell.row, cell.col) * cfg.charset.length)];
+        const facing = cell.outward.x * light.x + cell.outward.y * light.y;
+        cell.highlight = cell.tier <= 1 && facing > cfg.highlightThreshold;
+        cell.scrambleChar = cell.char;
+        particles.push(cell);
+      }));
+
+      // Coverage pass, at a finer sub-cell step, for thin hairline
+      // strokes the row/column grid alone would skip.
+      const extra = coveragePass(particles, field, W, H, cfg.coverageStep, () => cfg.cell * 0.7);
+      extra.forEach((e) => {
+        const outward = outwardNormal(field, e.px, e.py);
+        const facing = outward.x * light.x + outward.y * light.y;
+        const ch = cfg.charset[Math.floor(hash2(Math.round(e.x), Math.round(e.y)) * cfg.charset.length)];
+        particles.push({
+          x: e.x, y: e.y, tier: 0, distCss: e.distCss,
+          isFragment: false, char: ch, scrambleChar: ch,
+          highlight: facing > cfg.highlightThreshold, isCoverage: true
+        });
+      });
+
+      const xs = particles.map((p) => p.x);
+      const xMin = Math.min.apply(null, xs), xMax = Math.max.apply(null, xs);
+      particles.forEach((p) => { p.sweepT = xMax > xMin ? (p.x - xMin) / (xMax - xMin) : 0; });
+      return particles;
+    }
+
+    // ================================================================
+    // SHARED TIMELINE — createGlyphEffect(element, {mode}) — identical
+    // for "designer" (halftone) and "engineer" (ascii); only the
+    // particle builder + per-frame renderer differ.
+    // ================================================================
+    function createGlyphEffect(root, opts) {
+      const mode = opts.mode;
+      const textEl = root.querySelector('.word-text');
+      const word = textEl.textContent;
+      if (REDUCED_MOTION) return;
+
+      const c30 = cssVar('--color-30', '#2F63D9');
+      const c10 = cssVar('--color-10', '#FFE99B');
+      const c60 = cssVar('--color-60', '#F7CFFF');
+
+      const canvas = document.createElement('canvas');
+      canvas.setAttribute('aria-hidden', 'true');
+      root.appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+
+      let field = null, particles = [], boxW = 0, boxH = 0, dpr = Math.max(1, window.devicePixelRatio || 1);
+
+      function layout() {
+        dpr = Math.max(1, window.devicePixelRatio || 1);
+        const rect = textEl.getBoundingClientRect();
+        boxW = rect.width; boxH = rect.height;
+        const pad = CONFIG.padding;
+
+        canvas.style.left = (-pad) + 'px';
+        canvas.style.top = (-pad) + 'px';
+        canvas.style.width = (boxW + pad * 2) + 'px';
+        canvas.style.height = (boxH + pad * 2) + 'px';
+        canvas.width = Math.ceil((boxW + pad * 2) * dpr);
+        canvas.height = Math.ceil((boxH + pad * 2) * dpr);
+
+        const cs = getComputedStyle(textEl);
+        const font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+        field = buildMaskField(word, font, boxW, boxH, pad, dpr);
+
+        const W = boxW + pad * 2, H = boxH + pad * 2;
+        particles = mode === 'halftone' ? buildHalftoneParticles(field, W, H) : buildAsciiParticles(field, W, H);
+      }
+
+      let state = 'idle', phaseStart = 0, rafId = null, rippleOrigin = { x: 0, y: 0 };
+      const T = CONFIG.timing;
+      const PHASES = ['dissolve', 'flash', 'shrink', 'ripple', 'resolve'];
+      const PHASE_BOUNDS = (() => { let t = 0; const b = {}; PHASES.forEach((p) => { b[p] = [t, t + T[p]]; t += T[p]; }); return b; })();
+
+      function currentPhase(elapsed) {
+        for (const p of PHASES) { const [s, e] = PHASE_BOUNDS[p]; if (elapsed < e) return { name: p, localT: (elapsed - s) / (e - s) }; }
+        return { name: 'done', localT: 1 };
+      }
+
+      function trigger(originClient) {
+        if (state === 'playing') return; // no restart mid-animation
+        state = 'playing';
+        phaseStart = performance.now();
+        const pad = CONFIG.padding;
+        if (originClient) {
+          const rect = root.getBoundingClientRect();
+          rippleOrigin = { x: originClient.x - rect.left + pad, y: originClient.y - rect.top + pad };
+        } else {
+          rippleOrigin = { x: boxW / 2 + pad, y: boxH / 2 + pad };
+        }
+        textEl.style.opacity = '1';
+        canvas.style.opacity = '0';
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(tick);
+      }
+
+      function tick(now) {
+        const elapsed = now - phaseStart;
+        const { name, localT } = currentPhase(elapsed);
+        if (name === 'done') {
+          canvas.style.opacity = '0'; textEl.style.opacity = '1';
+          state = 'idle'; rafId = null;
+          return;
+        }
+        render(name, clamp(localT, 0, 1), elapsed);
+        rafId = requestAnimationFrame(tick);
+      }
+
+      function scaleForPhase(phase, t, dist) {
+        if (phase === 'dissolve' || phase === 'resolve') return 1;
+        if (phase === 'shrink') return lerp(1, 0.12, t * t);
+        if (phase === 'ripple') {
+          const waveFront = (CONFIG.ripple.speedPxPerSec * (t * T.ripple)) / 1000;
+          const diff = dist - waveFront, fw = CONFIG.ripple.frontWidth;
+          let progress;
+          if (diff > fw) progress = 0; else if (diff < -fw) progress = 1;
+          else progress = 1 - (diff + fw) / (2 * fw);
+          return lerp(0.12, 1, clamp(progress, 0, 1));
+        }
+        return 1;
+      }
+
+      function render(phase, t, elapsedMs) {
+        if (phase === 'dissolve') { textEl.style.opacity = String(1 - t); canvas.style.opacity = String(t); }
+        else if (phase === 'resolve') { textEl.style.opacity = String(t); canvas.style.opacity = String(1 - t); }
+        else { textEl.style.opacity = '0'; canvas.style.opacity = '1'; }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.scale(dpr, dpr);
+        if (mode === 'halftone') renderHalftone(phase, t);
+        else renderAscii(phase, t, elapsedMs);
+        ctx.restore();
+      }
+
+      function renderHalftone(phase, t) {
+        for (const p of particles) {
+          const dist = Math.hypot(p.x - rippleOrigin.x, p.y - rippleOrigin.y);
+          let scale = scaleForPhase(phase, t, dist);
+          let glow = 0;
+          if (phase === 'flash') {
+            const d = Math.abs(t - p.sweepT), w = 0.12;
+            glow = d < w ? 1 - d / w : 0;
+            scale = 1 + glow * 0.4;
+          }
+          const r = p.radius * scale;
+          if (r <= 0.15) continue;
+
+          ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+          ctx.fillStyle = p.color === 'core' ? c10 : c30;
+          ctx.fill();
+
+          if (glow > 0.5) {
+            ctx.beginPath(); ctx.arc(p.x, p.y, r * 0.6, 0, Math.PI * 2);
+            ctx.fillStyle = c10; ctx.globalAlpha = glow; ctx.fill(); ctx.globalAlpha = 1;
+          }
+          if (p.highlight && r > 0.6) {
+            ctx.beginPath(); ctx.arc(p.x - r * 0.32, p.y - r * 0.32, r * 0.38, 0, Math.PI * 2);
+            ctx.fillStyle = c60; ctx.fill();
+          }
+        }
+      }
+
+      function renderAscii(phase, t, elapsedMs) {
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        for (const p of particles) {
+          const dist = Math.hypot(p.x - rippleOrigin.x, p.y - rippleOrigin.y);
+          let scale = scaleForPhase(phase, t, dist);
+          let ch = p.isFragment ? p.char : p.scrambleChar;
+          let color = p.isFragment ? c10 : c30;
+
+          if (phase === 'flash') {
+            const d = t - p.sweepT;
+            if (d > -0.10 && d < 0.04) {
+              p.scrambleChar = CONFIG.ascii.charset[(Math.random() * CONFIG.ascii.charset.length) | 0];
+              ch = p.scrambleChar; color = c30;
+              scale = 1 + Math.max(0, 0.04 - Math.abs(d)) * 6;
+            } else if (d >= 0.04) {
+              ch = p.isFragment ? p.char : p.scrambleChar;
+              color = p.isFragment ? c10 : c30;
+            } else {
+              ch = p.scrambleChar; color = c30; scale *= 0.7;
+            }
+          }
+
+          const px = (CONFIG.ascii.sizeScale[p.tier] || CONFIG.ascii.sizeScale[0]) * scale;
+          if (px <= 1) continue;
+          ctx.font = `${px}px ${cssVar('--font-mono', 'monospace')}`;
+          ctx.fillStyle = color; ctx.globalAlpha = clamp(scale, 0, 1);
+          ctx.fillText(ch, p.x, p.y); ctx.globalAlpha = 1;
+
+          if (p.highlight && scale > 0.5) {
+            ctx.font = `${px * 0.55}px ${cssVar('--font-mono', 'monospace')}`;
+            ctx.fillStyle = c60;
+            ctx.fillText(ch, p.x - px * 0.22, p.y - px * 0.22);
+          }
+        }
+      }
+
+      root.addEventListener('mouseenter', (e) => trigger({ x: e.clientX, y: e.clientY }));
+      root.addEventListener('focusin', () => trigger(null));
+      root.addEventListener('touchstart', (e) => {
+        const t = e.touches[0];
+        trigger(t ? { x: t.clientX, y: t.clientY } : null);
+      }, { passive: true });
+
+      layout();
+      window.addEventListener('resize', layout);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+    }
+
+    document.querySelectorAll('.word').forEach((el) => createGlyphEffect(el, { mode: el.dataset.mode }));
+
+    // ================================================================
+    // PRELOAD — every image frame, so first hover never flickers.
+    // ================================================================
+    const ALL_IMAGE_PATHS = [
+      CONFIG.assets.eye.closed, CONFIG.assets.eye.openEmpty, ...CONFIG.assets.eye.openFrames,
+      CONFIG.assets.hand.rest, ...CONFIG.assets.hand.waveFrames
+    ].filter(Boolean);
+    const preloaded = {};
+    ALL_IMAGE_PATHS.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+      preloaded[src] = img;
+    });
+
+    // ================================================================
+    // EYE MODULE
+    // ================================================================
+    (function initEye() {
+      const wrap = document.getElementById('eye-wrap');
+      const img = document.getElementById('eye-img');
+      const pupilsCanvas = document.getElementById('eye-pupils');
+      if (!wrap || !img) return;
+      const cfg = CONFIG.eye;
+      const ctx = pupilsCanvas.getContext('2d');
+
+      let openness = 0;      // 0 closed .. 1 open, current animated value
+      let openAnimStart = 0, openAnimFrom = 0, openAnimTo = 0, openAnimDur = cfg.openDuration;
+      let animating = false;
+
+      let pupilCur = { x: 0, y: 0 };   // current eased offset from rest center, px
+      let pupilTarget = { x: 0, y: 0 };
+      let hovering = false;
+      let rafId = null;
+      let touchTimer = null;
+
+      // The eye's box is a fixed size (see CSS) so swapping frames never
+      // reflows the line, but that means object-fit:contain letterboxes
+      // whichever frame is narrower than the box. pupilCenterFrac/
+      // pupilRadiusFrac are defined against the artwork's own pixel
+      // space, so pupils need the actual PAINTED sub-rectangle, not the
+      // outer element box.
+      function getContainedRect(imgEl) {
+        const box = imgEl.getBoundingClientRect();
+        const nw = imgEl.naturalWidth, nh = imgEl.naturalHeight;
+        if (!nw || !nh) return box;
+        const boxRatio = box.width / box.height, imgRatio = nw / nh;
+        let w, h, x, y;
+        if (imgRatio > boxRatio) {
+          w = box.width; h = w / imgRatio;
+          x = box.left; y = box.top + (box.height - h) / 2;
+        } else {
+          h = box.height; w = h * imgRatio;
+          y = box.top; x = box.left + (box.width - w) / 2;
+        }
+        return { left: x, top: y, width: w, height: h };
+      }
+
+      function sizePupilCanvas() {
+        const dpr = Math.max(1, window.devicePixelRatio || 1);
+        const rect = img.getBoundingClientRect(); // canvas covers the full box; drawing itself is offset to the painted rect
+        pupilsCanvas.width = Math.ceil(rect.width * dpr);
+        pupilsCanvas.height = Math.ceil(rect.height * dpr);
+        pupilsCanvas.style.width = rect.width + 'px';
+        pupilsCanvas.style.height = rect.height + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function setFrame(openness01) {
+        // Two-image crossfade (closed <-> open-empty) is the functional
+        // fallback when no real per-frame opening sequence is supplied;
+        // if CONFIG.assets.eye.openFrames has real files, swap to
+        // picking the nearest frame index instead.
+        if (cfg && CONFIG.assets.eye.openFrames.length) {
+          const idx = clamp(Math.round(openness01 * (CONFIG.assets.eye.openFrames.length - 1)), 0, CONFIG.assets.eye.openFrames.length - 1);
+          img.src = CONFIG.assets.eye.openFrames[idx];
+        } else {
+          img.src = openness01 > 0.5 ? CONFIG.assets.eye.openEmpty : CONFIG.assets.eye.closed;
+        }
+        img.style.opacity = '1';
+      }
+
+      function drawPupils() {
+        const box = img.getBoundingClientRect();
+        ctx.clearRect(0, 0, box.width, box.height);
+        if (openness < 0.5) return; // pupils only visible once past the halfway-open point
+        const painted = getContainedRect(img);
+        // painted rect is in viewport coords; canvas origin is the outer
+        // box's top-left, so offset into canvas-local space.
+        const originX = painted.left - box.left, originY = painted.top - box.top;
+        const cx = originX + painted.width * cfg_eye().pupilCenterFrac.x;
+        const cy = originY + painted.height * cfg_eye().pupilCenterFrac.y;
+        const r = painted.width * cfg_eye().pupilRadiusFrac;
+        ctx.beginPath();
+        ctx.arc(cx + pupilCur.x, cy + pupilCur.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = cfg_eye().pupilColor;
+        ctx.fill();
+      }
+      function cfg_eye() { return CONFIG.assets.eye; }
+
+      function frame(now) {
+        rafId = requestAnimationFrame(frame);
+
+        if (animating) {
+          const t = clamp((now - openAnimStart) / openAnimDur, 0, 1);
+          openness = lerp(openAnimFrom, openAnimTo, t);
+          setFrame(openness);
+          if (t >= 1) animating = false;
+        }
+
+        pupilCur.x += (pupilTarget.x - pupilCur.x) * cfg.pupilEase;
+        pupilCur.y += (pupilTarget.y - pupilCur.y) * cfg.pupilEase;
+        drawPupils();
+      }
+
+      function startOpenAnim(to) {
+        openAnimFrom = openness;
+        openAnimTo = to;
+        // Reverse from wherever we currently are, not from the extreme —
+        // "if the cursor leaves mid-opening, reverse from the current
+        // frame instead of jumping."
+        const remaining = Math.abs(to - openness);
+        openAnimDur = cfg.openDuration * remaining;
+        openAnimStart = performance.now();
+        animating = true;
+      }
+
+      function updatePupilTarget(clientX, clientY) {
+        const painted = getContainedRect(img);
+        const cx = painted.left + painted.width * cfg_eye().pupilCenterFrac.x;
+        const cy = painted.top + painted.height * cfg_eye().pupilCenterFrac.y;
+        const dx = clientX - cx, dy = clientY - cy;
+        const dist = Math.hypot(dx, dy);
+        const maxR = cfg.pupilMaxRadius;
+        if (dist <= maxR || dist === 0) { pupilTarget = { x: dx, y: dy }; return; }
+        pupilTarget = { x: (dx / dist) * maxR, y: (dy / dist) * maxR };
+      }
+
+      if (REDUCED_MOTION) {
+        // Static open frame with centered pupils, no animation at all.
+        img.src = CONFIG.assets.eye.openEmpty;
+        openness = 1;
+        sizePupilCanvas();
+        drawPupils();
+        return;
+      }
+
+      sizePupilCanvas();
+      window.addEventListener('resize', sizePupilCanvas);
+
+      if (!IS_TOUCH) {
+        document.addEventListener('pointermove', (e) => {
+          const rect = img.getBoundingClientRect();
+          const pad = cfg.hoverPadding;
+          const within = e.clientX >= rect.left - pad && e.clientX <= rect.right + pad &&
+                          e.clientY >= rect.top - pad && e.clientY <= rect.bottom + pad;
+          if (within && !hovering) {
+            hovering = true;
+            startOpenAnim(1);
+          } else if (!within && hovering) {
+            hovering = false;
+            startOpenAnim(0);
+            pupilTarget = { x: 0, y: 0 };
+          }
+          if (hovering) updatePupilTarget(e.clientX, e.clientY);
+        }, { passive: true });
+      } else {
+        wrap.addEventListener('touchstart', () => {
+          clearTimeout(touchTimer);
+          hovering = true;
+          pupilTarget = { x: 0, y: 0 };
+          startOpenAnim(1);
+          touchTimer = setTimeout(() => {
+            hovering = false;
+            startOpenAnim(0);
+          }, cfg.touchOpenHold);
+        }, { passive: true });
+      }
+
+      rafId = requestAnimationFrame(frame);
+    })();
+
+    // ================================================================
+    // HAND MODULE
+    // ================================================================
+    (function initHand() {
+      const wrap = document.getElementById('hand-wrap');
+      const img = document.getElementById('hand-img');
+      if (!wrap || !img) return;
+      const cfg = CONFIG.hand;
+      const frames = CONFIG.assets.hand.waveFrames;
+      if (!frames.length) return;
+
+      if (REDUCED_MOTION) {
+        img.src = frames[0]; // a single wave frame, no looping
+        return;
+      }
+
+      let playing = false;
+      let stopRequested = false;
+      let frameIdx = 0;
+      let lastFrameTime = 0;
+      let rafId = null;
+      let cyclesRemaining = 0;
+
+      const frameDurMs = 1000 / cfg.fps;
+
+      function step(now) {
+        rafId = requestAnimationFrame(step);
+        if (!playing) return;
+        if (now - lastFrameTime < frameDurMs) return; // stop-motion: hard frame steps, no tweening
+        lastFrameTime = now;
+
+        frameIdx++;
+        if (frameIdx >= frames.length) {
+          frameIdx = 0;
+          if (stopRequested || cyclesRemaining > 0) {
+            if (cyclesRemaining > 0) cyclesRemaining--;
+            if (stopRequested && cyclesRemaining <= 0) {
+              playing = false;
+              img.src = CONFIG.assets.hand.rest;
+              return;
+            }
+          }
+        }
+        img.src = frames[frameIdx];
+      }
+
+      function startWave() {
+        if (playing) { stopRequested = false; return; }
+        playing = true; stopRequested = false; frameIdx = 0;
+        lastFrameTime = performance.now();
+        img.src = frames[0];
+      }
+      function finishThenRest() {
+        // "finish the current wave cycle, then return to rest" — don't
+        // cut the loop off mid-frame.
+        stopRequested = true;
+      }
+
+      if (!IS_TOUCH) {
+        wrap.addEventListener('mouseenter', startWave);
+        wrap.addEventListener('mouseleave', finishThenRest);
+        wrap.addEventListener('focus', startWave);
+        wrap.addEventListener('blur', finishThenRest);
+      } else {
+        wrap.addEventListener('touchstart', () => {
+          cyclesRemaining = cfg.touchCycles;
+          startWave();
+          stopRequested = true; // will finish after touchCycles loops then rest
+        }, { passive: true });
+      }
+
+      rafId = requestAnimationFrame(step);
+    })();
+  })();
+  </script>
+
+</body>
+</html>

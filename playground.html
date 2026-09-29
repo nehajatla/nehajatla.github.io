@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=3">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
 
 <style>
   /* ============================================================
@@ -33,7 +33,7 @@
       Falls back to Georgia elsewhere (closest free serif in spirit).
     */
     --caslon: "Cormorant Garamond", "Big Caslon", "Adobe Caslon Pro", Georgia, serif;
-    --sans: 'Inter', system-ui, sans-serif;
+    --sans: 'Poppins', system-ui, sans-serif;
   }
 
   html, body {
@@ -45,7 +45,7 @@
     cursor: none; /* native cursor hidden — periwinkle dot used instead */
   }
 
-  a { color: inherit; text-decoration: none; }
+  a { color: inherit; text-decoration: none; cursor: none; }
 
   /* ============================================================
      NAV
@@ -55,7 +55,7 @@
     top: 0; left: 0; right: 0;
     z-index: 300;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
     padding: 22px 48px;
     background: rgba(250,247,242,0.78);
@@ -88,20 +88,67 @@
 
   .nav-links a:hover { color: var(--ink); }
 
-  /* Highlight rectangle behind each nav word — see the page script for
-     the color-pairing logic. Lives inside the link (not on the shared
-     #cursor dot) and is positioned/z-indexed so the link's own text
-     always paints on top of it, with no interference from
-     .nav-container's backdrop-filter blur. */
-  .nav-links a .nav-hl {
+  /* Lotus-gradient highlight behind each nav word on hover — a fixed
+     gradient (not per-cursor-color pairing), paired with the cursor
+     fading to white on hover (see the body:has() rule near #cursor) so
+     it reads as the cursor handing its color off to the button. Pure
+     CSS — no JS involved. */
+  .nav-links a::before {
+    content: '';
     position: absolute;
     inset: -6px -8px;
     border-radius: 3px;
     z-index: -1;
     opacity: 0;
+    background: linear-gradient(90deg, #4B8AFF, #FFE99B, #EFABFF);
     transition: opacity 0.15s ease;
   }
-  .nav-links a.nav-hover .nav-hl { opacity: 1; }
+  .nav-links a:hover::before { opacity: 1; }
+
+  /* ── AMBIENT BACKGROUND — soft drifting off-white blobs + a faint
+     animated grain, sitting behind #viewport (z:-1) but above the
+     page's own cream background, so the flat fill reads as alive
+     instead of plain. Fixed (not absolute) since body itself isn't a
+     positioned container here — same pattern as index.html/about.html,
+     just anchored to the page instead of a specific section. */
+  .bg-field {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .bg-field .bg-grain {
+    position: absolute;
+    inset: -2%;
+    width: 104%;
+    height: 104%;
+    opacity: 0.5;
+    mix-blend-mode: overlay;
+    image-rendering: pixelated;
+  }
+  .bg-field .bg-orb {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,253,248,0.95) 0%, rgba(255,253,248,0) 68%);
+    filter: blur(45px);
+    mix-blend-mode: overlay;
+    opacity: 0.9;
+    animation: bgOrbDrift 32s ease-in-out infinite;
+  }
+  .bg-orb-1 { width: 420px; height: 420px; top: -10%; left: -8%; animation-duration: 30s; }
+  .bg-orb-2 { width: 360px; height: 360px; bottom: -12%; right: -6%; animation-duration: 38s; animation-delay: -6s; }
+  .bg-orb-3 { width: 300px; height: 300px; top: 42%; left: 58%; animation-duration: 44s; animation-delay: -18s; }
+
+  @keyframes bgOrbDrift {
+    0%   { transform: translate(0,0) scale(1); }
+    33%  { transform: translate(3%,-5%) scale(1.08); }
+    66%  { transform: translate(-4%,4%) scale(0.95); }
+    100% { transform: translate(0,0) scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bg-field .bg-orb { animation: none; }
+  }
 
   /* ============================================================
      VIEWPORT / CANVAS
@@ -231,20 +278,27 @@
   #cursor {
     position: fixed;
     top: 0; left: 0;
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    background: var(--periwinkle);
-    box-shadow: 0 0 0 6px var(--periwinkle-dim);
+    width: 40px; height: 40px;
+    background-image: url('favicon.svg?v=4');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
     pointer-events: none;
     z-index: 9999;
     will-change: transform;
-    transform: translate3d(-7px, -7px, 0);
+    transform: translate3d(-20px, -20px, 0);
     scale: 1;
-    transition: scale 0.15s ease, background 0.2s ease;
+    transition: scale 0.15s ease, filter 0.2s ease;
   }
 
   #cursor.dragging {
-    box-shadow: 0 0 0 10px var(--periwinkle-dim);
+    scale: 1.15;
+  }
+
+  /* Cursor fades to white while hovering a nav link — reads as it handing
+     its color off to the button's gradient (see .nav-links a::before). */
+  body:has(.nav-links a:hover) #cursor {
+    filter: brightness(0) invert(1);
   }
 
   /* ============================================================
@@ -290,12 +344,23 @@
 <body>
 
   <nav class="nav-container">
+    <a href="index.html" class="nav-logo">Neha Jatla</a>
     <div class="nav-links">
       <a href="index.html#work">Work</a>
       <a href="playground.html" class="active">Playground</a>
       <a href="about.html">About</a>
     </div>
   </nav>
+
+  <!-- Ambient background — drifting off-white blobs + animated grain,
+       sits behind the whole canvas viewport (see .bg-field above and
+       the grain script near the end of this file). -->
+  <div class="bg-field" aria-hidden="true">
+    <canvas class="bg-grain"></canvas>
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+  </div>
 
   <div id="viewport">
     <div id="canvas"></div>
@@ -434,64 +499,12 @@
   // Carries the color the cursor was left in on the homepage hero across
   // the rest of the visit (see index.html, the only page that ever writes
   // this key).
-  const cursorBaseColor = localStorage.getItem('siteCursorColor') || (cursorEl ? getComputedStyle(cursorEl).backgroundColor : '#6574fc');
-  if (localStorage.getItem('siteCursorColor') && cursorEl) cursorEl.style.background = cursorBaseColor;
+  const cursorBaseColor = localStorage.getItem('siteCursorColor') || '#6574fc';
+  if (localStorage.getItem('siteCursorColor') && cursorEl) cursorEl.style.setProperty('--cursor-glow', cursorBaseColor);
 
-  // Hand-picked pairings (not a computed complement) — each hero palette
-  // color hovering the nav gets the word set in that same color, on a
-  // rectangle in its specific paired color: dark blue <-> coral pink,
-  // yellow -> dark blue, medium pink <-> lilac purple, cyan <-> deeper
-  // orangey-pink/red.
-  const HOVER_PAIRS = {
-    '#4B8AFF': '#FD9191',
-    '#FD9191': '#4B8AFF',
-    '#FFE99B': '#4B8AFF',
-    '#FF178B': '#EB95FF',
-    '#EB95FF': '#FF178B',
-    '#6AEEFF': '#FF4B51',
-    '#FF4B51': '#6AEEFF'
-  };
-  function rgbToHex(rgb) {
-    const m = rgb.match(/\d+/g);
-    if (!m) return '#6574fc';
-    return '#' + m.slice(0, 3).map((v) => (+v).toString(16).padStart(2, '0')).join('');
-  }
-  function hoverBg(hex) {
-    return HOVER_PAIRS[hex.toUpperCase()] || '#4B8AFF';
-  }
-  // The highlight rectangle lives inside each link (a span inserted
-  // before its text), not on the shared #cursor dot — #cursor sits at
-  // z-index:9999 site-wide, and .nav-container has
-  // backdrop-filter:blur(14px); putting the rectangle behind nav to let
-  // the text show through ran it straight through that blur and turned a
-  // crisp rectangle into a soft glow. A span painted inside the link
-  // never touches the blur, and — since it's absolutely positioned with
-  // z-index:-1 while the link's own text is plain in-flow inline
-  // content, which always paints above negative-z-index positioned
-  // siblings — the text sits on top of it automatically.
-  document.querySelectorAll('.nav-links a').forEach((link) => {
-    const hl = document.createElement('span');
-    hl.className = 'nav-hl';
-    link.prepend(hl);
-  });
-  let lastNavLink = null;
-  function updateNavHoverCursor(navLink) {
-    if (navLink !== lastNavLink) {
-      if (lastNavLink) {
-        lastNavLink.classList.remove('nav-hover');
-        lastNavLink.style.color = '';
-      }
-      if (navLink) {
-        const current = localStorage.getItem('siteCursorColor') || cursorBaseColor;
-        const currentHex = current.startsWith('#') ? current : rgbToHex(current);
-        navLink.querySelector('.nav-hl').style.background = hoverBg(currentHex);
-        navLink.classList.add('nav-hover');
-        navLink.style.color = currentHex;
-      }
-      lastNavLink = navLink;
-    }
-    return !!navLink;
-  }
+  // Nav hover (the gradient highlight + cursor-turns-white effect) is
+  // pure CSS now — see .nav-links a::before and the
+  // body:has(.nav-links a:hover) #cursor rule above.
 
   // Embedded interactive tiles (e.g. Storm Strings) run a real, continuous
   // physics simulation whether or not they're actually visible — the wall
@@ -516,6 +529,7 @@
   let lastX = 0, lastY = 0;
   let lastMoveTime = 0;
   let inertiaActive = false;
+  let lastWheelTime = -1000;
 
   // parallaxX/Y = the secondary cursor-driven shift, eased toward target.
   // Final canvas transform each frame = (originX + parallaxX, originY + parallaxY)
@@ -873,7 +887,7 @@
         const absY = rect.top + e.data.y;
         cursorScreenX = absX;
         cursorScreenY = absY;
-        cursorEl.style.transform = 'translate3d(' + (absX - 7) + 'px, ' + (absY - 7) + 'px, 0)';
+        cursorEl.style.transform = 'translate3d(' + (absX - 20) + 'px, ' + (absY - 20) + 'px, 0)';
         updateParallaxTarget();
         break;
       }
@@ -902,7 +916,16 @@
     }
 
     applyCanvasTransform();
-    updateProximityScaling();
+
+    // Skipped during an active drag or right after a scroll — every tile
+    // on screen gets a distance calc + lerp + transform write here, and
+    // stacking that on top of the drag/scroll's own per-frame work was
+    // what read as the cursor and canvas jerking during the gesture
+    // itself. Proximity hover isn't the point mid-pan anyway; it resumes
+    // the instant the gesture ends.
+    if (!isDragging && performance.now() - lastWheelTime > 150) {
+      updateProximityScaling();
+    }
 
     // Re-render visible cells continuously while either inertia or
     // parallax is actively moving the canvas (cheap check; renderVisibleCells
@@ -928,13 +951,10 @@
   function onPointerMove(e) {
     cursorScreenX = e.clientX;
     cursorScreenY = e.clientY;
-    // Checked via real pointer position on move, not mouseenter/mouseleave
-    // — those fire spuriously when the canvas pans under a stationary cursor.
-    const hoverTarget = document.elementFromPoint(e.clientX, e.clientY);
-    const navLink = hoverTarget && hoverTarget.closest('.nav-links a');
-    const overNav = updateNavHoverCursor(navLink);
-    cursorEl.style.transform = 'translate3d(' + (e.clientX - 7) + 'px, ' + (e.clientY - 7) + 'px, 0)';
-    cursorEl.style.scale = (!overNav && hoverTarget && hoverTarget.closest('a, button')) ? '1.7' : '1';
+    // Nav hover (gradient highlight + cursor-turns-white) and the
+    // big-flower hover-grow on any link are both pure CSS now — see
+    // .nav-links a::before and the body:has() rules above.
+    cursorEl.style.transform = 'translate3d(' + (e.clientX - 20) + 'px, ' + (e.clientY - 20) + 'px, 0)';
     updateParallaxTarget();
 
     if (!isDragging) return;
@@ -991,6 +1011,7 @@
     e.preventDefault();
     inertiaActive = false; // a fresh scroll input overrides any glide in progress
     velX = 0; velY = 0;
+    lastWheelTime = performance.now();
 
     originX -= e.deltaX * CONFIG.scrollSensitivity;
     originY -= e.deltaY * CONFIG.scrollSensitivity;
@@ -1018,6 +1039,42 @@
   }
 
   init();
+</script>
+<script>
+  // Ambient grain — regenerates a small noise tile every ~90ms for a
+  // subtle "static" flicker, tinted off-white rather than gray so it
+  // reads as texture within the page's own background instead of TV
+  // static. Skips the loop entirely under reduced motion.
+  (function () {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelectorAll('.bg-grain').forEach((canvas) => {
+      const ctx = canvas.getContext('2d');
+      const SIZE = 160;
+      canvas.width = SIZE;
+      canvas.height = SIZE;
+
+      function paint() {
+        const img = ctx.createImageData(SIZE, SIZE);
+        for (let i = 0; i < img.data.length; i += 4) {
+          const v = 250 + Math.random() * 5;
+          img.data[i] = v;
+          img.data[i + 1] = v - 3;
+          img.data[i + 2] = v - 10;
+          img.data[i + 3] = Math.random() * 70;
+        }
+        ctx.putImageData(img, 0, 0);
+      }
+
+      if (reduced) { paint(); return; }
+
+      let last = 0;
+      function loop(now) {
+        if (now - last > 90) { paint(); last = now; }
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
+    });
+  })();
 </script>
 </body>
 </html>
