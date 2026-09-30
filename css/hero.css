@@ -73,12 +73,22 @@
   vertical-align: -0.12em;
   outline: none;
 }
-.glyph-img img { display: block; height: 100%; width: 100%; object-fit: contain; pointer-events: none; }
+/* Scoped to #hand-wrap specifically (not a blanket `.glyph-img img`)
+   — the eye's own <img> frames are fully styled by .eye-frame below,
+   and a generic rule here used to win the cascade over .eye-frame's
+   display:none (class+tag beats a single class), leaving every frame
+   visible at once regardless of which one .is-visible was on. */
+#hand-wrap img { display: block; height: 100%; width: 100%; object-fit: contain; pointer-events: none; }
 
-/* Eye — a single static inline SVG (js/eyes.js only ever moves the
-   #eye-pupil circle inside it; the rest of the vector never changes).
-   The SVG's own viewBox locks its aspect ratio, so it just needs to
-   fill the wrap box like any other inline graphic. */
+/* Eye — three traced raster frames (open / half-closed / fully closed,
+   js/eyes.js#PHASES) stacked in #eye-stage, all the same pixel
+   dimensions so swapping which one is visible never shifts or resizes
+   anything. Only one .eye-frame carries .is-visible at a time — a
+   crisp swap (display:none/block), no transition, no cross-fade. The
+   pupil is a separately-positioned circle (#eye-pupil) inside a
+   masked layer (#eye-pupil-clip) so it can keep tracking the cursor
+   independently of which frame is showing; js/eyes.js swaps the mask
+   image to match the current frame's own outline. */
 #eye-wrap {
   position: relative;
   display: inline-flex;
@@ -88,12 +98,30 @@
   margin-right: 0.18em;
   vertical-align: -0.1em;
 }
-#eye-svg { display: block; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-/* Auto-blink (js/eyes.js) scales #eye-content flat around its own
-   vertical center via the Web Animations API — fill-box + center makes
-   scaleY pivot on the eye's own bounding box instead of the SVG
-   viewport's origin. */
-#eye-content { transform-box: fill-box; transform-origin: center; }
+#eye-stage { position: relative; display: block; width: 100%; height: 100%; }
+.eye-frame {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: contain;
+  display: none;
+  pointer-events: none;
+}
+.eye-frame.is-visible { display: block; }
+#eye-pupil-clip {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: center; mask-position: center;
+  -webkit-mask-size: contain; mask-size: contain;
+  pointer-events: none;
+}
+#eye-pupil {
+  position: absolute;
+  top: 0; left: 0;
+  border-radius: 50%;
+  background: #4B8AFF;
+  transform: translate(-50%, -50%);
+}
 
 /* The hand sits larger than the eyes and trails a little below the
    baseline — sized so its own descent fits inside the gap between

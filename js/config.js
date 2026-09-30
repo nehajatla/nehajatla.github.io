@@ -39,11 +39,9 @@ window.SITE_CONFIG = {
 
     ripple: { speedPxPerSec: 1500, frontWidth: 46 },
 
-    // The eye is now a static inline SVG (index.html #eye-svg) built
-    // directly from the source vector — js/eyes.js reads its geometry
-    // straight off that markup rather than from config here. See
-    // eyes.js's own header comment for the pupil-tracking/clamping
-    // logic and its tunables (EASE, POD, PAD).
+    // The eye is three traced raster frames (assets/hero/eye-phase*) —
+    // js/eyes.js owns its own geometry/tunables directly rather than
+    // reading them from config here. See eyes.js's own header comment.
     assets: {
       hand: {
         rest: 'assets/hero/hand-rest.png',

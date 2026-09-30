@@ -1,126 +1,181 @@
 /* ================================================================
-   eyes.js — pupil-tracking for the static inline eye SVG (index.html
-   #eye-svg). The eye itself (outline + lashes) never changes; this
-   only moves the #eye-pupil circle toward the cursor, clamped to an
-   ellipse inscribed in the eye's own outline (via getScreenCTM, so it
-   works in the SVG's own coordinate space regardless of how large the
-   SVG is actually rendered on the page) so it can never visually cross
-   the drawn outline — the outline's clip-path is a second safety net
-   on top of that. Tracks the cursor anywhere on the page (not just
-   near the eye) and eases back to its resting position when the
-   cursor leaves the window. Not gated on hovering the eye: the eye is
-   always "open" now, there is no blink state.
+   eyes.js — 3-phase blink + cursor-tracking pupil.
+
+   The eye is three traced raster frames (assets/hero/eye-phase{1,2,3})
+   stacked in #eye-stage, all sharing identical pixel dimensions so a
+   frame swap never shifts or resizes anything — only one carries
+   .is-visible at a time, swapped with no transition (setFrame). Rests
+   on phase 1 (open); every ~3-5s (randomized) it blinks through
+   1->2->3->2->1, holding each of 2/3 for ~70ms.
+
+   The pupil is a separate circle (#eye-pupil) that keeps tracking the
+   cursor regardless of blink phase — it's inside a masked layer
+   (#eye-pupil-clip) whose mask-image is swapped to match whichever
+   frame's own outline is currently showing (phase 1's mask while
+   resting/phase 1, phase 2's while mid-blink on phase 2), and hidden
+   outright on phase 3 (eyes fully shut). Travel is additionally
+   clamped to an ellipse inscribed in phase 1's outline (a soft, natural
+   range — the mask is what actually guarantees no visual overflow).
    ================================================================ */
 (function () {
   'use strict';
   const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const IS_TOUCH = matchMedia('(hover: none), (pointer: coarse)').matches;
 
-  const svg = document.getElementById('eye-svg');
+  const stage = document.getElementById('eye-stage');
+  const frames = [
+    document.getElementById('eye-frame-1'),
+    document.getElementById('eye-frame-2'),
+    document.getElementById('eye-frame-3')
+  ];
+  const pupilClip = document.getElementById('eye-pupil-clip');
   const pupil = document.getElementById('eye-pupil');
-  const eyeContent = document.getElementById('eye-content');
-  if (!svg || !pupil) return;
+  if (!stage || !pupilClip || !pupil || frames.some((f) => !f)) return;
 
-  // Auto-blink: a quick flat-scale-and-back on #eye-content, at a
-  // randomized 5-6s interval (fixed timing reads as mechanical; a
-  // little jitter reads as a natural blink). Web Animations API rather
-  // than the rAF tween pattern used elsewhere here, since it's a
-  // one-shot effect with no per-frame state to track.
-  if (eyeContent && eyeContent.animate && !REDUCED_MOTION) {
-    function scheduleBlink() {
-      const delay = 5000 + Math.random() * 1000;
+  // Geometry measured directly off the traced source art (all three
+  // frames share this canvas, see the asset header in that extraction
+  // — phase 1's own painted rect is the reference for all of it).
+  const PUPIL_CENTER_FRAC = { x: 0.6034, y: 0.5725 };
+  const PUPIL_RADIUS_FRAC = 0.1763;
+  const POD_BOUNDS_FRAC = { left: 0.0804, top: 0.2727, right: 0.9397, bottom: 0.9264 };
+  const MASKS = {
+    1: 'assets/hero/eye-phase1-mask.png',
+    2: 'assets/hero/eye-phase2-mask.png'
+  };
+  // Masks are only ever referenced via CSS url(), never as an <img>,
+  // so nothing else would trigger fetching them — without this, the
+  // first blink's mask-image swap could paint before the PNG finished
+  // loading, briefly showing the pupil full-circle/unclipped.
+  Object.values(MASKS).forEach((src) => { new Image().src = src; });
+
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  // object-fit:contain places the image's actual drawn content off-
+  // center within its box whenever the box's aspect ratio doesn't
+  // exactly match the image's own — this is that placement, in page
+  // pixels, so pupil math can be relative to the ART, not the box.
+  function getContainedRect(imgEl) {
+    const box = imgEl.getBoundingClientRect();
+    const nw = imgEl.naturalWidth, nh = imgEl.naturalHeight;
+    if (!nw || !nh) return box;
+    const boxRatio = box.width / box.height, imgRatio = nw / nh;
+    let w, h, x, y;
+    if (imgRatio > boxRatio) {
+      w = box.width; h = w / imgRatio;
+      x = box.left; y = box.top + (box.height - h) / 2;
+    } else {
+      h = box.height; w = h * imgRatio;
+      y = box.top; x = box.left + (box.width - w) / 2;
+    }
+    return { left: x, top: y, width: w, height: h };
+  }
+
+  // All three frames share identical intrinsic dimensions, so any of
+  // them gives the same painted rect — frame 1 is always in the DOM.
+  function paintedRect() { return getContainedRect(frames[0]); }
+
+  // Everything here is kept in STAGE-relative coordinates (matching
+  // what onMove below computes from clientX/Y), not page coordinates —
+  // painted.left/top are page-relative (from getBoundingClientRect),
+  // so the stage's own offset is subtracted out up front.
+  let ellipse = null;
+  function recomputeEllipse() {
+    const painted = paintedRect();
+    const stageBox = stage.getBoundingClientRect();
+    const originX = painted.left - stageBox.left, originY = painted.top - stageBox.top;
+    const r = painted.width * PUPIL_RADIUS_FRAC;
+    const pad = 1.5;
+    const podLeft = originX + painted.width * POD_BOUNDS_FRAC.left;
+    const podRight = originX + painted.width * POD_BOUNDS_FRAC.right;
+    const podTop = originY + painted.height * POD_BOUNDS_FRAC.top;
+    const podBottom = originY + painted.height * POD_BOUNDS_FRAC.bottom;
+    ellipse = {
+      cx: (podLeft + podRight) / 2,
+      cy: (podTop + podBottom) / 2,
+      rx: Math.max(0, (podRight - podLeft) / 2 - r - pad),
+      ry: Math.max(0, (podBottom - podTop) / 2 - r - pad)
+    };
+    restX = originX + painted.width * PUPIL_CENTER_FRAC.x;
+    restY = originY + painted.height * PUPIL_CENTER_FRAC.y;
+    pupilDiameter = painted.width * PUPIL_RADIUS_FRAC * 2;
+    pupil.style.width = pupilDiameter + 'px';
+    pupil.style.height = pupilDiameter + 'px';
+  }
+
+  function clampToEllipse(x, y) {
+    if (!ellipse || ellipse.rx <= 0 || ellipse.ry <= 0) return { x: ellipse ? ellipse.cx : x, y: ellipse ? ellipse.cy : y };
+    const relX = x - ellipse.cx, relY = y - ellipse.cy;
+    const norm = (relX * relX) / (ellipse.rx * ellipse.rx) + (relY * relY) / (ellipse.ry * ellipse.ry);
+    if (norm <= 1) return { x, y };
+    const scale = 1 / Math.sqrt(norm);
+    return { x: ellipse.cx + relX * scale, y: ellipse.cy + relY * scale };
+  }
+
+  let restX = 0, restY = 0, pupilDiameter = 0;
+  let curX = 0, curY = 0, targetX = 0, targetY = 0;
+  let started = false;
+
+  function onResize() {
+    recomputeEllipse();
+    if (!started) { curX = targetX = restX; curY = targetY = restY; started = true; }
+  }
+  recomputeEllipse();
+  curX = targetX = restX;
+  curY = targetY = restY;
+  window.addEventListener('resize', onResize);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(onResize);
+
+  // ---- blink state machine ------------------------------------------
+  let phase = 1;
+  function setFrame(n) {
+    phase = n;
+    frames.forEach((f, i) => f.classList.toggle('is-visible', i === n - 1));
+    if (n === 3) {
+      pupilClip.style.opacity = '0';
+    } else {
+      pupilClip.style.opacity = '1';
+      pupilClip.style.maskImage = 'url(' + MASKS[n] + ')';
+      pupilClip.style.webkitMaskImage = 'url(' + MASKS[n] + ')';
+    }
+  }
+  setFrame(1);
+
+  if (!REDUCED_MOTION) {
+    const HOLD = 70; // ms per mid-blink frame
+    function doBlink() {
+      setFrame(2);
       setTimeout(() => {
-        eyeContent.animate(
-          [
-            { transform: 'scaleY(1)' },
-            { transform: 'scaleY(0.05)', offset: 0.45 },
-            { transform: 'scaleY(1)' }
-          ],
-          { duration: 220, easing: 'ease-in-out' }
-        );
-        scheduleBlink();
-      }, delay);
+        setFrame(3);
+        setTimeout(() => {
+          setFrame(2);
+          setTimeout(() => setFrame(1), HOLD);
+        }, HOLD);
+      }, HOLD);
+    }
+    function scheduleBlink() {
+      const delay = 3000 + Math.random() * 2000;
+      setTimeout(() => { doBlink(); scheduleBlink(); }, delay);
     }
     scheduleBlink();
   }
 
-  // Resting position — exactly the source vector's own pupil cx/cy.
-  const REST_X = parseFloat(pupil.getAttribute('cx'));
-  const REST_Y = parseFloat(pupil.getAttribute('cy'));
-  const PUPIL_R = parseFloat(pupil.getAttribute('r'));
-
-  // Ellipse inscribed in the pod outline's own bounding box (measured
-  // from the source vector: x 421.164-765.269, y 176.247-335.189),
-  // shrunk by the pupil's own radius + a small pad so its EDGE stays
-  // inside the outline, not just its center.
-  const POD = { x0: 421.164, y0: 176.247, x1: 765.269, y1: 335.189 };
-  const PAD = 2;
-  const ELLIPSE = {
-    cx: (POD.x0 + POD.x1) / 2,
-    cy: (POD.y0 + POD.y1) / 2,
-    rx: Math.max(0, (POD.x1 - POD.x0) / 2 - PUPIL_R - PAD),
-    ry: Math.max(0, (POD.y1 - POD.y0) / 2 - PUPIL_R - PAD)
-  };
-
-  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-
-  // Clamps a desired absolute (x,y) to ELLIPSE by scaling back radially
-  // along its own direction from the ellipse center — reads as a
-  // smooth oval boundary rather than clamping each axis independently.
-  function clampToEllipse(x, y) {
-    if (ELLIPSE.rx <= 0 || ELLIPSE.ry <= 0) return { x: ELLIPSE.cx, y: ELLIPSE.cy };
-    const relX = x - ELLIPSE.cx, relY = y - ELLIPSE.cy;
-    const norm = (relX * relX) / (ELLIPSE.rx * ELLIPSE.rx) + (relY * relY) / (ELLIPSE.ry * ELLIPSE.ry);
-    if (norm <= 1) return { x, y };
-    const scale = 1 / Math.sqrt(norm);
-    return { x: ELLIPSE.cx + relX * scale, y: ELLIPSE.cy + relY * scale };
-  }
-
-  function toSvgPoint(clientX, clientY) {
-    const ctm = svg.getScreenCTM();
-    if (!ctm) return { x: REST_X, y: REST_Y };
-    const pt = svg.createSVGPoint();
-    pt.x = clientX;
-    pt.y = clientY;
-    const p = pt.matrixTransform(ctm.inverse());
-    return { x: p.x, y: p.y };
-  }
-
-  let curX = REST_X, curY = REST_Y;
-  let targetX = REST_X, targetY = REST_Y;
-  const EASE = 0.28;
-
-  if (REDUCED_MOTION) {
-    pupil.setAttribute('cx', REST_X);
-    pupil.setAttribute('cy', REST_Y);
-    return;
-  }
+  // ---- pupil tracking -------------------------------------------------
+  if (REDUCED_MOTION) return;
 
   function onMove(clientX, clientY) {
-    const p = toSvgPoint(clientX, clientY);
-    const clamped = clampToEllipse(p.x, p.y);
+    const stageBox = stage.getBoundingClientRect();
+    const clamped = clampToEllipse(clientX - stageBox.left, clientY - stageBox.top);
     targetX = clamped.x;
     targetY = clamped.y;
   }
-
-  function reset() {
-    targetX = REST_X;
-    targetY = REST_Y;
-  }
+  function reset() { targetX = restX; targetY = restY; }
 
   if (!IS_TOUCH) {
     document.addEventListener('pointermove', (e) => onMove(e.clientX, e.clientY), { passive: true });
-    // Fires when the pointer leaves the viewport entirely (relatedTarget
-    // is null/undefined only in that case, not for ordinary moves
-    // between elements inside the page).
-    document.addEventListener('mouseout', (e) => {
-      if (!e.relatedTarget) reset();
-    });
+    document.addEventListener('mouseout', (e) => { if (!e.relatedTarget) reset(); });
   }
 
-  // Frame-rate-independent easing — see cursor.js's own frame loop for
-  // why a plain per-frame multiplier looks jerky when frame timing
-  // varies; this scales the lerp factor by elapsed time instead.
+  const EASE = 0.28;
   let lastTime = null;
   function frame(now) {
     requestAnimationFrame(frame);
@@ -130,8 +185,8 @@
     const factor = 1 - Math.pow(1 - EASE, dt * 60);
     curX += (targetX - curX) * factor;
     curY += (targetY - curY) * factor;
-    pupil.setAttribute('cx', curX.toFixed(2));
-    pupil.setAttribute('cy', curY.toFixed(2));
+    pupil.style.left = curX + 'px';
+    pupil.style.top = curY + 'px';
   }
   requestAnimationFrame(frame);
 })();
