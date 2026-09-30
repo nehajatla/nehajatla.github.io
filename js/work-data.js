@@ -107,7 +107,69 @@ const PROJECTS = [
     tall:    false,
     tags:    ['SWE', 'Data Analytics'],
     body: `
-      <p>Coming soon: thumbnail and case study in progress.</p>
+      <div class="case-meta">
+        <div>
+          <p class="case-meta-label">Role</p>
+          <p>Software Engineering &amp; Data Analytics Intern</p>
+        </div>
+        <div>
+          <p class="case-meta-label">Timeline</p>
+          <p>June – December 2025</p>
+        </div>
+        <div>
+          <p class="case-meta-label">Team</p>
+          <p>Swadha Rai</p>
+          <p>Rewriting the Code</p>
+          <p>Reboot Representation</p>
+        </div>
+        <div>
+          <p class="case-meta-label">Skills</p>
+          <p>Python &amp; NLP</p>
+          <p>Tableau</p>
+          <p>Survey Analysis</p>
+        </div>
+      </div>
+
+      <h3>How might a 40K+ member community turn its own data into decisions?</h3>
+      <p>Rewriting the Code supports women in tech through community, data and advocacy. Over six months I worked on both ends of that data: the conversations happening in Slack, and the recruiting outcomes of the students in it.</p>
+
+      <h3>The community was talking more than anyone could read...</h3>
+      <p>RTC's Slack generated thousands of messages, and reporting ran on manual workflows. Staff couldn't sort what members needed fast enough to act on it.</p>
+      <p>...and the recruiting data that mattered most didn't exist. Few studies break tech recruiting outcomes down by race and gender together. Without that evidence, it was hard to advocate for Black, Latina and Native American (BLNA) women in computing.</p>
+      <p><em>Where in the pipeline do BLNA women fall behind — at the application, the interview, or the offer?</em></p>
+
+      <h3>An NLP Slackbot that reads the community for you</h3>
+      <p>I built and launched an AI-powered Python Slackbot that processed 2K+ community messages, then automated the reporting behind it with 10+ Tableau dashboards stakeholders use to make decisions.</p>
+
+      <h3>The Reboot report: 549 students, three questions, five lenses</h3>
+      <p>With Swadha Rai, I co-authored an 80-page study with Reboot Representation and ColorStack on the 2025 recruiting cycle.</p>
+      <ol class="case-steps">
+        <li><strong>Survey design</strong> — refined over multiple rounds to cover search strategy, technical prep and interview progression.</li>
+        <li><strong>Sampling</strong> — stratified random sampling that oversampled BLNA students: 244 BLNA women, 208 BLNA men, 97 non-BLNA respondents.</li>
+        <li><strong>Cleaning</strong> — validated eligibility, removed outliers, converted multi-select answers to binary indicators.</li>
+        <li><strong>Analysis</strong> — every question cut by race, gender, graduation year, first-gen status and top-CS-program attendance.</li>
+        <li><strong>Visualization</strong> — filterable Tableau dashboards for offers, application volume, selectiveness and interview stage.</li>
+      </ol>
+
+      <h3>Five hiring insights, delivered to leadership</h3>
+      <div class="case-stats">
+        <div class="case-stat"><b>2K+</b><span>messages processed for a 40K+ member community</span></div>
+        <div class="case-stat"><b>72%</b><span>increase in workflow efficiency</span></div>
+        <div class="case-stat"><b>5+</b><span>hiring insights communicated to leadership</span></div>
+      </div>
+      <p>The report found BLNA women face barriers at several stages of the pipeline, not only at the offer.</p>
+      <table class="case-compare">
+        <thead><tr><th>Offers received</th><th>BLNA women</th><th>Non-BLNA women</th></tr></thead>
+        <tbody>
+          <tr><td>Zero</td><td class="hl">44%</td><td>33%</td></tr>
+          <tr><td>One</td><td>32%</td><td>25%</td></tr>
+          <tr><td>Two or more</td><td class="hl">24%</td><td>41%</td></tr>
+          <tr><td>Mean offers</td><td class="hl">0.9</td><td>1.4</td></tr>
+        </tbody>
+      </table>
+      <div class="case-confidential">
+        <p>The full internal hiring report is confidential. Want more insights or to learn more? <a href="mailto:neha.jatla@duke.edu">Reach out to me directly</a>.</p>
+      </div>
     `
   },
   {

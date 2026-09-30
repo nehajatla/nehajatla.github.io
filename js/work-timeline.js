@@ -83,8 +83,9 @@
 
     if (c.kind === 'project') {
       const p = c.project;
-      if (el.tagName === 'A') el.href = '#';
-      el.setAttribute('aria-label', 'Open: ' + p.title + ' (case study coming soon)');
+      if (el.tagName === 'A') el.href = '#' + p.id;
+      el.setAttribute('aria-label', 'Open: ' + p.title);
+      el.dataset.projectId = p.id;
 
       const thumb = document.createElement('div');
       thumb.className = 'tl-card-thumb' + (p.logo ? ' tl-card-thumb--logo' : '');
@@ -129,8 +130,10 @@
       el.appendChild(thumb);
       el.appendChild(caption);
 
-      // Inert for now — case studies open later (per spec).
-      el.addEventListener('click', (e) => { e.preventDefault(); });
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (window.openCaseStudy) window.openCaseStudy(p);
+      });
     } else {
       const c2 = c.def;
       if (el.tagName === 'A') { el.href = c2.link; el.target = '_blank'; el.rel = 'noopener'; }
@@ -288,10 +291,22 @@
     }
   }, { passive: false });
 
-  let dragging = false, lastPointerX = 0;
+  // setPointerCapture below redirects pointerup's target to the
+  // viewport itself (standard pointer-capture behavior), which
+  // suppresses the browser's native 'click' synthesis on whichever
+  // card was actually under the pointer — so a real drag can coexist
+  // with a real click, total movement is tracked here and a "click"
+  // under CLICK_THRESHOLD px is dispatched manually against the
+  // pointerdown target instead of relying on the (suppressed) native
+  // click event for pointer-driven interactions.
+  const CLICK_THRESHOLD = 6;
+  let dragging = false, lastPointerX = 0, downX = 0, downY = 0, downTarget = null, moved = 0;
   viewport.addEventListener('pointerdown', (e) => {
     dragging = true;
     lastPointerX = e.clientX;
+    downX = e.clientX; downY = e.clientY;
+    downTarget = e.target;
+    moved = 0;
     viewport.classList.add('is-dragging');
     viewport.setPointerCapture(e.pointerId);
   });
@@ -299,9 +314,21 @@
     if (!dragging) return;
     const dx = e.clientX - lastPointerX;
     lastPointerX = e.clientX;
+    moved = Math.max(moved, Math.hypot(e.clientX - downX, e.clientY - downY));
     window.scrollBy({ top: -dx });
   });
-  function endDrag() { dragging = false; viewport.classList.remove('is-dragging'); }
+  function endDrag(e) {
+    dragging = false;
+    viewport.classList.remove('is-dragging');
+    if (moved < CLICK_THRESHOLD && downTarget) {
+      const card = downTarget.closest ? downTarget.closest('.timeline-card--project') : null;
+      if (card) {
+        const project = PROJECTS.find((proj) => proj.id === card.dataset.projectId);
+        if (project && window.openCaseStudy) window.openCaseStudy(project);
+      }
+    }
+    downTarget = null;
+  }
   viewport.addEventListener('pointerup', endDrag);
   viewport.addEventListener('pointercancel', endDrag);
 

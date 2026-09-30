@@ -23,6 +23,11 @@
 
   if (!overlay || typeof PROJECTS === 'undefined') return;
 
+  // Exposed so work-timeline.js's card click handler can open a case
+  // study directly with the project object it already has, instead of
+  // duplicating this overlay's populate/open logic there.
+  window.openCaseStudy = open;
+
   function open(p) {
     labelEl.textContent = p.context;
     titleEl.textContent = p.title;

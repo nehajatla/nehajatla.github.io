@@ -92,7 +92,12 @@
   align-items: start;
 }
 .case-body > .case-embed,
-.case-body > h3 { grid-column: 1 / -1; }
+.case-body > h3,
+.case-body > .case-meta,
+.case-body > .case-stats,
+.case-body > .case-compare,
+.case-body > .case-steps,
+.case-body > .case-confidential { grid-column: 1 / -1; }
 .case-body h3 { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 400; color: var(--ink); margin: 48px 0 14px; }
 .case-body .case-col > h3:first-child { margin-top: 0; }
 .case-body p { margin-bottom: 20px; }
@@ -109,6 +114,40 @@
 }
 .case-body .case-embed.full-bleed iframe { border-radius: 0; }
 
+/* ── Case-study sub-components — role/timeline/team/skills row, stat
+   callouts, a comparison table, a numbered process list, and a
+   confidential-note aside. Shared across any case study's body, not
+   just RTC's. ─────────────────────────────────────────────────── */
+.case-meta { display: flex; flex-wrap: wrap; gap: 32px; margin: 8px 0 12px; }
+.case-meta > div { display: flex; flex-direction: column; gap: 6px; min-width: 140px; }
+.case-meta .case-meta-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-muted); }
+.case-meta p { color: var(--ink); margin: 0; font-size: 14px; }
+
+.case-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 8px 0 24px; }
+.case-stat { border-top: 1px solid var(--border); padding-top: 14px; }
+.case-stat b { display: block; font-family: var(--font-serif); font-weight: 400; font-size: 2.2rem; color: var(--color-30); line-height: 1.1; margin-bottom: 4px; }
+.case-stat span { font-size: 13px; color: var(--ink-muted); }
+
+.case-compare { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 32px; }
+.case-compare th, .case-compare td { text-align: left; padding: 10px 14px 10px 0; border-bottom: 1px solid var(--border); }
+.case-compare th { font-weight: 500; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); }
+.case-compare td { color: var(--ink-soft); }
+.case-compare td:first-child { color: var(--ink-muted); }
+.case-compare .hl { color: var(--color-30); font-weight: 500; }
+
+.case-steps { padding-left: 20px; display: flex; flex-direction: column; gap: 10px; margin: 8px 0 24px; }
+.case-steps li::marker { color: var(--color-30); }
+.case-steps strong { color: var(--ink); font-weight: 500; }
+
+.case-confidential {
+  border-left: 2px solid var(--color-30);
+  padding: 2px 0 2px 16px;
+  margin: 8px 0 24px;
+  font-style: italic;
+}
+.case-confidential a { color: var(--color-30); text-decoration: underline; text-underline-offset: 3px; }
+
 @media (max-width: 860px) {
   .case-body { grid-template-columns: 1fr; }
+  .case-stats { grid-template-columns: 1fr; }
 }
