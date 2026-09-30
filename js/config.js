@@ -47,23 +47,24 @@ window.SITE_CONFIG = {
         left: {
           closed: 'assets/hero/eye-closed-left.png',
           openEmpty: 'assets/hero/eye-open-empty-left.png',
-          // openEmpty is traced directly off the user's reference art
-          // (flood-filled to transparent background, pupil detected and
-          // cut out to opaque white so the canvas-drawn pupil below can
-          // take over) rather than pulled from the original vector
-          // sheet, whose pod shape didn't match the reference closely
-          // enough. Geometry below is measured from that trace.
-          pupilCenterFrac: { x: 0.6776, y: 0.5707 },
-          pupilRadiusFrac: 0.1666,
-          // The pod's own interior bounding box (largest connected
-          // near-white/near-blue region, i.e. INSIDE the stroke) as a
-          // fraction of the full crop — eyes.js clamps pupil travel to
-          // this box so it can't visually cross the outline.
-          podBoundsFrac: { left: 0.097, top: 0.2959, right: 0.9455, bottom: 0.9286 },
-          // heightAspect = the SMALLER of this eye's closed/open aspect
-          // ratios, so eyes.js's width-derived box height never
-          // letterboxes either state shorter than its full width.
-          heightAspect: 1.6837
+          // Both assets are rendered straight from the same source
+          // vector sheet (MacBook Air - 10.svg: one pod+lash group for
+          // open, one crease+lash group for closed) and the closed art
+          // is then fit (contain, centered, transparent pad) onto a
+          // canvas of the OPEN eye's exact pixel dimensions — so the
+          // two PNGs are pixel-dimension-identical and heightAspect
+          // below is shared by both states: the box never resizes or
+          // shifts position when the eye blinks.
+          pupilCenterFrac: { x: 0.6848, y: 0.5732 },
+          pupilRadiusFrac: 0.1739,
+          // Pod outline's own bounding box (excluding lashes), as a
+          // fraction of the shared crop. eyes.js inscribes an ELLIPSE
+          // in this rect and clamps pupil travel to that ellipse (not
+          // the rect itself) so it can't cross the almond-shaped
+          // outline — a rectangular clamp would let it reach the
+          // rect's corners, which sit outside the pod's pointed tips.
+          podBoundsFrac: { left: 0.0458, top: 0.2352, right: 1.0, bottom: 1.0 },
+          heightAspect: 1.7293
         },
         pupilColor: '#4B8AFF'
       },
@@ -106,8 +107,8 @@ window.SITE_CONFIG = {
       // see #hand-wrap in hero.css) and a nudge relative to the text
       // baseline. Applied as CSS custom properties at init.
       scale: 1.3,      // 1.3 = 30% bigger
-      offsetX: -22,     // px, shifts the whole hand box left
-      offsetY: 34       // px, shifts the whole hand box upward
+      offsetX: -22,     // px, shifts the whole hand box left (unchanged)
+      offsetY: 60       // px, shifts the whole hand box upward
     }
   },
 

@@ -161,35 +161,55 @@
     animating = true;
   }
 
-  // Safe pupil travel room, in px, before its drawn edge would cross
-  // the eye outline — derived from the painted rect (open-state art)
-  // and pupil geometry, not a fixed guess. This eye is short and wide,
-  // so its vertical room is only a few px even though its horizontal
-  // room is generous.
-  function marginsFor(imgEl) {
+  // The pod outline is an almond/ellipse-like shape, not a rectangle —
+  // clamping the pupil's offset independently on each axis (a
+  // rectangular clamp) would let it reach the corners of podBoundsFrac,
+  // which sit outside the pod's actual pointed tips. Instead we
+  // inscribe an ellipse in that rect (shrunk by the pupil's own radius
+  // + a small pad, so its EDGE stays inside, not just its center) and
+  // clamp the pupil's absolute position to that ellipse.
+  function ellipseFor(imgEl) {
     const painted = getContainedRect(imgEl);
-    const center = pupilCenterOf(imgEl);
     const eyeCfg = cfg_eye(imgEl);
     const r = painted.width * eyeCfg.pupilRadiusFrac;
     const pad = 1.5;
-    // Clamp to the POD OUTLINE's own bounds, not the full painted rect
-    // — the crop includes lash strokes above/beside the pod, so the
-    // image's own edges sit well outside the pod in several directions
-    // and clamping to them would let the pupil visually cross the
-    // drawn outline before reaching the image edge.
     const pb = eyeCfg.podBoundsFrac;
     const podLeft = painted.left + painted.width * pb.left;
     const podRight = painted.left + painted.width * pb.right;
     const podTop = painted.top + painted.height * pb.top;
     const podBottom = painted.top + painted.height * pb.bottom;
-    const marginX = Math.max(0, Math.min(center.x - podLeft, podRight - center.x) - r - pad);
-    const marginY = Math.max(0, Math.min(center.y - podTop, podBottom - center.y) - r - pad);
-    return { marginX, marginY };
+    return {
+      cx: (podLeft + podRight) / 2,
+      cy: (podTop + podBottom) / 2,
+      rx: Math.max(0, (podRight - podLeft) / 2 - r - pad),
+      ry: Math.max(0, (podBottom - podTop) / 2 - r - pad)
+    };
+  }
+
+  // Clamps a desired pupil OFFSET (relative to the pupil's own resting
+  // center) so the pupil's resulting absolute position stays inside
+  // the safe ellipse above — scaling the offset back radially along
+  // its own direction when it would land outside, rather than
+  // clamping x/y independently, so the boundary itself reads as a
+  // smooth oval, not a diamond.
+  function clampOffsetToEllipse(imgEl, offsetX, offsetY) {
+    const ell = ellipseFor(imgEl);
+    const center = pupilCenterOf(imgEl);
+    const relX = (center.x + offsetX) - ell.cx;
+    const relY = (center.y + offsetY) - ell.cy;
+    if (ell.rx <= 0 || ell.ry <= 0) return { x: 0, y: 0 };
+    const norm = (relX * relX) / (ell.rx * ell.rx) + (relY * relY) / (ell.ry * ell.ry);
+    if (norm <= 1) return { x: offsetX, y: offsetY };
+    const scale = 1 / Math.sqrt(norm);
+    return {
+      x: (ell.cx + relX * scale) - center.x,
+      y: (ell.cy + relY * scale) - center.y
+    };
   }
 
   // Gaze DIRECTION from the eye's own center to the cursor, scaled by
   // distance up to a generous cap, then clamped to this eye's own safe
-  // margins (above) so the pupil tracks the cursor without ever
+  // ellipse (above) so the pupil tracks the cursor without ever
   // visually crossing the drawn outline.
   function updatePupilTargets(clientX, clientY) {
     const wrapBox = wrap.getBoundingClientRect();
@@ -202,10 +222,7 @@
     const dirX = dist === 0 ? 0 : dx / dist;
     const dirY = dist === 0 ? 0 : dy / dist;
     const rawX = dirX * travel, rawY = dirY * travel;
-    pupilTarget = imgs.map((imgEl) => {
-      const { marginX, marginY } = marginsFor(imgEl);
-      return { x: clamp(rawX, -marginX, marginX), y: clamp(rawY, -marginY, marginY) };
-    });
+    pupilTarget = imgs.map((imgEl) => clampOffsetToEllipse(imgEl, rawX, rawY));
   }
 
   if (REDUCED_MOTION) {
