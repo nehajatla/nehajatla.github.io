@@ -53,13 +53,16 @@
 }
 
 /* The oval label pill — hidden/collapsed by default, scales up from
-   the cursor's own center (not a fixed corner) so it reads as the dot
-   itself stretching into an oval, not a separate tooltip appearing. */
+   a point above the cursor (not centered on it) so it reads as the
+   dot stretching into an oval without ever sitting directly on top of
+   the hovered content — on the hero's tiny eye/hand glyphs a
+   cursor-centered pill was large enough to fully cover the artwork it
+   was labeling (eyelashes included). */
 .cursor-dot-pill {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) scale(0.5);
+  transform: translate(-50%, calc(-50% - 30px)) scale(0.5);
   display: inline-flex;
   align-items: center;
   padding: 7px 16px;
@@ -77,7 +80,7 @@
 }
 .cursor-dot.is-labeled .cursor-dot-pill {
   opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
+  transform: translate(-50%, calc(-50% - 30px)) scale(1);
 }
 
 /* Hidden entirely on touch/coarse pointers and under reduced motion —
