@@ -108,7 +108,7 @@ window.SITE_CONFIG = {
       // baseline. Applied as CSS custom properties at init.
       scale: 1.3,      // 1.3 = 30% bigger
       offsetX: -22,     // px, shifts the whole hand box left (unchanged)
-      offsetY: 60       // px, shifts the whole hand box upward
+      offsetY: 80       // px, shifts the whole hand box upward
     }
   },
 
