@@ -24,6 +24,12 @@
 
   img.src = CONFIG.assets.hand.rest;
   wrap.style.overflow = 'visible';
+  // Size/position tuning from config.js — arm and palm scale together
+  // (the whole box grows uniformly), so proportions and the wrist
+  // pivot (computed below from the box's actual rendered size) stay
+  // correct at any scale.
+  document.documentElement.style.setProperty('--hand-scale', cfg.scale != null ? cfg.scale : 1);
+  document.documentElement.style.setProperty('--hand-offset-y', (cfg.offsetY || 0) + 'px');
 
   function easeInOutSine(t) { return -(Math.cos(Math.PI * t) - 1) / 2; }
   function lerp(a, b, t) { return a + (b - a) * t; }

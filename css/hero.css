@@ -5,6 +5,15 @@
    hero-prototype.html if it comes back later); see js/eyes.js and
    js/hand.js for the eye/hand interaction logic this markup drives.
    ================================================================ */
+/* Wraps the hero AND the work timeline section together purely for
+   layout grouping — no background of its own. The single shared
+   .bg-field canvas (base.css, a fixed sibling of this wrapper) is the
+   only thing between body's solid color and the content, so it reads
+   as ONE continuous grain field across both hero and timeline with no
+   seam at the boundary. An opaque background here would sit in the
+   normal stacking order (z-index:auto) above the canvas's z-index:-1
+   and hide it entirely — that was the earlier bug. */
+
 .home-hero {
   position: relative;
   z-index: 0;
@@ -14,8 +23,14 @@
   align-items: flex-start;
   justify-content: center;
   padding: calc(var(--nav-h) + 4vh) 8vw 6vh;
-  background: var(--color-60);
+  background: transparent;
 }
+
+/* On index.html only (work.html keeps its own opaque section — it has
+   no shared field to show through) — the timeline section's own solid
+   fill is turned off so .hero-work-field's single spanning canvas
+   shows through it too, continuous with the hero above. */
+.hero-work-field .work-timeline-section { background: transparent; }
 
 .hero {
   max-width: 1100px;
@@ -79,8 +94,17 @@
 
 /* The hand sits larger than the eyes and trails a little below the
    baseline — sized so its own descent fits inside the gap between
-   lines (see .hero-line's margin-top) instead of overlapping line 3. */
-#hand-wrap { width: 1.7em; height: 1.7em; vertical-align: -0.85em; }
+   lines (see .hero-line's margin-top) instead of overlapping line 3.
+   --hand-scale / --hand-offset-y are set at runtime by js/hand.js from
+   CONFIG.hand.scale / CONFIG.hand.offsetY (config.js) — arm and palm
+   scale together since this resizes the whole box, and the wrist
+   pivot (js/hand.js setPivot) recomputes from the box's actual
+   rendered size each time, so the pivot point stays correct. */
+#hand-wrap {
+  width: calc(1.7em * var(--hand-scale, 1));
+  height: calc(1.7em * var(--hand-scale, 1));
+  vertical-align: calc(-0.85em - var(--hand-offset-y, 0px));
+}
 .glyph-img:focus-visible { outline: 2px solid var(--color-10); outline-offset: 2px; border-radius: 3px; }
 /* "eye" / "hand" labels are now shown by the custom cursor itself
    (morphs into an oval pill — see cursor.css/cursor.js and this

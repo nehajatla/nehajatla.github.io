@@ -1,6 +1,11 @@
 /* ================================================================
    nav.css — shared site navigation, identical on every page.
    ================================================================ */
+/* Always fully transparent — no fill, no scroll-triggered fade/blur,
+   no border/shadow — so the grain background shows through behind it
+   and the logo/links are never dimmed or covered. nav.js still toggles
+   .is-scrolled for other purposes, but nothing here reads that class
+   anymore. */
 .nav {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -11,18 +16,6 @@
   align-items: center;
   padding: 0 var(--pad-x);
   background: transparent;
-  border-bottom: 0.5px solid transparent;
-  transition: background 0.3s var(--ease), border-color 0.3s var(--ease), backdrop-filter 0.3s var(--ease);
-}
-
-/* Translucent + blurred once the page has scrolled (nav.js toggles
-   this class) — never covers hero text since the hero itself sits
-   below the nav's own height. */
-.nav.is-scrolled {
-  background: rgba(250, 248, 245, 0.82);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom-color: var(--border);
 }
 
 /* ── Logo — large inline lotus mark, no visible wordmark (the link's

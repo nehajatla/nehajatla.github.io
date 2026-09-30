@@ -1,11 +1,8 @@
 /* ================================================================
    home.css — home page only. The old 3-card "Selected Work" preview
-   (linking out to a separate work.html) has been replaced by the
-   REAL work timeline embedded directly below the hero — see
-   .home-work-header here and .work-timeline-section in
-   css/work-timeline.css, both shared markup with work.html itself.
+   (linking out to a separate work.html) has been replaced by the REAL
+   work timeline embedded directly below the hero — see
+   .work-timeline-section in css/work-timeline.css (shared markup with
+   work.html itself). No separate "Selected Work" heading here — the
+   timeline's own pinned year display already signals the section.
    ================================================================ */
-.home-work-header {
-  padding: 96px var(--pad-x) 0;
-  background: var(--color-60);
-}

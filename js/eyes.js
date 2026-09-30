@@ -38,25 +38,32 @@
   let rafId = null;
   let touchTimer = null;
 
-  // Each eye box is a fixed pixel width (its own boxAspect × the shared
-  // whole-pixel height) so neither eye ever renders a fraction of a
-  // pixel larger/blurrier than intended, and widths never reflow when
-  // the closed/open frame swaps (each box already fits its widest state).
+  // Both eyes get the SAME WIDTH (not the same height) — see the long
+  // comment on heightAspect in config.js for why: with genuinely
+  // different drawn shapes, matching outer-box height (or even outer
+  // box area) still let object-fit:contain fit one eye's art tighter
+  // than the other's, so the DRAWN eyes ended up visibly different
+  // sizes despite equal boxes. Matching width, with each eye's own
+  // height derived from width/heightAspect (its own smaller aspect,
+  // so contain is always width-constrained in both states), keeps the
+  // actual drawn eye — not just its box — the same size on both sides.
   function sizeEyeBoxes() {
-    wrap.style.height = '';
-    const heightPx = Math.round(wrap.getBoundingClientRect().height);
-    wrap.style.height = heightPx + 'px';
-
+    wrap.style.width = '';
+    const widthPx = Math.round(wrap.getBoundingClientRect().width || parseFloat(getComputedStyle(wrap).width));
     const gapPx = Math.round(parseFloat(getComputedStyle(wrap).columnGap || getComputedStyle(wrap).gap || '0'));
-    let totalW = 0;
+    const perEyeW = Math.round((widthPx - gapPx * (eyeBoxes.length - 1)) / eyeBoxes.length);
+
+    let maxH = 0;
     eyeBoxes.forEach((el, i) => {
-      const aspect = CONFIG.assets.eye[imgs[i].dataset.eye].boxAspect;
-      const w = Math.round(heightPx * aspect);
-      el.style.flex = '0 0 ' + w + 'px';
-      el.style.width = w + 'px';
-      totalW += w;
+      const aspect = CONFIG.assets.eye[imgs[i].dataset.eye].heightAspect;
+      const h = Math.round(perEyeW / aspect);
+      el.style.flex = '0 0 ' + perEyeW + 'px';
+      el.style.width = perEyeW + 'px';
+      el.style.height = h + 'px';
+      maxH = Math.max(maxH, h);
     });
-    wrap.style.width = (totalW + gapPx * (eyeBoxes.length - 1)) + 'px';
+    wrap.style.width = (perEyeW * eyeBoxes.length + gapPx * (eyeBoxes.length - 1)) + 'px';
+    wrap.style.height = maxH + 'px';
   }
 
   function getContainedRect(imgEl) {

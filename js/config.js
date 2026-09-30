@@ -46,19 +46,30 @@ window.SITE_CONFIG = {
         left: {
           closed: 'assets/hero/eye-closed-left.png',
           openEmpty: 'assets/hero/eye-open-empty-left.png',
-          pupilCenterFrac: { x: 0.668, y: 0.561 },
-          pupilRadiusFrac: 0.158,
-          // Fixed box width (as a multiple of shared height) sized to the
-          // WIDER of the closed/open crops' own aspect ratios, so the box
-          // never has to reflow when the frame swaps between states.
-          boxAspect: 2.378
+          // Pupil geometry read directly off the source vector's own
+          // numbers (ellipse cx/cy/rx against the crop box), not
+          // detected from a raster — exact, not approximated.
+          pupilCenterFrac: { x: 0.6628, y: 0.537 },
+          pupilRadiusFrac: 0.1717,
+          // heightAspect = the SMALLER of this eye's closed/open aspect
+          // ratios (2.378). eyes.js sizes both eyes to the SAME WIDTH
+          // and derives each one's own box height as width/heightAspect
+          // — using the smaller aspect guarantees object-fit:contain
+          // is always width-constrained (fills the box's full width) in
+          // BOTH states, so the drawn eye itself is the same visual
+          // width as its sibling, not just the outer box. (Equal outer
+          // boxes alone weren't enough: left's closed art nearly fills
+          // its box at 2.378, but right's closed art — 1.369, a
+          // genuinely more compact drawn shape — only filled ~55% of
+          // an equally-sized box, reading as visibly smaller.)
+          heightAspect: 2.378
         },
         right: {
           closed: 'assets/hero/eye-closed-right.png',
           openEmpty: 'assets/hero/eye-open-empty-right.png',
-          pupilCenterFrac: { x: 0.634, y: 0.512 },
-          pupilRadiusFrac: 0.162,
-          boxAspect: 1.577
+          pupilCenterFrac: { x: 0.6354, y: 0.4035 },
+          pupilRadiusFrac: 0.1747,
+          heightAspect: 1.369
         },
         pupilColor: '#4B8AFF'
       },
@@ -89,7 +100,12 @@ window.SITE_CONFIG = {
       pauseDuration: 350,    // ms held at rest between cycles
       returnDuration: 350,   // ms to ease back to rest on leave
       pivotFrac: { x: 0.50, y: 0.60 }, // wrist pivot, fraction of hand-rest.png
-      touchCycles: 2
+      touchCycles: 2,
+      // Overall size (arm + palm scale together, box grows uniformly —
+      // see #hand-wrap in hero.css) and an upward nudge relative to the
+      // text baseline. Applied as CSS custom properties at init.
+      scale: 1.3,      // 1.3 = 30% bigger
+      offsetY: 12       // px, shifts the whole hand box upward
     }
   },
 

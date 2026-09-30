@@ -36,11 +36,12 @@
     </ul>
   </nav>
 
-  <main class="home-hero">
-    <div class="bg-field" aria-hidden="true">
-      <canvas class="bg-grain-flow"></canvas>
-    </div>
+  <div class="bg-field bg-field--fixed" aria-hidden="true">
+    <canvas class="bg-grain-flow"></canvas>
+  </div>
 
+  <div class="hero-work-field">
+  <main class="home-hero">
     <div class="hero">
       <p class="hero-line">hi, i'm neha.</p>
       <p class="hero-line">
@@ -60,17 +61,8 @@
     </div>
   </main>
 
-  <header class="home-work-header reveal">
-    <h1 class="work-page-heading">Selected Work</h1>
-    <p class="work-page-sub">A collection of product, brand, and design work — from enterprise AI platforms to early-stage startup identity systems.</p>
-  </header>
-
   <section class="work-timeline-section" id="work-timeline-section" aria-label="Work timeline, 2025 to 2027">
     <div class="work-timeline-sticky" id="work-timeline-sticky">
-      <div class="bg-field" aria-hidden="true">
-        <canvas class="bg-grain-flow"></canvas>
-      </div>
-
       <div class="timeline-year" aria-hidden="true">
         <span class="timeline-year-static">202</span><span class="timeline-year-window" id="timelineYearWindow"><span class="timeline-year-idle-wrap" id="timelineYearIdleWrap"><span class="timeline-year-reel" id="timelineYearReel"></span></span></span>
       </div>
@@ -82,6 +74,7 @@
       </div>
     </div>
   </section>
+  </div>
 
   <div class="case-overlay" id="case-overlay" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="case-topbar">

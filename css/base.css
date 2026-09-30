@@ -41,6 +41,7 @@ input, textarea, select { cursor: auto; }
   display: block;
 }
 
+
 /* ── SCROLL REVEALS — fade/slide-up, staggered via inline transition
    delays set in scroll-reveals.js. ─────────────────────────────── */
 .reveal {
