@@ -203,6 +203,7 @@
 .timeline-card--project:hover .tl-card-thumb-video { transform: scale(1.04); }
 .tl-card-thumb--logo { background: #fff !important; display: flex; align-items: center; justify-content: center; }
 .tl-card-thumb--logo img { width: 42%; height: 42%; object-fit: contain; }
+.tl-card-thumb--contain img { object-fit: contain; }
 .tl-card-thumb-placeholder { position: absolute; inset: 0; }
 
 .tl-card-caption { min-height: var(--caption-h); padding: 18px 2px 0; box-sizing: border-box; }

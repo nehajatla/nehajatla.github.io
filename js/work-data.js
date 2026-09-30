@@ -23,6 +23,7 @@
    wide     true = landscape 16:9 aspect ratio
    big      true = larger square thumbnail
    logo     true = image is a brand mark, shown small + contained
+   contain  true = show the whole image (no crop) on the color bg
    tags     discipline tags shown in the case-study header
    body     HTML for the full case study body (work.html only)
    ================================================================ */
@@ -198,8 +199,9 @@ const PROJECTS = [
     title:   'Duke CS+',
     role:    'Undergraduate Research Assistant',
     desc:    'A natural-language interface for electronic health records, built through Duke\'s CS+ summer research program.',
-    color:   '#B7D3C4',
-    image:   '',
+    color:   '#001A57',
+    image:   'work/duke-cs-plus/duke-cs-logo.jpg',
+    contain: true,
     tall:    false,
     tags:    ['Research', 'Product Design', 'LLM'],
     body: `

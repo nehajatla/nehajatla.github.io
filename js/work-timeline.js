@@ -88,7 +88,7 @@
       el.dataset.projectId = p.id;
 
       const thumb = document.createElement('div');
-      thumb.className = 'tl-card-thumb' + (p.logo ? ' tl-card-thumb--logo' : '');
+      thumb.className = 'tl-card-thumb' + (p.logo ? ' tl-card-thumb--logo' : '') + (p.contain ? ' tl-card-thumb--contain' : '');
       thumb.style.background = p.color;
 
       if (p.video) {
