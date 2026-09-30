@@ -152,12 +152,12 @@ const PROJECTS = [
       </ol>
 
       <h3>Read the report</h3>
-      <p>A short preview — the cover and two pages from the 80-page study.</p>
+      <p>A short preview: the cover and two pages from the 80-page study.</p>
       <div class="report-book" tabindex="0" aria-label="Report preview, use the arrows or left/right keys to flip pages">
         <div class="report-book-frame">
-          <img class="report-book-page is-active" src="work/rtc/cover.png" alt="Report cover: Understanding Recruiting Experiences and Outcomes for BLNA Undergraduate Women in Tech, Reboot Representation x Rewriting the Code">
-          <img class="report-book-page" src="work/rtc/page1.png" alt="Report page: application volume by top computer science program attendance">
-          <img class="report-book-page" src="work/rtc/page2.png" alt="Report page: offer count by graduation year">
+          <img class="report-book-page is-active" src="work/rtc/rtc-report-p1.png" alt="Report cover: Understanding Recruiting Experiences and Outcomes for BLNA Undergraduate Women in Tech, Reboot Representation x Rewriting the Code">
+          <img class="report-book-page" src="work/rtc/rtc-report-p17.png" alt="Report page: offer count by graduation year">
+          <img class="report-book-page" src="work/rtc/rtc-report-p21.png" alt="Report page: offer count by top computer science program attendance">
         </div>
         <div class="report-book-controls">
           <button class="report-book-prev" type="button" aria-label="Previous page">‹</button>
