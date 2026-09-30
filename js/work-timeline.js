@@ -33,15 +33,10 @@
     readingLineFraction: 0.28         // which card is "active" — fraction of viewport width from the left edge
   };
 
-  /* ── Real project order + year, as given directly by the user. ── */
-  const PROJECT_ORDER = [
-    { id: 'rtc',            year: 2025 },
-    { id: 'duke-ai-health', year: 2025 },
-    { id: 'cognition',      year: 2025 },
-    { id: 'duke-eatz',      year: 2025 },
-    { id: 'metlife',        year: 2026 },
-    { id: 'legends',        year: 2026 }
-  ];
+  /* Real project order + year — single source of truth lives in
+     work-data.js (PROJECT_TIMELINE_ORDER), shared with the home
+     page's preview so both always show the same real order. */
+  const PROJECT_ORDER = (typeof PROJECT_TIMELINE_ORDER !== 'undefined') ? PROJECT_TIMELINE_ORDER : [];
 
   const LOOKAHEAD_CARDS = [
     {

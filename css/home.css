@@ -56,20 +56,22 @@
   overflow: hidden;
   margin-bottom: 16px;
 }
-.preview-card-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease); }
-.preview-card:hover .preview-card-thumb img { transform: scale(1.04); }
-.preview-card-context {
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
-  margin-bottom: 6px;
-}
+.preview-card-thumb img,
+.preview-card-thumb video { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease); display: block; }
+.preview-card:hover .preview-card-thumb img,
+.preview-card:hover .preview-card-thumb video { transform: scale(1.04); }
+.preview-card-thumb--logo { display: flex; align-items: center; justify-content: center; }
+.preview-card-thumb--logo img { width: 46%; height: 46%; object-fit: contain; }
 .preview-card-title {
   font-family: var(--font-serif);
   font-size: 1.3rem;
   color: var(--ink);
   transition: opacity 0.2s;
+  margin-bottom: 2px;
+}
+.preview-card-role {
+  font-size: 12px;
+  color: var(--ink-muted);
 }
 .preview-card:hover .preview-card-title { opacity: 0.7; }
 

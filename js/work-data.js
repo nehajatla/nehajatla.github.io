@@ -155,3 +155,21 @@ const PROJECTS = [
     `
   }
 ];
+
+/* ================================================================
+   PROJECT_TIMELINE_ORDER — single source of truth for real
+   chronological order + year, as given directly by the user (not
+   re-derived from `context` strings, which aren't all month-precise).
+   Used by both work-timeline.js (the full work.html timeline) and
+   home-preview.js (the home page's "Selected Work" teaser), so the
+   home page always shows the same real projects, in the same real
+   order, as the actual work page.
+   ================================================================ */
+const PROJECT_TIMELINE_ORDER = [
+  { id: 'rtc',            year: 2025 },
+  { id: 'duke-ai-health', year: 2025 },
+  { id: 'cognition',      year: 2025 },
+  { id: 'duke-eatz',      year: 2025 },
+  { id: 'metlife',        year: 2026 },
+  { id: 'legends',        year: 2026 }
+];
