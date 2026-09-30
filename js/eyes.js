@@ -18,7 +18,31 @@
 
   const svg = document.getElementById('eye-svg');
   const pupil = document.getElementById('eye-pupil');
+  const eyeContent = document.getElementById('eye-content');
   if (!svg || !pupil) return;
+
+  // Auto-blink: a quick flat-scale-and-back on #eye-content, at a
+  // randomized 5-6s interval (fixed timing reads as mechanical; a
+  // little jitter reads as a natural blink). Web Animations API rather
+  // than the rAF tween pattern used elsewhere here, since it's a
+  // one-shot effect with no per-frame state to track.
+  if (eyeContent && eyeContent.animate && !REDUCED_MOTION) {
+    function scheduleBlink() {
+      const delay = 5000 + Math.random() * 1000;
+      setTimeout(() => {
+        eyeContent.animate(
+          [
+            { transform: 'scaleY(1)' },
+            { transform: 'scaleY(0.05)', offset: 0.45 },
+            { transform: 'scaleY(1)' }
+          ],
+          { duration: 220, easing: 'ease-in-out' }
+        );
+        scheduleBlink();
+      }, delay);
+    }
+    scheduleBlink();
+  }
 
   // Resting position — exactly the source vector's own pupil cx/cy.
   const REST_X = parseFloat(pupil.getAttribute('cx'));

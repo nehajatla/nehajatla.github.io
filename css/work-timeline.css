@@ -108,11 +108,18 @@
   position: relative;
   flex: 1;
   overflow: hidden;
-  cursor: grab;
   touch-action: pan-y;
 }
-.timeline-viewport:active,
-.timeline-viewport.is-dragging { cursor: grabbing; }
+/* grab/grabbing only where there's no custom cursor to show it instead
+   (touch, reduced motion) — on fine-pointer devices cursor.js's dot
+   growing on hover already communicates "draggable", and letting this
+   win the cascade over cursor.css's cursor:none was showing the native
+   arrow/grab hand alongside the dot. */
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .timeline-viewport { cursor: grab; }
+  .timeline-viewport:active,
+  .timeline-viewport.is-dragging { cursor: grabbing; }
+}
 .timeline-viewport:focus-visible { outline: 2px solid var(--color-10); outline-offset: -4px; }
 
 .timeline-track {
@@ -168,7 +175,9 @@
   transition: transform 0.3s var(--ease);
 }
 
-.timeline-card--project { cursor: pointer; }
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .timeline-card--project { cursor: pointer; }
+}
 .timeline-card--project:hover,
 .timeline-card--project:focus-visible,
 .timeline-card--lookahead:hover,

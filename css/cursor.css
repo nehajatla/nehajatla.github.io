@@ -6,7 +6,12 @@
    ================================================================ */
 @media (hover: hover) and (pointer: fine) {
   body { cursor: none; }
-  a, button, [role="button"], .word, .glyph-img, input[type="checkbox"] { cursor: none; }
+  /* Mirrors js/config.js's cursor.hoverSelector exactly — anything the
+     dot grows for must also lose its native cursor here, or the arrow
+     (or a more specific cursor like grab/pointer from another
+     stylesheet loaded later) shows alongside the dot instead of it. */
+  a, button, [role="button"], .word, .glyph-img, input[type="checkbox"],
+  .work-card, .preview-card, .timeline-card, .timeline-viewport, [tabindex] { cursor: none; }
 }
 
 /* Position (translate3d + a constant translate(-50%,-50%), set every
@@ -37,10 +42,12 @@
   transition: transform 0.2s var(--ease), opacity 0.2s var(--ease);
 }
 
-/* Grow + go translucent while hovering a plain interactive element. */
+/* A LITTLE bigger (not a dramatic grow-and-fade) while hovering a
+   plain interactive element — stays solid black, just large enough to
+   read as a state change. */
 .cursor-dot.is-hovering .cursor-dot-inner {
-  transform: scale(1);
-  opacity: 0.65;
+  transform: scale(0.593); /* 16px / 27px base size */
+  opacity: 1;
 }
 /* Brief shrink on mousedown. */
 .cursor-dot.is-pressed .cursor-dot-inner {
