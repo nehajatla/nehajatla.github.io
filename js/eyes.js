@@ -125,6 +125,7 @@
     });
   }
 
+  let lastFrameTime = null;
   function frame(now) {
     rafId = requestAnimationFrame(frame);
     if (animating) {
@@ -133,11 +134,19 @@
       setFrame(openness);
       if (t >= 1) animating = false;
     }
-    // Same ease for every pupil, applied to the same shared target, so
-    // they can never drift out of sync with each other.
+    // Frame-rate-independent smoothing (same fix as cursor.js's own
+    // frame loop, for the same reason): a plain `x += (target-x)*ease`
+    // looks jerky whenever the frame interval varies, because the same
+    // per-frame factor then represents a different amount of real
+    // time. Scaling the factor by elapsed time keeps pupil motion at a
+    // consistent visual speed regardless of frame pacing.
+    if (lastFrameTime === null) lastFrameTime = now;
+    const dt = Math.min((now - lastFrameTime) / 1000, 0.1);
+    lastFrameTime = now;
+    const factor = 1 - Math.pow(1 - cfg.pupilEase, dt * 60);
     pupilCur.forEach((p, i) => {
-      p.x += (pupilTarget[i].x - p.x) * cfg.pupilEase;
-      p.y += (pupilTarget[i].y - p.y) * cfg.pupilEase;
+      p.x += (pupilTarget[i].x - p.x) * factor;
+      p.y += (pupilTarget[i].y - p.y) * factor;
     });
     drawPupils();
   }

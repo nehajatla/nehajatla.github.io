@@ -94,14 +94,18 @@
 /* The hand sits larger than the eyes and trails a little below the
    baseline — sized so its own descent fits inside the gap between
    lines (see .hero-line's margin-top) instead of overlapping line 3.
-   --hand-scale / --hand-offset-y are set at runtime by js/hand.js from
-   CONFIG.hand.scale / CONFIG.hand.offsetY (config.js) — arm and palm
-   scale together since this resizes the whole box, and the wrist
-   pivot (js/hand.js setPivot) recomputes from the box's actual
-   rendered size each time, so the pivot point stays correct. */
+   --hand-scale / --hand-offset-x / --hand-offset-y are set at runtime
+   by js/hand.js from CONFIG.hand.scale/offsetX/offsetY (config.js) —
+   arm and palm scale together since this resizes the whole box, and
+   the wrist pivot (js/hand.js setPivot) recomputes from the box's
+   actual rendered size each time, so the pivot point stays correct.
+   The x/y nudge is a plain visual offset (left + vertical-align, not a
+   transform) so it doesn't disturb the inline flow of the text/period
+   after it. */
 #hand-wrap {
   width: calc(1.7em * var(--hand-scale, 1));
   height: calc(1.7em * var(--hand-scale, 1));
+  left: var(--hand-offset-x, 0px);
   vertical-align: calc(-0.85em - var(--hand-offset-y, 0px));
 }
 .glyph-img:focus-visible { outline: 2px solid var(--color-10); outline-offset: 2px; border-radius: 3px; }

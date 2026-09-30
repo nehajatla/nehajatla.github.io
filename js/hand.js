@@ -29,6 +29,7 @@
   // pivot (computed below from the box's actual rendered size) stay
   // correct at any scale.
   document.documentElement.style.setProperty('--hand-scale', cfg.scale != null ? cfg.scale : 1);
+  document.documentElement.style.setProperty('--hand-offset-x', (cfg.offsetX || 0) + 'px');
   document.documentElement.style.setProperty('--hand-offset-y', (cfg.offsetY || 0) + 'px');
 
   function easeInOutSine(t) { return -(Math.cos(Math.PI * t) - 1) / 2; }

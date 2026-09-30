@@ -103,10 +103,11 @@ window.SITE_CONFIG = {
       pivotFrac: { x: 0.50, y: 0.60 }, // wrist pivot, fraction of hand-rest.png
       touchCycles: 2,
       // Overall size (arm + palm scale together, box grows uniformly —
-      // see #hand-wrap in hero.css) and an upward nudge relative to the
-      // text baseline. Applied as CSS custom properties at init.
+      // see #hand-wrap in hero.css) and a nudge relative to the text
+      // baseline. Applied as CSS custom properties at init.
       scale: 1.3,      // 1.3 = 30% bigger
-      offsetY: 24       // px, shifts the whole hand box upward
+      offsetX: -22,     // px, shifts the whole hand box left
+      offsetY: 34       // px, shifts the whole hand box upward
     }
   },
 
