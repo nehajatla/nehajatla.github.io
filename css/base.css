@@ -1,0 +1,92 @@
+/* ================================================================
+   base.css — reset, base typography, ambient background, scroll
+   reveals. Shared by every page.
+   ================================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--color-60);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-weight: 300;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+img { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; border: none; background: none; }
+
+/* Native cursor stays put on touch/coarse pointers and reduced-motion;
+   custom cursor (cursor.css) takes over otherwise via cursor:none on
+   fine-pointer devices only — see cursor.css. */
+input, textarea, select { cursor: auto; }
+
+/* ── AMBIENT BACKGROUND — a WebGL grainy drifting circle of pastel
+   static (see js/bg-grain-flow.js), rendered into a canvas sized to
+   fill .bg-field. ─────────────────────────────────────────────── */
+.bg-field {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.bg-field.bg-field--fixed { position: fixed; }
+.bg-field .bg-grain-flow {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ── SCROLL REVEALS — fade/slide-up, staggered via inline transition
+   delays set in scroll-reveals.js. ─────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
+}
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* ── Visible focus states everywhere ─────────────────────────────── */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-10);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ── View transitions — short crossfade; nav/logo stay stable ─────
+   Cross-document opt-in (multi-page site, no client router): browsers
+   that support it crossfade same-origin navigations automatically;
+   others just navigate instantly, which is the required fallback. */
+@view-transition {
+  navigation: auto;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.28s;
+  animation-timing-function: var(--ease);
+}
+::view-transition-old(site-nav),
+::view-transition-new(site-nav) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) { animation: none !important; }
+}

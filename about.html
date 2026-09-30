@@ -1,228 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neha — About</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg?v=3">
-    <link rel="stylesheet" href="styles.css?v=24">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — Neha Jatla</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=5">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/nav.css">
+  <link rel="stylesheet" href="css/cursor.css">
+  <link rel="stylesheet" href="css/about.css">
 </head>
-<body>
+<body data-page="about">
 
-    <nav class="nav-container">
-        <a href="index.html" class="nav-logo">Neha Jatla</a>
-        <div class="nav-links">
-            <a href="index.html#work">Work</a>
-            <a href="playground.html">Playground</a>
-            <a href="about.html" class="active">About</a>
+  <nav class="nav" aria-label="Primary">
+    <a href="index.html" class="nav-logo" aria-label="Neha Jatla — home">
+      <svg class="nav-logo-mark" viewBox="339 99 600 600" aria-hidden="true">
+        <path class="petal" d="M729.277 404.97C730.986 309.546 638.202 178.532 638.202 178.532C638.202 178.532 550.7 310.051 550.7 404.97C550.7 561.278 638.202 620.162 638.202 620.162C638.202 620.162 726.477 561.278 729.277 404.97Z" fill="#FFE99B"/>
+        <path class="petal" d="M889.842 423.978C911.247 362.207 900.74 302.303 900.74 302.303C900.74 302.303 704.137 328.314 645.915 496.328C630.291 541.417 635.016 618.004 635.016 618.004C635.016 618.004 831.621 591.993 889.842 423.978Z" fill="#4B8AFF" fill-opacity="0.78"/>
+        <path class="petal" d="M626.642 496.328C648.047 558.1 637.54 618.004 637.54 618.004C637.54 618.004 440.937 591.993 382.715 423.978C367.091 378.89 371.816 302.303 371.816 302.303C371.816 302.303 568.421 328.313 626.642 496.328Z" fill="#4B8AFF" fill-opacity="0.78"/>
+        <path class="petal" d="M461.4 353.449C461.4 288.077 490.943 234.91 490.943 234.91C490.943 234.91 668.2 323.814 668.2 501.623C668.2 549.34 638.657 620.162 638.657 620.162C638.657 620.162 461.399 531.258 461.4 353.449Z" fill="#EFABFF" fill-opacity="0.77"/>
+        <path class="petal" d="M813.9 353.449C813.9 288.077 784.357 234.91 784.357 234.91C784.357 234.91 607.1 323.814 607.1 501.623C607.1 549.34 636.643 620.162 636.643 620.162C636.643 620.162 813.901 531.258 813.9 353.449Z" fill="#EFABFF" fill-opacity="0.77"/>
+      </svg>
+    </a>
+    <ul class="nav-links">
+      <li><a href="work.html" class="nav-link" data-page="work"><span class="nav-dot" aria-hidden="true"></span><span class="nav-label">Work</span></a></li>
+      <li><a href="play.html" class="nav-link" data-page="play"><span class="nav-dot" aria-hidden="true"></span><span class="nav-label">Play</span></a></li>
+      <li><a href="about.html" class="nav-link" data-page="about"><span class="nav-dot" aria-hidden="true"></span><span class="nav-label">About</span></a></li>
+    </ul>
+  </nav>
+
+  <main class="about-main">
+    <div class="bg-field" aria-hidden="true">
+      <canvas class="bg-grain-flow"></canvas>
+    </div>
+
+    <div class="face-flip reveal" id="face-flip" aria-hidden="true"></div>
+
+    <div class="about-info">
+      <h1 class="about-title reveal">Hi there, I'm Neha.</h1>
+
+      <p class="about-intro reveal">I'm a designer, engineer, and dancer who loves turning messy problems into clean, human-centered products, and I'm happiest where tech, storytelling, and visual craft meet.</p>
+
+      <p class="about-outside-label reveal">Outside of design I'm:</p>
+      <ul class="about-list reveal">
+        <li>Dancing Bollywood until my feet hurt</li>
+        <li>Cafe hopping and ranking lattes on Beli</li>
+        <li>Gouache painting and Prismacolor doodling</li>
+      </ul>
+
+      <p class="about-contact reveal">I post my work on <a href="https://x.com/neha_jatla" target="_blank" rel="noopener">X</a>. Say hello at <a href="mailto:neha.jatla@duke.edu">neha.jatla@duke.edu</a> or via <a href="https://www.linkedin.com/in/nehajatla" target="_blank" rel="noopener">LinkedIn</a>.</p>
+
+      <h2 class="about-section-heading reveal">Experience</h2>
+      <div class="about-rows reveal">
+        <div class="about-row">
+          <p class="about-row-left"><span class="about-row-title">MetLife</span> <span class="about-row-sep">/</span> <span class="about-row-role">Product Management &amp; Design</span></p>
+          <p class="about-row-year">Summer 2026</p>
         </div>
-    </nav>
-
-    <main class="about-main">
-        <!-- Ambient background — drifting off-white blobs + animated
-             grain, sits behind everything else on this page (see
-             .bg-field in styles.css and the grain script below). -->
-        <div class="bg-field" aria-hidden="true">
-            <canvas class="bg-grain"></canvas>
-            <div class="bg-orb bg-orb-1"></div>
-            <div class="bg-orb bg-orb-2"></div>
-            <div class="bg-orb bg-orb-3"></div>
+        <div class="about-row">
+          <p class="about-row-left"><span class="about-row-title">Cognition</span> <span class="about-row-sep">/</span> <span class="about-row-role">Product Management &amp; Design</span></p>
+          <p class="about-row-year">2025&ndash;2026</p>
         </div>
-
-        <!-- Face-flip — cycles fast through face-centered 3:4 photos so
-             the face stays anchored in frame while the rest of each shot
-             changes underneath it, like a flip-book. Swap FACE_FRAMES
-             below for real photo paths; until then it cycles solid-color
-             placeholders so the timing/effect can be seen and tuned. -->
-        <div class="face-flip" id="face-flip" aria-hidden="true"></div>
-
-        <div class="about-info">
-            <h1 class="about-title">Hi there, I'm Neha.</h1>
-
-            <p class="about-intro">I'm a designer, engineer, and dancer who loves turning messy problems into clean, human-centered products, and I'm happiest where tech, storytelling, and visual craft meet.</p>
-
-            <p class="about-outside-label">Outside of design I'm:</p>
-            <ul class="about-list">
-                <li>Dancing Bollywood until my feet hurt</li>
-                <li>Cafe hopping and ranking lattes on Beli</li>
-                <li>Gouache painting and Prismacolor doodling</li>
-            </ul>
-
-            <p class="about-contact">I post my work on <a href="https://x.com/neha_jatla" target="_blank" rel="noopener">X</a>. Say hello at <a href="mailto:neha.jatla@duke.edu">neha.jatla@duke.edu</a> or via <a href="https://www.linkedin.com/in/nehajatla" target="_blank" rel="noopener">LinkedIn</a>.</p>
-
-            <h2 class="about-section-heading">Experience</h2>
-            <div class="about-rows">
-                <div class="about-row">
-                    <p class="about-row-left"><span class="about-row-title">MetLife</span> <span class="about-row-sep">/</span> <span class="about-row-role">Product Management &amp; Design</span></p>
-                    <p class="about-row-year">Summer 2026</p>
-                </div>
-                <div class="about-row">
-                    <p class="about-row-left"><span class="about-row-title">Cognition</span> <span class="about-row-sep">/</span> <span class="about-row-role">Product Management &amp; Design</span></p>
-                    <p class="about-row-year">2025&ndash;2026</p>
-                </div>
-                <div class="about-row">
-                    <p class="about-row-left"><span class="about-row-title">Duke AI Health</span> <span class="about-row-sep">/</span> <span class="about-row-role">Product Research &amp; Engineering</span></p>
-                    <p class="about-row-year">Summer 2025</p>
-                </div>
-                <div class="about-row">
-                    <p class="about-row-left"><span class="about-row-title">RTC</span> <span class="about-row-sep">/</span> <span class="about-row-role">SWE &amp; Data Analytics Intern</span></p>
-                    <p class="about-row-year">Summer 2025</p>
-                </div>
-                <div class="about-row">
-                    <p class="about-row-left"><span class="about-row-title">Legends</span> <span class="about-row-sep">/</span> <span class="about-row-role">Media &amp; Design Chair</span></p>
-                    <p class="about-row-year">2026</p>
-                </div>
-                <div class="about-row">
-                    <p class="about-row-left"><span class="about-row-title">Duke Product Space</span> <span class="about-row-sep">/</span> <span class="about-row-role">Co-Director of Fellowship</span></p>
-                    <p class="about-row-year">2026</p>
-                </div>
-                <div class="about-row">
-                    <p class="about-row-left"><span class="about-row-title">Duke CS Student Union</span> <span class="about-row-sep">/</span> <span class="about-row-role">Vice President</span></p>
-                    <p class="about-row-year">2025</p>
-                </div>
-                <div class="about-row">
-                    <p class="about-row-left"><span class="about-row-title">DTech</span> <span class="about-row-sep">/</span> <span class="about-row-role">Academic VP</span></p>
-                    <p class="about-row-year">2026</p>
-                </div>
-            </div>
-
-            <h2 class="about-section-heading">Education</h2>
-            <div class="about-rows">
-                <div class="about-row">
-                    <p class="about-row-left"><span class="about-row-title">Duke University</span> <span class="about-row-sep">/</span> <span class="about-row-role">Computer Science (SWE &amp; Design) &amp; Statistics</span></p>
-                    <p class="about-row-year">2028</p>
-                </div>
-                <div class="about-row">
-                    <p class="about-row-left"><span class="about-row-title">Duke University</span> <span class="about-row-sep">/</span> <span class="about-row-role">Innovation &amp; Entrepreneurship Certificate</span></p>
-                    <p class="about-row-year">2028</p>
-                </div>
-                <div class="about-row">
-                    <p class="about-row-left"><span class="about-row-title">CIEE Singapore at SMU</span> <span class="about-row-sep">/</span> <span class="about-row-role">Study Abroad</span></p>
-                    <p class="about-row-year">2027</p>
-                </div>
-            </div>
+        <div class="about-row">
+          <p class="about-row-left"><span class="about-row-title">Duke AI Health</span> <span class="about-row-sep">/</span> <span class="about-row-role">Product Research &amp; Engineering</span></p>
+          <p class="about-row-year">Summer 2025</p>
         </div>
-    </main>
+        <div class="about-row">
+          <p class="about-row-left"><span class="about-row-title">RTC</span> <span class="about-row-sep">/</span> <span class="about-row-role">SWE &amp; Data Analytics Intern</span></p>
+          <p class="about-row-year">Summer 2025</p>
+        </div>
+        <div class="about-row">
+          <p class="about-row-left"><span class="about-row-title">Legends</span> <span class="about-row-sep">/</span> <span class="about-row-role">Media &amp; Design Chair</span></p>
+          <p class="about-row-year">2026</p>
+        </div>
+        <div class="about-row">
+          <p class="about-row-left"><span class="about-row-title">Duke Product Space</span> <span class="about-row-sep">/</span> <span class="about-row-role">Co-Director of Fellowship</span></p>
+          <p class="about-row-year">2026</p>
+        </div>
+        <div class="about-row">
+          <p class="about-row-left"><span class="about-row-title">Duke CS Student Union</span> <span class="about-row-sep">/</span> <span class="about-row-role">Vice President</span></p>
+          <p class="about-row-year">2025</p>
+        </div>
+        <div class="about-row">
+          <p class="about-row-left"><span class="about-row-title">DTech</span> <span class="about-row-sep">/</span> <span class="about-row-role">Academic VP</span></p>
+          <p class="about-row-year">2026</p>
+        </div>
+      </div>
 
-    <div id="cursor"></div>
+      <h2 class="about-section-heading reveal">Education</h2>
+      <div class="about-rows reveal">
+        <div class="about-row">
+          <p class="about-row-left"><span class="about-row-title">Duke University</span> <span class="about-row-sep">/</span> <span class="about-row-role">Computer Science (SWE &amp; Design) &amp; Statistics</span></p>
+          <p class="about-row-year">2028</p>
+        </div>
+        <div class="about-row">
+          <p class="about-row-left"><span class="about-row-title">Duke University</span> <span class="about-row-sep">/</span> <span class="about-row-role">Innovation &amp; Entrepreneurship Certificate</span></p>
+          <p class="about-row-year">2028</p>
+        </div>
+        <div class="about-row">
+          <p class="about-row-left"><span class="about-row-title">CIEE Singapore at SMU</span> <span class="about-row-sep">/</span> <span class="about-row-role">Study Abroad</span></p>
+          <p class="about-row-year">2027</p>
+        </div>
+      </div>
+    </div>
+  </main>
 
-    <script src="script.js"></script>
-    <script>
-      // Custom periwinkle-dot cursor — native arrow hidden site-wide via
-      // CSS (see styles.css), matching index.html / playground.html.
-      (function () {
-        const cursorEl = document.getElementById('cursor');
-        if (!cursorEl) return;
-
-        // Carries the color the cursor was left in on the homepage hero
-        // across the rest of the visit (see index.html, the only page
-        // that ever writes this key).
-        const savedColor = localStorage.getItem('siteCursorColor');
-        if (savedColor) cursorEl.style.setProperty('--cursor-glow', savedColor);
-
-        // Nav hover (gradient highlight + cursor-turns-white) and the
-        // big-flower hover-grow on any link are both pure CSS now — see
-        // .nav-links a::before and the body:has() rules in styles.css.
-        document.addEventListener('pointermove', (e) => {
-          cursorEl.style.transform = 'translate3d(' + (e.clientX - 20) + 'px, ' + (e.clientY - 20) + 'px, 0)';
-        }, { passive: true });
-      })();
-    </script>
-    <script>
-      // Face-flip — swap FACE_FRAMES for real photo paths (7-10 shots,
-      // shot/cropped so your face sits in roughly the same spot in every
-      // one) once they're ready. Until then this cycles solid-color
-      // placeholders so the flip timing can be seen and tuned. Every
-      // frame is preloaded before the cycle starts, so switching to real
-      // photos won't introduce a load-in flicker on the first pass.
-      (function () {
-        const el = document.getElementById('face-flip');
-        if (!el) return;
-
-        const FACE_FRAMES = [
-          'assets/about/face-1.jpg',
-          'assets/about/face-2.jpg',
-          'assets/about/face-3.jpg',
-          'assets/about/face-4.jpg'
-        ];
-        const PLACEHOLDER_COLORS = ['#4B8AFF', '#FD9191', '#FFE99B', '#EB95FF', '#FF178B', '#6AEEFF', '#FF4B51'];
-        const FRAME_MS = 550;
-
-        if (FACE_FRAMES.length) {
-          let loaded = 0;
-          const imgs = FACE_FRAMES.map((src) => {
-            const img = document.createElement('img');
-            img.src = src;
-            img.alt = '';
-            img.style.opacity = '0';
-            img.addEventListener('load', () => { loaded++; });
-            el.appendChild(img);
-            return img;
-          });
-          let i = 0;
-          const start = () => {
-            imgs[0].style.opacity = '1';
-            setInterval(() => {
-              imgs[i].style.opacity = '0';
-              i = (i + 1) % imgs.length;
-              imgs[i].style.opacity = '1';
-            }, FRAME_MS);
-          };
-          // Poll rather than wait on every individual load event, so one
-          // slow image can't stall the others that are already ready.
-          const waitTimer = setInterval(() => {
-            if (loaded >= imgs.length) { clearInterval(waitTimer); start(); }
-          }, 50);
-        } else {
-          // No real photos wired up yet — cycle flat color panels instead,
-          // just to preview the flip-book's timing.
-          let i = 0;
-          el.style.background = PLACEHOLDER_COLORS[0];
-          setInterval(() => {
-            i = (i + 1) % PLACEHOLDER_COLORS.length;
-            el.style.background = PLACEHOLDER_COLORS[i];
-          }, FRAME_MS);
-        }
-      })();
-    </script>
-    <script>
-      // Ambient grain — regenerates a small noise tile every ~90ms for a
-      // subtle "static" flicker, tinted off-white rather than gray so it
-      // reads as texture within the page's own background instead of TV
-      // static. Skips the loop entirely under reduced motion.
-      (function () {
-        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        document.querySelectorAll('.bg-grain').forEach((canvas) => {
-          const ctx = canvas.getContext('2d');
-          const SIZE = 160;
-          canvas.width = SIZE;
-          canvas.height = SIZE;
-
-          function paint() {
-            const img = ctx.createImageData(SIZE, SIZE);
-            for (let i = 0; i < img.data.length; i += 4) {
-              const v = 250 + Math.random() * 5;
-              img.data[i] = v;
-              img.data[i + 1] = v - 3;
-              img.data[i + 2] = v - 10;
-              img.data[i + 3] = Math.random() * 70;
-            }
-            ctx.putImageData(img, 0, 0);
-          }
-
-          if (reduced) { paint(); return; }
-
-          let last = 0;
-          function loop(now) {
-            if (now - last > 90) { paint(); last = now; }
-            requestAnimationFrame(loop);
-          }
-          requestAnimationFrame(loop);
-        });
-      })();
-    </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="js/bg-grain-flow.js"></script>
+  <script src="js/about.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/cursor.js"></script>
+  <script src="js/scroll-reveals.js"></script>
 </body>
 </html>

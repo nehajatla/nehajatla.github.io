@@ -3,19 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Neha Jatla — CS, AI &amp; Design @ Duke</title>
+  <title>Play — Neha Jatla</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg?v=5">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&family=Poppins:wght@400;500&family=Libre+Caslon+Display&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/nav.css">
   <link rel="stylesheet" href="css/cursor.css">
-  <link rel="stylesheet" href="css/hero.css">
-  <link rel="stylesheet" href="css/home.css">
+  <link rel="stylesheet" href="css/play.css">
 </head>
-<body data-page="home">
+<body class="play-body" data-page="play">
 
   <nav class="nav" aria-label="Primary">
     <a href="index.html" class="nav-logo" aria-label="Neha Jatla — home">
@@ -34,47 +33,27 @@
     </ul>
   </nav>
 
-  <main class="home-hero">
-    <div class="bg-field" aria-hidden="true">
-      <canvas class="bg-grain-flow"></canvas>
-    </div>
+  <div class="play-intro" aria-hidden="true"><p>An infinite wall — scroll, drag, or scatter around.</p></div>
 
-    <div class="hero">
-      <p class="hero-line">hi, i'm neha.</p>
-      <p class="hero-line">
-        designer by
-        <span class="glyph-img" id="eye-wrap" data-cursor-label="eye" tabindex="0" role="img" aria-label="eyes">
-          <span class="eye eye--left"><img class="eye-img" data-eye="left" src="assets/hero/eye-closed-left.png" alt=""></span>
-          <span class="eye eye--right"><img class="eye-img" data-eye="right" src="assets/hero/eye-closed-right.png" alt=""></span>
-          <canvas id="eye-pupils" aria-hidden="true"></canvas>
-        </span>,
-      </p>
-      <p class="hero-line">
-        engineer by
-        <span class="glyph-img" id="hand-wrap" data-cursor-label="hand" tabindex="0" role="img" aria-label="hand">
-          <img id="hand-img" src="assets/hero/hand-rest.png" alt="">
-        </span>.
-      </p>
-    </div>
-  </main>
+  <div class="bg-field bg-field--fixed" aria-hidden="true">
+    <canvas class="bg-grain-flow"></canvas>
+  </div>
 
-  <section class="home-preview">
-    <div class="home-preview-head reveal">
-      <h2 class="home-preview-heading">Selected Work</h2>
-      <a href="work.html" class="home-preview-link">View all work →</a>
-    </div>
-    <div class="home-preview-grid" id="home-preview-grid"></div>
-  </section>
+  <div id="viewport">
+    <div id="canvas"></div>
+  </div>
 
-  <script src="js/work-data.js"></script>
-  <script src="js/home-preview.js"></script>
+  <div id="hint">
+    <div class="hint-line"></div>
+    <span>Scroll / Drag to Move</span>
+    <div class="hint-line"></div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="js/bg-grain-flow.js"></script>
+  <script src="js/play.js"></script>
   <script src="js/config.js"></script>
-  <script src="js/eyes.js"></script>
-  <script src="js/hand.js"></script>
   <script src="js/nav.js"></script>
   <script src="js/cursor.js"></script>
-  <script src="js/scroll-reveals.js"></script>
 </body>
 </html>

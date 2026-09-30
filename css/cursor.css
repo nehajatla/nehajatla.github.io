@@ -1,0 +1,88 @@
+/* ================================================================
+   cursor.css — a single plain black dot (pointer devices only), that
+   morphs into an oval label pill ("eye" / "hand") over elements with
+   [data-cursor-label]. Replaces the previous single-image lotus
+   cursor site-wide.
+   ================================================================ */
+@media (hover: hover) and (pointer: fine) {
+  body { cursor: none; }
+  a, button, [role="button"], .word, .glyph-img, input[type="checkbox"] { cursor: none; }
+}
+
+/* Position (translate3d + a constant translate(-50%,-50%), set every
+   frame by cursor.js) lives on the outer element; the outer box has
+   no intrinsic size of its own, so the inner circle and the pill can
+   each carry their own size/shape without the JS positioning math
+   ever needing to know either one's current (possibly mid-transition,
+   possibly text-width-dependent) dimensions. */
+.cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate3d(-200px, -200px, 0);
+  will-change: transform;
+}
+.cursor-dot-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 27px;
+  height: 27px;
+  margin: -13.5px 0 0 -13.5px;
+  border-radius: 50%;
+  background: var(--ink);
+  transform: scale(0.407); /* 11px / 27px base size */
+  transition: transform 0.2s var(--ease), opacity 0.2s var(--ease);
+}
+
+/* Grow + go translucent while hovering a plain interactive element. */
+.cursor-dot.is-hovering .cursor-dot-inner {
+  transform: scale(1);
+  opacity: 0.65;
+}
+/* Brief shrink on mousedown. */
+.cursor-dot.is-pressed .cursor-dot-inner {
+  transform: scale(0.259); /* 7px / 27px base size */
+}
+/* The circle hides while the pill takes over. */
+.cursor-dot.is-labeled .cursor-dot-inner {
+  transform: scale(0.15);
+  opacity: 0;
+}
+
+/* The oval label pill — hidden/collapsed by default, scales up from
+   the cursor's own center (not a fixed corner) so it reads as the dot
+   itself stretching into an oval, not a separate tooltip appearing. */
+.cursor-dot-pill {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.5);
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--color-60);
+  font-family: "Poppins", var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s var(--ease), transform 0.2s var(--ease);
+}
+.cursor-dot.is-labeled .cursor-dot-pill {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Hidden entirely on touch/coarse pointers and under reduced motion —
+   native cursor is used instead in both cases. */
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .cursor-dot { display: none; }
+  body, a, button, [role="button"] { cursor: auto; }
+}

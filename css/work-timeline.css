@@ -1,0 +1,263 @@
+/* ================================================================
+   work-timeline.css — horizontal scrolling strip of real project
+   thumbnails for work.html. Big thumbnail, title + role underneath,
+   next card peeking in at the right edge as you scroll. Layout
+   sizing lives here as CSS custom properties on .work-timeline-section
+   so it's one place to tune — js/work-timeline.js reads these back at
+   runtime wherever it needs a pixel value.
+   ================================================================ */
+
+.work-timeline-section {
+  position: relative;
+  background: var(--color-60);
+
+  /* ── Layout tuning knobs ── */
+  --card-w: min(54vw, 760px);         /* thumbnail card width */
+  --card-h: calc(var(--card-w) * 0.68); /* landscape rectangle, not square */
+  --caption-h: 74px;             /* min-height of the title+role block below a box — keeps caption rhythm consistent; the BOXED area (--card-h) is what's guaranteed identical across every card, project or lookahead */
+  --card-gap: 72px;             /* gap between cards (the spine line + connector run through this gap) */
+  --track-pad: 12vw;            /* trailing space so the last card can scroll fully into view */
+  --track-pad-top: 28px;        /* space above every card's box — cards are TOP-aligned (not centered) so the boxed area lines up exactly across cards even when caption text below varies in length */
+}
+
+@media (max-width: 900px) {
+  .work-timeline-section {
+    --card-w: 78vw;
+    --card-gap: 40px;
+  }
+}
+@media (max-width: 560px) {
+  .work-timeline-section {
+    --card-w: 86vw;
+    --card-h: calc(var(--card-w) * 0.78); /* a bit taller on small phones so captions/thumbnail stay legible */
+    --card-gap: 28px;
+  }
+}
+
+/* height is set inline by JS (100vh + horizontal scroll distance) */
+.work-timeline-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Pinned year display, large Garamond — its own header band ABOVE
+   the card strip (normal flow, not overlapping the cards' frame). ── */
+.timeline-year {
+  position: relative;
+  flex: 0 0 auto;
+  z-index: 5;
+  display: flex;
+  align-items: flex-start;
+  padding: calc(var(--nav-h) + 20px) var(--pad-x) 12px;
+  font-family: var(--font-serif-garamond, "EB Garamond", Garamond, Georgia, serif);
+  font-weight: 500;
+  font-size: clamp(2.6rem, 6vw, 4.5rem);
+  line-height: 1;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  pointer-events: none;
+  user-select: none;
+}
+.timeline-year-static { display: inline-block; }
+.timeline-year-window {
+  position: relative;
+  display: inline-block;
+  width: 0.62em;
+  height: 1em;
+  overflow: hidden;
+  transition: color 0.35s var(--ease);
+}
+.timeline-year-window.is-spinning { color: var(--color-10); }
+.timeline-year-window.is-crossfade .ty-digit { transition: opacity 0.3s var(--ease); }
+
+.timeline-year-idle-wrap { position: absolute; inset: 0; }
+.timeline-year-reel {
+  position: absolute;
+  left: 0; top: 0; width: 100%;
+  will-change: transform;
+}
+.timeline-year-window.is-spinning .timeline-year-reel {
+  filter: blur(var(--reel-blur, 0px));
+  animation: tlReelBlur var(--reel-dur, 820ms) ease-out;
+}
+@keyframes tlReelBlur {
+  0%   { filter: blur(0); }
+  35%  { filter: blur(3px); }
+  70%  { filter: blur(1px); }
+  100% { filter: blur(0); }
+}
+@keyframes tlIdleSpin {
+  0%   { transform: translateY(0); }
+  25%  { transform: translateY(-130%); filter: blur(2px); }
+  55%  { transform: translateY(15%); filter: blur(1px); }
+  80%  { transform: translateY(-6%); filter: blur(0); }
+  100% { transform: translateY(0); filter: blur(0); }
+}
+.ty-digit {
+  display: block;
+  height: 1em;
+  line-height: 1;
+}
+
+/* ── Horizontal viewport + track ─────────────────────────────── */
+.timeline-viewport {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: pan-y;
+}
+.timeline-viewport:active,
+.timeline-viewport.is-dragging { cursor: grabbing; }
+.timeline-viewport:focus-visible { outline: 2px solid var(--color-10); outline-offset: -4px; }
+
+.timeline-track {
+  position: relative;
+  /* Without an explicit width, a block-level flex container's own box
+     is only as wide as its containing block (the viewport) — its
+     overflowing flex children still render past that edge, but any
+     absolutely-positioned descendant sizing itself with left/right
+     (the spine line below) anchors to that viewport-width box, not
+     the true scrollable content width. width:max-content makes the
+     track's own box exactly as wide as all its cards + gaps, so the
+     spine's right:0 reaches the true last card instead of cutting off
+     after roughly one viewport's worth of cards. */
+  width: max-content;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--card-gap);
+  padding: var(--track-pad-top) var(--pad-x) 0;
+  padding-right: var(--track-pad);
+  will-change: transform;
+}
+
+/* One continuous line threading through every card's center, instead
+   of isolated per-gap ticks — reads as a single timeline the
+   experiences sit on, not separate unconnected tiles. Sits behind the
+   cards (z-index 0); each card has an opaque thumbnail so the line
+   only shows through the gaps, like beads on a thread. */
+.timeline-spine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* Vertical center of the boxed area (thumbnail / dashed box), which
+     now sits at a fixed top offset (--track-pad-top) rather than
+     being centered — see .timeline-track's align-items:flex-start. */
+  top: calc(var(--track-pad-top) + var(--card-h) / 2);
+  height: 2px;
+  background: var(--ink);
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+/* ── Cards ───────────────────────────────────────────────────── */
+.timeline-card {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 var(--card-w);
+  width: var(--card-w);
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  transition: transform 0.3s var(--ease);
+}
+
+.timeline-card--project { cursor: pointer; }
+.timeline-card--project:hover,
+.timeline-card--project:focus-visible,
+.timeline-card--lookahead:hover,
+.timeline-card--lookahead:focus-visible { transform: translateY(-6px); }
+
+.tl-card-thumb {
+  position: relative;
+  width: 100%;
+  height: var(--card-h);
+  flex: 0 0 auto;
+  overflow: hidden;
+  background: var(--card-bg);
+  box-shadow: 0 0 0 1px var(--border);
+}
+.tl-card-thumb img,
+.tl-card-thumb-video {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s var(--ease);
+}
+.timeline-card--project:hover .tl-card-thumb img,
+.timeline-card--project:hover .tl-card-thumb-video { transform: scale(1.04); }
+.tl-card-thumb--logo { background: #fff !important; display: flex; align-items: center; justify-content: center; }
+.tl-card-thumb--logo img { width: 42%; height: 42%; object-fit: contain; }
+.tl-card-thumb-placeholder { position: absolute; inset: 0; }
+
+.tl-card-caption { min-height: var(--caption-h); padding: 18px 2px 0; box-sizing: border-box; }
+.tl-card-title {
+  font-family: var(--font-serif-garamond, "EB Garamond", Garamond, Georgia, serif);
+  font-size: clamp(1.15rem, 2vw, 1.5rem);
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+.tl-card-role {
+  font-family: "Poppins", var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--ink-muted);
+}
+
+/* ── Lookahead cards (2027) — same two-part shape as a project card:
+   a boxed area sized to EXACTLY --card-h (matching the thumbnail
+   height exactly, not the whole taller card) with a dashed outline
+   instead of a thumbnail image, then unboxed caption text below. ── */
+.tl-look-box {
+  width: 100%;
+  height: var(--card-h);
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  border: 1.5px dashed var(--color-10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s var(--ease);
+}
+.timeline-card--lookahead:hover .tl-look-box,
+.timeline-card--lookahead:focus-visible .tl-look-box {
+  background: color-mix(in srgb, var(--color-10) 14%, transparent);
+}
+.tl-look-icon {
+  font-size: 28px;
+  color: var(--color-30);
+}
+.tl-look-caption { display: flex; flex-direction: column; gap: 4px; }
+.tl-look-heading {
+  font-family: var(--font-serif-garamond, "EB Garamond", Garamond, Georgia, serif);
+  font-size: clamp(1.1rem, 1.8vw, 1.4rem);
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.tl-look-body {
+  font-family: "Poppins", var(--font-sans);
+  font-size: 13px;
+  color: var(--ink-muted);
+  line-height: 1.55;
+  max-width: 34ch;
+}
+
+@media (max-width: 640px) {
+  .timeline-year { padding: calc(var(--nav-h) + 16px) var(--pad-x) 6px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timeline-card,
+  .tl-card-thumb img,
+  .tl-card-thumb-video { transition: none; }
+  .timeline-year-reel { transition: none !important; animation: none !important; }
+}

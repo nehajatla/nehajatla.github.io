@@ -1,0 +1,47 @@
+/* ================================================================
+   tokens.css — global design tokens, shared by every page.
+
+   60/30/10 color system:
+     --color-60  dominant — page background (warm cream, matches the
+                 previous site's --bg-color / --cream)
+     --color-30  secondary — blue-ink accent (matches the previous
+                 site's periwinkle/blue-ink accent family)
+     --color-10  accent — yellow highlight (matches the previous
+                 site's --yellow, used for underlines/highlights)
+   All typeset text stays near-black (--ink), independent of the
+   60/30/10 system.
+
+   --lotus-blue / --lotus-pink / --lotus-yellow are extracted directly
+   from favicon.svg's three fill colors — used ONLY for the logo mark
+   and the custom cursor, nowhere else in the UI.
+   ================================================================ */
+:root {
+  --color-60: #FAF8F5;
+  --color-30: #2F63D9;
+  --color-10: #FFE99B;
+
+  --ink: #111111;
+  --ink-soft: #21201F;
+  --ink-muted: #6B6258;
+  --ink-ghost: #8A8278;
+  --border: rgba(17, 17, 17, 0.09);
+  --card-bg: #FDFDFD;
+
+  /* Lotus mark colors — read from favicon.svg fills. Logo + cursor only. */
+  --lotus-blue: #4B8AFF;
+  --lotus-pink: #EFABFF;
+  --lotus-yellow: #FFE99B;
+
+  --font-headline: "Big Caslon", "Libre Caslon Display", Georgia, serif;
+  --font-serif: "Cormorant Garamond", "Big Caslon", "Adobe Caslon Pro", Georgia, serif;
+  --font-sans: "Inter", "Poppins", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "JetBrains Mono", monospace;
+
+  --nav-h: 118px;
+  --pad-x: 52px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (max-width: 540px) {
+  :root { --pad-x: 20px; }
+}

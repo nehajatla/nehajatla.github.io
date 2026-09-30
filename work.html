@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Neha Jatla — CS, AI &amp; Design @ Duke</title>
+  <title>Work — Neha Jatla</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg?v=5">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&family=Poppins:wght@400;500&family=Libre+Caslon+Display&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/nav.css">
   <link rel="stylesheet" href="css/cursor.css">
-  <link rel="stylesheet" href="css/hero.css">
-  <link rel="stylesheet" href="css/home.css">
+  <link rel="stylesheet" href="css/work.css">
+  <link rel="stylesheet" href="css/work-timeline.css">
 </head>
-<body data-page="home">
+<body data-page="work">
 
   <nav class="nav" aria-label="Primary">
     <a href="index.html" class="nav-logo" aria-label="Neha Jatla — home">
@@ -34,45 +34,50 @@
     </ul>
   </nav>
 
-  <main class="home-hero">
-    <div class="bg-field" aria-hidden="true">
-      <canvas class="bg-grain-flow"></canvas>
-    </div>
+  <header class="work-page-header reveal">
+    <h1 class="work-page-heading">Selected Work</h1>
+    <p class="work-page-sub">A collection of product, brand, and design work — from enterprise AI platforms to early-stage startup identity systems.</p>
+  </header>
 
-    <div class="hero">
-      <p class="hero-line">hi, i'm neha.</p>
-      <p class="hero-line">
-        designer by
-        <span class="glyph-img" id="eye-wrap" data-cursor-label="eye" tabindex="0" role="img" aria-label="eyes">
-          <span class="eye eye--left"><img class="eye-img" data-eye="left" src="assets/hero/eye-closed-left.png" alt=""></span>
-          <span class="eye eye--right"><img class="eye-img" data-eye="right" src="assets/hero/eye-closed-right.png" alt=""></span>
-          <canvas id="eye-pupils" aria-hidden="true"></canvas>
-        </span>,
-      </p>
-      <p class="hero-line">
-        engineer by
-        <span class="glyph-img" id="hand-wrap" data-cursor-label="hand" tabindex="0" role="img" aria-label="hand">
-          <img id="hand-img" src="assets/hero/hand-rest.png" alt="">
-        </span>.
-      </p>
-    </div>
-  </main>
+  <section class="work-timeline-section" id="work-timeline-section" aria-label="Work timeline, 2023 to 2027">
+    <div class="work-timeline-sticky" id="work-timeline-sticky">
+      <div class="bg-field bg-field--fixed" aria-hidden="true">
+        <canvas class="bg-grain-flow"></canvas>
+      </div>
 
-  <section class="home-preview">
-    <div class="home-preview-head reveal">
-      <h2 class="home-preview-heading">Selected Work</h2>
-      <a href="work.html" class="home-preview-link">View all work →</a>
+      <div class="timeline-year" aria-hidden="true">
+        <span class="timeline-year-static">202</span><span class="timeline-year-window" id="timelineYearWindow"><span class="timeline-year-idle-wrap" id="timelineYearIdleWrap"><span class="timeline-year-reel" id="timelineYearReel"></span></span></span>
+      </div>
+
+      <div class="timeline-viewport" id="timelineViewport" role="group" aria-label="Scroll horizontally through my work">
+        <div class="timeline-track" id="timelineTrack">
+          <div class="timeline-spine" aria-hidden="true"></div>
+        </div>
+      </div>
     </div>
-    <div class="home-preview-grid" id="home-preview-grid"></div>
   </section>
 
+  <div class="case-overlay" id="case-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="case-topbar">
+      <button class="case-back" id="case-back">← Back to work</button>
+      <button class="case-close" id="case-close" aria-label="Close case study">✕</button>
+    </div>
+
+    <div class="case-hero" id="case-hero">
+      <p class="case-hero-label" id="case-hero-label"></p>
+      <h2 class="case-hero-title" id="case-hero-title"></h2>
+      <p class="case-hero-meta" id="case-hero-meta"></p>
+    </div>
+
+    <div class="case-body" id="case-body"></div>
+  </div>
+
   <script src="js/work-data.js"></script>
-  <script src="js/home-preview.js"></script>
+  <script src="js/work-render.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="js/bg-grain-flow.js"></script>
+  <script src="js/work-timeline.js"></script>
   <script src="js/config.js"></script>
-  <script src="js/eyes.js"></script>
-  <script src="js/hand.js"></script>
   <script src="js/nav.js"></script>
   <script src="js/cursor.js"></script>
   <script src="js/scroll-reveals.js"></script>
