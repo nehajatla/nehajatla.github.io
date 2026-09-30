@@ -18,6 +18,7 @@
   const titleEl  = document.getElementById('case-hero-title');
   const metaEl   = document.getElementById('case-hero-meta');
   const bodyEl   = document.getElementById('case-body');
+  const tocEl    = document.getElementById('case-toc');
   const backBtn  = document.getElementById('case-back');
   const closeBtn = document.getElementById('case-close');
 
@@ -28,15 +29,57 @@
   // duplicating this overlay's populate/open logic there.
   window.openCaseStudy = open;
 
+  // Builds the sidebar from whichever h3s the current body actually
+  // has — some projects are still just a "coming soon" paragraph with
+  // none, in which case :empty in CSS hides the sidebar entirely
+  // rather than showing an empty column.
+  let tocLinks = [];
+  let tocHeadings = [];
+  function buildToc(projectId) {
+    if (!tocEl) return;
+    tocEl.innerHTML = '';
+    tocHeadings = Array.from(bodyEl.querySelectorAll('h3'));
+    tocLinks = tocHeadings.map((h, i) => {
+      const id = 'sec-' + i + '-' + h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-+|-+$)/g, '').slice(0, 40);
+      h.id = id;
+      const a = document.createElement('a');
+      a.href = '#' + id;
+      a.textContent = h.textContent;
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        h.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        history.replaceState(null, '', '#' + projectId);
+      });
+      tocEl.appendChild(a);
+      return a;
+    });
+  }
+
+  // Highlights whichever section is currently at/above the top of the
+  // scrolled view, so the sidebar tracks reading position rather than
+  // only reacting to clicks.
+  function updateActiveToc() {
+    if (!tocHeadings.length) return;
+    const threshold = overlay.getBoundingClientRect().top + 170;
+    let activeIdx = 0;
+    for (let i = 0; i < tocHeadings.length; i++) {
+      if (tocHeadings[i].getBoundingClientRect().top <= threshold) activeIdx = i;
+    }
+    tocLinks.forEach((a, i) => a.classList.toggle('is-active', i === activeIdx));
+  }
+  overlay.addEventListener('scroll', updateActiveToc, { passive: true });
+
   function open(p) {
     labelEl.textContent = p.context;
     titleEl.textContent = p.title;
     metaEl.textContent = p.tags.join(' · ');
     bodyEl.innerHTML = p.body;
+    buildToc(p.id);
     overlay.setAttribute('aria-hidden', 'false');
     overlay.classList.add('is-open');
     document.body.style.overflow = 'hidden';
     overlay.scrollTop = 0;
+    updateActiveToc();
     backBtn.focus();
     history.replaceState(null, '', '#' + p.id);
   }

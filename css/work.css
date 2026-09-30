@@ -80,9 +80,46 @@
 }
 .case-hero-meta { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); }
 
-.case-body {
+/* .case-body used to carry this padding/max-width itself; now split
+   across .case-content (outer padding, overall width) and .case-toc
+   (the sidebar) so the two sit side by side. */
+.case-content {
+  display: flex;
+  gap: 56px;
+  align-items: flex-start;
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 0 var(--pad-x) 120px;
-  max-width: 1080px;
+}
+.case-toc {
+  flex: 0 0 170px;
+  /* Flex items default to min-width:auto (content-based), so nowrap
+     link text was forcing this past its 170px basis instead of being
+     clipped by it — min-width:0 lets the basis actually cap it. */
+  min-width: 0;
+  position: sticky;
+  top: 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.case-toc:empty { display: none; }
+.case-toc a {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--ink-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s;
+}
+.case-toc a:hover { color: var(--ink); }
+.case-toc a.is-active { color: var(--color-30); }
+
+.case-body {
+  flex: 1;
+  min-width: 0;
+  max-width: 900px;
   font-size: 15px;
   line-height: 1.82;
   color: var(--ink-soft);
@@ -98,7 +135,7 @@
 .case-body > .case-compare,
 .case-body > .case-steps,
 .case-body > .case-confidential { grid-column: 1 / -1; }
-.case-body h3 { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 400; color: var(--ink); margin: 48px 0 14px; }
+.case-body h3 { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 400; color: var(--ink); margin: 48px 0 14px; scroll-margin-top: 90px; }
 .case-body .case-col > h3:first-child { margin-top: 0; }
 .case-body p { margin-bottom: 20px; }
 .case-body ul { margin: 0 0 20px 22px; }
@@ -218,4 +255,9 @@
 @media (max-width: 860px) {
   .case-body { grid-template-columns: 1fr; }
   .case-stats { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 960px) {
+  .case-content { flex-direction: column; gap: 0; }
+  .case-toc { display: none; }
 }

@@ -188,7 +188,7 @@ const PROJECTS = [
         </tbody>
       </table>
       <div class="case-confidential">
-        <p>The full internal hiring report is confidential. Want more insights or to learn more? <a href="mailto:neha.jatla@duke.edu">Reach out to me directly</a>.</p>
+        <p>The full internal hiring report is confidential. Want more insights or to learn more? <a href="about.html#contact">Reach out to me directly</a>.</p>
       </div>
     `
   },
