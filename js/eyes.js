@@ -1,13 +1,15 @@
 /* ================================================================
-   eyes.js — eye pupil-tracking module. Left and right eyes are two
-   genuinely different drawn shapes (not a mirrored copy of one), each
-   with its own crop, pupil position, and box aspect ratio — see
-   CONFIG.assets.eye.left/right. Closed at rest; opens on hover-zone
-   enter (wrap box + hoverPadding); pupils track the cursor as a
-   single shared gaze vector (see updatePupilTargets) so they move in
-   parallel instead of converging; eases back to center + closes on
-   leave; reverses from the current frame if interrupted mid-
-   animation. Tap-to-open + auto-close on touch.
+   eyes.js — single-eye pupil-tracking module. Closed at rest; opens
+   on hover-zone enter (wrap box + hoverPadding); pupil tracks the
+   cursor (see updatePupilTargets), clamped to stay inside the drawn
+   outline (see marginsFor); eases back to center + closes on leave;
+   reverses from the current frame if interrupted mid-animation.
+   Tap-to-open + auto-close on touch.
+
+   Written generically over an array of eyes (imgs/eyeBoxes) rather
+   than assuming exactly one — a second eye can be added back by
+   adding a second .eye span in index.html and a matching key under
+   CONFIG.assets.eye without touching this file.
    ================================================================ */
 (function () {
   'use strict';
@@ -38,15 +40,11 @@
   let rafId = null;
   let touchTimer = null;
 
-  // Both eyes get the SAME WIDTH (not the same height) — see the long
-  // comment on heightAspect in config.js for why: with genuinely
-  // different drawn shapes, matching outer-box height (or even outer
-  // box area) still let object-fit:contain fit one eye's art tighter
-  // than the other's, so the DRAWN eyes ended up visibly different
-  // sizes despite equal boxes. Matching width, with each eye's own
-  // height derived from width/heightAspect (its own smaller aspect,
-  // so contain is always width-constrained in both states), keeps the
-  // actual drawn eye — not just its box — the same size on both sides.
+  // Box height is derived from the wrap's own width via heightAspect
+  // (the smaller of this eye's closed/open aspect ratios — see
+  // config.js) so object-fit:contain is always width-constrained in
+  // BOTH states, and the drawn eye never gets letterboxed shorter than
+  // its full width in either one.
   function sizeEyeBoxes() {
     wrap.style.width = '';
     const widthPx = Math.round(wrap.getBoundingClientRect().width || parseFloat(getComputedStyle(wrap).width));
@@ -92,8 +90,8 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  // Each eye's own pupil-center fraction marks the true visual center
-  // of that eye's own drawn shape (they differ between left and right).
+  // pupil-center fraction marks the true visual center of the eye's
+  // own drawn shape (not necessarily the box's geometric center).
   function pupilCenterOf(imgEl) {
     const painted = getContainedRect(imgEl);
     const frac = cfg_eye(imgEl).pupilCenterFrac;
@@ -154,15 +152,11 @@
     animating = true;
   }
 
-  // Each eye's own safe travel room, in px, before the pupil's drawn
-  // edge would cross the eye outline — derived from ITS OWN painted
-  // rect (open-state art, letterboxed differently per eye) and pupil
-  // geometry, not a shared guess. The left eye in particular is short
-  // and wide, so its vertical room is only a few px even though its
-  // horizontal room is generous; a single shared radius small enough
-  // to be safe on every axis of every eye left pupils barely moving
-  // at all (the "doesn't track the cursor" bug) — clamping per eye,
-  // per axis lets each eye move as far as it safely can instead.
+  // Safe pupil travel room, in px, before its drawn edge would cross
+  // the eye outline — derived from the painted rect (open-state art)
+  // and pupil geometry, not a fixed guess. This eye is short and wide,
+  // so its vertical room is only a few px even though its horizontal
+  // room is generous.
   function marginsFor(imgEl) {
     const painted = getContainedRect(imgEl);
     const center = pupilCenterOf(imgEl);
@@ -184,14 +178,10 @@
     return { marginX, marginY };
   }
 
-  // Single shared gaze DIRECTION: compute ONE vector from the midpoint
-  // between the two eyes to the cursor, scaled by distance up to a
-  // generous cap — like real eyes converging on a point far enough
-  // away that both eyes' sightlines are effectively parallel, which is
-  // what keeps them from going cross-eyed when the cursor sits between
-  // the two. Each eye then clamps that same shared vector to its own
-  // safe margins (above), so both pupils still move together in the
-  // same direction, just bounded individually.
+  // Gaze DIRECTION from the eye's own center to the cursor, scaled by
+  // distance up to a generous cap, then clamped to this eye's own safe
+  // margins (above) so the pupil tracks the cursor without ever
+  // visually crossing the drawn outline.
   function updatePupilTargets(clientX, clientY) {
     const wrapBox = wrap.getBoundingClientRect();
     const midX = wrapBox.left + wrapBox.width / 2;

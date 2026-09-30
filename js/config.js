@@ -41,8 +41,9 @@ window.SITE_CONFIG = {
 
     assets: {
       eye: {
-        // Left and right are genuinely different drawn shapes (not a
-        // mirrored copy of one), each with its own pupil position/size.
+        // Single eye now (the right-eye variant was removed) — kept
+        // under the "left" key since eyes.js/hero.css key off
+        // data-eye="left" and CONFIG.assets.eye.left.
         left: {
           closed: 'assets/hero/eye-closed-left.png',
           openEmpty: 'assets/hero/eye-open-empty-left.png',
@@ -73,16 +74,6 @@ window.SITE_CONFIG = {
           // the closed crop's own aspect (2.378), so it's the
           // constraining one.
           heightAspect: 1.7135
-        },
-        right: {
-          closed: 'assets/hero/eye-closed-right.png',
-          openEmpty: 'assets/hero/eye-open-empty-right.png',
-          pupilCenterFrac: { x: 0.6412, y: 0.5189 },
-          pupilRadiusFrac: 0.1758,
-          podBoundsFrac: { left: 0.0164, top: 0.2088, right: 0.993, bottom: 0.9885 },
-          // Closed crop (1.369) is still the smaller/constraining aspect
-          // here even after the open crop grew to include lashes (1.634).
-          heightAspect: 1.369
         },
         pupilColor: '#4B8AFF'
       },

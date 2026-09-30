@@ -75,16 +75,14 @@
 }
 .glyph-img img { display: block; height: 100%; width: 100%; object-fit: contain; pointer-events: none; }
 
-/* Two eye crops side by side — genuinely different drawn shapes (not
-   a mirrored copy of one), each sized to its own aspect ratio by
-   eyes.js (sizeEyeBoxes) so neither is stretched/squashed to match
-   the other. Width/height below are just the pre-JS fallback. */
+/* Single eye crop, sized to its own aspect ratio by eyes.js
+   (sizeEyeBoxes) rather than stretched/squashed to a fixed box.
+   Width/height below are just the pre-JS fallback. */
 #eye-wrap {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0.3em;
-  width: 2.3em;
+  width: 1.4em;
   height: 0.85em;
   vertical-align: -0.1em;
 }
