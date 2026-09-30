@@ -98,7 +98,7 @@ const PROJECTS = [
   {
     id:      'rtc',
     context: 'REWRITING THE CODE - 2025',
-    title:   'RTC: SWE & Data Analytics',
+    title:   'Rewriting the Code',
     role:    'SWE & Data Analytics Intern',
     desc:    'Software engineering and data analytics with Rewriting the Code.',
     color:   '#C9AFCC',
