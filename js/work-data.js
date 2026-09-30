@@ -193,17 +193,97 @@ const PROJECTS = [
     `
   },
   {
-    id:      'duke-ai-health',
-    context: 'DUKE AI HEALTH - 2025',
-    title:   'Duke AI Health',
-    role:    'Product Research & Engineering Intern',
-    desc:    'Coming soon.',
+    id:      'duke-cs-plus',
+    context: 'DUKE CS+ - 2025',
+    title:   'Duke CS+',
+    role:    'Undergraduate Research Assistant',
+    desc:    'A natural-language interface for electronic health records, built through Duke\'s CS+ summer research program.',
     color:   '#B7D3C4',
     image:   '',
     tall:    false,
-    tags:    ['Product Research', 'Engineering'],
+    tags:    ['Research', 'Product Design', 'LLM'],
     body: `
-      <p>Coming soon: thumbnail and case study in progress.</p>
+      <div class="case-meta">
+        <div>
+          <p class="case-meta-label">Role</p>
+          <p>Undergraduate Research Assistant</p>
+        </div>
+        <div>
+          <p class="case-meta-label">Timeline</p>
+          <p>May – July 2025</p>
+        </div>
+        <div>
+          <p class="case-meta-label">Team</p>
+          <p>Amanda Guo</p>
+          <p>Duke CS+ Program</p>
+        </div>
+        <div>
+          <p class="case-meta-label">Skills</p>
+          <p>Product Research</p>
+          <p>Product Design</p>
+          <p>LLM Prompting</p>
+        </div>
+      </div>
+
+      <figure>
+        <div class="case-frame"><img src="https://interdisciplinary.duke.edu/sites/default/files/styles/scale_width_1220/public/llm-powered-team-1000w-v2.png?itok=TPpCltKn" alt="Amanda Guo and Neha Jatla stand by their CS+ research poster"></div>
+        <figcaption>Amanda Guo and me with our poster at the CS+ summer showcase. Photo: Duke Interdisciplinary Studies.</figcaption>
+      </figure>
+
+      <h3>How might clinicians surface insights from health records without writing SQL?</h3>
+      <p>Through Duke's CS+ summer research program, Amanda Guo and I built an end-to-end AI application that works as a natural-language interface for electronic health records (EHR), mentored by Panyu Chen, Danyang Zhuo, Anru Zhang, Raymond Xiong and Carl Dong.</p>
+
+      <h3>Healthcare researchers rely on EHRs for critical insights...</h3>
+      <p>EHR databases like MIMIC hold diagnoses, ICU stays, labs and outcomes for thousands of patients, making them one of the richest sources for clinical research.</p>
+      <p>...but many lack the expertise to query them. Writing complex SQL and building meaningful visualizations are both technical bottlenecks. That slows down data exploration and delays scientific discovery for the clinical staff who need the answers most.</p>
+      <p><em>What if anyone could just ask the question?</em></p>
+
+      <h3>From workflow research to product requirements</h3>
+      <p>I studied how clinicians and researchers explore data today and translated their needs into requirements, then led product design of an LLM pipeline that turns plain language into SQL, visualizations and cohort-selection flowcharts.</p>
+
+      <figure>
+        <div class="case-frame"><img src="work/duke-cs-plus/ehr-architecture.png" alt="System architecture: user prompt to LLM-predicted SQL, interactive SQL editor, database query, predicted visualization and feedback; prompt built from schema information, cell reference information and top-K similar few-shot demos"></div>
+        <figcaption>System architecture. Each prompt combines schema information, real cell values and the most similar few-shot examples before it reaches the LLM.</figcaption>
+      </figure>
+
+      <h3>Ask, refine, visualize</h3>
+      <p>Users pick a database and model, ask a question, and get SQL back. They can refine the query in plain English with the interactive SQL editor, chart the results, and send feedback that feeds error logging.</p>
+
+      <figure>
+        <div class="case-frame"><img src="work/duke-cs-plus/ehr-demo.png" alt="Product demo: natural-language query generates SQL, the SQL is edited with an added age filter, results render as a bar chart, and a feedback box appears below"></div>
+        <figcaption>Live demo on the MIMIC-IV demo database: a cohort question becomes SQL, gets refined (&ldquo;at least 15 years old&rdquo;), and renders as a chart.</figcaption>
+      </figure>
+
+      <h3>Engineering the prompt, one component at a time</h3>
+      <ol class="case-steps">
+        <li><strong>Schema information</strong> — tables, columns and data types ground the model so it doesn't invent fields.</li>
+        <li><strong>Cell reference information</strong> — real values (age: 72, diagnosis: "sepsis") teach the model how to filter, so "patients over 65 with sepsis" becomes a valid query.</li>
+        <li><strong>Top-K similar few-shot demos</strong> — the question-query pairs closest to the user's prompt, found by cosine similarity in embedding space.</li>
+      </ol>
+
+      <h3>30% more accurate queries, and a tool non-coders can use</h3>
+      <div class="case-stats">
+        <div class="case-stat"><b>30%</b><span>improvement in query accuracy from prompt experimentation</span></div>
+        <div class="case-stat"><b>0.52</b><span>execution accuracy with the full prompt</span></div>
+        <div class="case-stat"><b>3</b><span>outputs from one question: SQL, charts and cohort flowcharts</span></div>
+      </div>
+
+      <h3>Ablation study</h3>
+      <p>Removing any one prompt component hurt accuracy — dropping few-shot demos cut execution accuracy by about two-thirds.</p>
+      <table class="case-ablation">
+        <tr class="is-full"><td>Full prompt</td><td><div class="bar-track" style="width:100%"></div></td><td>0.523</td></tr>
+        <tr><td>Without cell reference</td><td><div class="bar-track" style="width:54%"></div></td><td>0.284</td></tr>
+        <tr><td>Without schema information</td><td><div class="bar-track" style="width:48%"></div></td><td>0.249</td></tr>
+        <tr><td>Without few-shot demos</td><td><div class="bar-track" style="width:35%"></div></td><td>0.182</td></tr>
+      </table>
+
+      <p>Next steps: build a clinical Text2SQL dataset from past research studies to benchmark against expert-written queries, and pilot the tool with the Duke Bioinformatics Department.</p>
+
+      <a class="case-press" href="https://interdisciplinary.duke.edu/news/plus-programs-add-research-intensive-summer/" target="_blank" rel="noopener">
+        <span class="case-press-label">Featured · Duke Interdisciplinary Studies · August 2025</span>
+        <span class="case-press-title">&ldquo;Plus&rdquo; Programs Add Up to Research-Intensive Summer</span>
+        <span class="case-press-go">Read the article &rarr;</span>
+      </a>
     `
   },
   {
@@ -249,7 +329,7 @@ const PROJECTS = [
    ================================================================ */
 const PROJECT_TIMELINE_ORDER = [
   { id: 'rtc',            year: 2025 },
-  { id: 'duke-ai-health', year: 2025 },
+  { id: 'duke-cs-plus',   year: 2025 },
   { id: 'cognition',      year: 2025 },
   { id: 'duke-eatz',      year: 2025 },
   { id: 'metlife',        year: 2026 },
