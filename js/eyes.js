@@ -166,10 +166,21 @@
   function marginsFor(imgEl) {
     const painted = getContainedRect(imgEl);
     const center = pupilCenterOf(imgEl);
-    const r = painted.width * cfg_eye(imgEl).pupilRadiusFrac;
+    const eyeCfg = cfg_eye(imgEl);
+    const r = painted.width * eyeCfg.pupilRadiusFrac;
     const pad = 1.5;
-    const marginX = Math.max(0, Math.min(center.x - painted.left, (painted.left + painted.width) - center.x) - r - pad);
-    const marginY = Math.max(0, Math.min(center.y - painted.top, (painted.top + painted.height) - center.y) - r - pad);
+    // Clamp to the POD OUTLINE's own bounds, not the full painted rect
+    // — the crop includes lash strokes above/beside the pod, so the
+    // image's own edges sit well outside the pod in several directions
+    // and clamping to them would let the pupil visually cross the
+    // drawn outline before reaching the image edge.
+    const pb = eyeCfg.podBoundsFrac;
+    const podLeft = painted.left + painted.width * pb.left;
+    const podRight = painted.left + painted.width * pb.right;
+    const podTop = painted.top + painted.height * pb.top;
+    const podBottom = painted.top + painted.height * pb.bottom;
+    const marginX = Math.max(0, Math.min(center.x - podLeft, podRight - center.x) - r - pad);
+    const marginY = Math.max(0, Math.min(center.y - podTop, podBottom - center.y) - r - pad);
     return { marginX, marginY };
   }
 
