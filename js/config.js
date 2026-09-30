@@ -86,12 +86,10 @@ window.SITE_CONFIG = {
       // be generous since the per-eye clamp is what actually keeps
       // pupils inside their own outline.
       pupilMaxRadius: 18,
-      // Lerp factor toward the target each frame (frame-rate scaled —
-      // see frame() in eyes.js). Too low and the pupil visibly lags
-      // behind the cursor, which reads as sluggish/disconnected rather
-      // than smooth; this is high enough to track at close to the
-      // cursor's own speed while the dt-scaling keeps it jitter-free.
-      pupilEase: 0.35,
+      // Lower = slower/smoother lerp toward the target each frame,
+      // trading a little responsiveness for a less jittery, more fluid
+      // motion.
+      pupilEase: 0.1,
       touchOpenHold: 2200
     },
 
@@ -109,7 +107,7 @@ window.SITE_CONFIG = {
       // baseline. Applied as CSS custom properties at init.
       scale: 1.3,      // 1.3 = 30% bigger
       offsetX: -22,     // px, shifts the whole hand box left
-      offsetY: 50       // px, shifts the whole hand box upward
+      offsetY: 34       // px, shifts the whole hand box upward
     }
   },
 
