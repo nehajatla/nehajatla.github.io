@@ -87,7 +87,11 @@ window.SITE_CONFIG = {
     eye: {
       hoverPadding: 24,
       openDuration: 250,
-      pupilMaxRadius: 5,
+      // Upper bound on the SHARED gaze vector before each eye clamps it
+      // to its own safe margin (see marginsFor in eyes.js) — this can
+      // be generous since the per-eye clamp is what actually keeps
+      // pupils inside their own outline.
+      pupilMaxRadius: 18,
       pupilEase: 0.18,
       touchOpenHold: 2200
     },

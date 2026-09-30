@@ -154,12 +154,33 @@
     animating = true;
   }
 
-  // Single shared gaze model: compute ONE direction from the midpoint
-  // between the two eyes to the cursor, scale it by distance up to the
-  // max pupil radius, and apply that identical offset to every pupil —
-  // like real eyes converging on a point far enough away that both
-  // eyes' sightlines are effectively parallel. This is what keeps the
-  // eyes from going cross-eyed when the cursor sits between/near them.
+  // Each eye's own safe travel room, in px, before the pupil's drawn
+  // edge would cross the eye outline — derived from ITS OWN painted
+  // rect (open-state art, letterboxed differently per eye) and pupil
+  // geometry, not a shared guess. The left eye in particular is short
+  // and wide, so its vertical room is only a few px even though its
+  // horizontal room is generous; a single shared radius small enough
+  // to be safe on every axis of every eye left pupils barely moving
+  // at all (the "doesn't track the cursor" bug) — clamping per eye,
+  // per axis lets each eye move as far as it safely can instead.
+  function marginsFor(imgEl) {
+    const painted = getContainedRect(imgEl);
+    const center = pupilCenterOf(imgEl);
+    const r = painted.width * cfg_eye(imgEl).pupilRadiusFrac;
+    const pad = 1.5;
+    const marginX = Math.max(0, Math.min(center.x - painted.left, (painted.left + painted.width) - center.x) - r - pad);
+    const marginY = Math.max(0, Math.min(center.y - painted.top, (painted.top + painted.height) - center.y) - r - pad);
+    return { marginX, marginY };
+  }
+
+  // Single shared gaze DIRECTION: compute ONE vector from the midpoint
+  // between the two eyes to the cursor, scaled by distance up to a
+  // generous cap — like real eyes converging on a point far enough
+  // away that both eyes' sightlines are effectively parallel, which is
+  // what keeps them from going cross-eyed when the cursor sits between
+  // the two. Each eye then clamps that same shared vector to its own
+  // safe margins (above), so both pupils still move together in the
+  // same direction, just bounded individually.
   function updatePupilTargets(clientX, clientY) {
     const wrapBox = wrap.getBoundingClientRect();
     const midX = wrapBox.left + wrapBox.width / 2;
@@ -167,10 +188,14 @@
     const dx = clientX - midX, dy = clientY - midY;
     const dist = Math.hypot(dx, dy);
     const maxR = cfg.pupilMaxRadius;
-    const offset = (dist <= maxR || dist === 0)
-      ? { x: dx, y: dy }
-      : { x: (dx / dist) * maxR, y: (dy / dist) * maxR };
-    pupilTarget = imgs.map(() => offset);
+    const travel = Math.min(dist, maxR);
+    const dirX = dist === 0 ? 0 : dx / dist;
+    const dirY = dist === 0 ? 0 : dy / dist;
+    const rawX = dirX * travel, rawY = dirY * travel;
+    pupilTarget = imgs.map((imgEl) => {
+      const { marginX, marginY } = marginsFor(imgEl);
+      return { x: clamp(rawX, -marginX, marginX), y: clamp(rawY, -marginY, marginY) };
+    });
   }
 
   if (REDUCED_MOTION) {
