@@ -1,80 +1,11 @@
 /* ================================================================
-   home.css — home page only: "selected work" preview section below
-   the hero (2-3 cards, links through to work.html). Reuses the same
-   card visual language as css/work.css's full listing.
+   home.css — home page only. The old 3-card "Selected Work" preview
+   (linking out to a separate work.html) has been replaced by the
+   REAL work timeline embedded directly below the hero — see
+   .home-work-header here and .work-timeline-section in
+   css/work-timeline.css, both shared markup with work.html itself.
    ================================================================ */
-.home-preview {
-  padding: 100px var(--pad-x) 140px;
+.home-work-header {
+  padding: 96px var(--pad-x) 0;
   background: var(--color-60);
-  border-top: 1px solid var(--border);
-}
-
-.home-preview-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 56px;
-  flex-wrap: wrap;
-}
-
-.home-preview-heading {
-  font-family: var(--font-serif);
-  font-size: clamp(2rem, 3.6vw, 3rem);
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-}
-
-.home-preview-link {
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 3px;
-  transition: color 0.2s, border-color 0.2s;
-}
-.home-preview-link:hover,
-.home-preview-link:focus-visible { color: var(--ink); border-color: var(--ink); }
-
-.home-preview-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
-}
-
-.preview-card {
-  display: block;
-  cursor: pointer;
-}
-.preview-card-thumb {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 4 / 3.2;
-  border-radius: 3px;
-  overflow: hidden;
-  margin-bottom: 16px;
-}
-.preview-card-thumb img,
-.preview-card-thumb video { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease); display: block; }
-.preview-card:hover .preview-card-thumb img,
-.preview-card:hover .preview-card-thumb video { transform: scale(1.04); }
-.preview-card-thumb--logo { display: flex; align-items: center; justify-content: center; }
-.preview-card-thumb--logo img { width: 46%; height: 46%; object-fit: contain; }
-.preview-card-title {
-  font-family: var(--font-serif);
-  font-size: 1.3rem;
-  color: var(--ink);
-  transition: opacity 0.2s;
-  margin-bottom: 2px;
-}
-.preview-card-role {
-  font-size: 12px;
-  color: var(--ink-muted);
-}
-.preview-card:hover .preview-card-title { opacity: 0.7; }
-
-@media (max-width: 860px) {
-  .home-preview-grid { grid-template-columns: 1fr; gap: 32px; }
 }
