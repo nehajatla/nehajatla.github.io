@@ -228,8 +228,8 @@ const PROJECTS = [
       </div>
 
       <figure>
-        <div class="case-frame"><img src="https://interdisciplinary.duke.edu/sites/default/files/styles/scale_width_1220/public/llm-powered-team-1000w-v2.png?itok=TPpCltKn" alt="Amanda Guo and Neha Jatla stand by their CS+ research poster"></div>
-        <figcaption>Amanda Guo and me with our poster at the CS+ summer showcase. Photo: Duke Interdisciplinary Studies.</figcaption>
+        <div class="case-frame"><img src="work/duke-cs-plus/ehr-poster.jpg" alt="Research poster: LLM-Powered Querying and Visualization of Electronic Health Records, covering the problem, solution, interface demonstration, system design and future work"></div>
+        <figcaption>Our CS+ research poster.</figcaption>
       </figure>
 
       <h3>How might clinicians surface insights from health records without writing SQL?</h3>
@@ -243,18 +243,8 @@ const PROJECTS = [
       <h3>From workflow research to product requirements</h3>
       <p>I studied how clinicians and researchers explore data today and translated their needs into requirements, then led product design of an LLM pipeline that turns plain language into SQL, visualizations and cohort-selection flowcharts.</p>
 
-      <figure>
-        <div class="case-frame"><img src="work/duke-cs-plus/ehr-architecture.png" alt="System architecture: user prompt to LLM-predicted SQL, interactive SQL editor, database query, predicted visualization and feedback; prompt built from schema information, cell reference information and top-K similar few-shot demos"></div>
-        <figcaption>System architecture. Each prompt combines schema information, real cell values and the most similar few-shot examples before it reaches the LLM.</figcaption>
-      </figure>
-
       <h3>Ask, refine, visualize</h3>
       <p>Users pick a database and model, ask a question, and get SQL back. They can refine the query in plain English with the interactive SQL editor, chart the results, and send feedback that feeds error logging.</p>
-
-      <figure>
-        <div class="case-frame"><img src="work/duke-cs-plus/ehr-demo.png" alt="Product demo: natural-language query generates SQL, the SQL is edited with an added age filter, results render as a bar chart, and a feedback box appears below"></div>
-        <figcaption>Live demo on the MIMIC-IV demo database: a cohort question becomes SQL, gets refined (&ldquo;at least 15 years old&rdquo;), and renders as a chart.</figcaption>
-      </figure>
 
       <h3>Engineering the prompt, one component at a time</h3>
       <ol class="case-steps">
