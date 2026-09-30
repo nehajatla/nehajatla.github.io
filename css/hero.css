@@ -84,6 +84,7 @@
   align-items: center;
   width: 1.4em;
   height: 0.85em;
+  margin-right: 0.18em;
   vertical-align: -0.1em;
 }
 .eye { flex: 0 0 auto; height: 100%; min-width: 0; }

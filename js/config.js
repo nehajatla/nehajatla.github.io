@@ -47,33 +47,23 @@ window.SITE_CONFIG = {
         left: {
           closed: 'assets/hero/eye-closed-left.png',
           openEmpty: 'assets/hero/eye-open-empty-left.png',
-          // Pupil geometry read directly off the source vector's own
-          // numbers (ellipse cx/cy/rx against the crop box), not
-          // detected from a raster — exact, not approximated. The
-          // open-eye crop now includes its lash strokes (previously
-          // cropped to just the pod outline, which is why lashes were
-          // missing on the open state), so this box is wider/taller
-          // than before and these fractions moved with it.
-          pupilCenterFrac: { x: 0.6805, y: 0.5709 },
-          pupilRadiusFrac: 0.1706,
-          // The pod outline's own bounding box, as a fraction of the
-          // full (lash-inclusive) crop — eyes.js clamps pupil travel to
-          // THIS box, not the full painted rect, since the crop now
-          // extends past the pod to include the lash strokes above/
-          // beside it and clamping to the outer image edge would let
-          // the pupil visually cross the pod's own outline.
-          podBoundsFrac: { left: 0.0501, top: 0.2378, right: 0.9932, bottom: 0.9883 },
+          // openEmpty is traced directly off the user's reference art
+          // (flood-filled to transparent background, pupil detected and
+          // cut out to opaque white so the canvas-drawn pupil below can
+          // take over) rather than pulled from the original vector
+          // sheet, whose pod shape didn't match the reference closely
+          // enough. Geometry below is measured from that trace.
+          pupilCenterFrac: { x: 0.6776, y: 0.5707 },
+          pupilRadiusFrac: 0.1666,
+          // The pod's own interior bounding box (largest connected
+          // near-white/near-blue region, i.e. INSIDE the stroke) as a
+          // fraction of the full crop — eyes.js clamps pupil travel to
+          // this box so it can't visually cross the outline.
+          podBoundsFrac: { left: 0.097, top: 0.2959, right: 0.9455, bottom: 0.9286 },
           // heightAspect = the SMALLER of this eye's closed/open aspect
-          // ratios. eyes.js sizes both eyes to the SAME WIDTH and
-          // derives each one's own box height as width/heightAspect —
-          // using the smaller aspect guarantees object-fit:contain is
-          // always width-constrained (fills the box's full width) in
-          // BOTH states, so the drawn eye itself is the same visual
-          // width as its sibling, not just the outer box. Here the open
-          // crop (1.7135, now including lash margin) is smaller than
-          // the closed crop's own aspect (2.378), so it's the
-          // constraining one.
-          heightAspect: 1.7135
+          // ratios, so eyes.js's width-derived box height never
+          // letterboxes either state shorter than its full width.
+          heightAspect: 1.6837
         },
         pupilColor: '#4B8AFF'
       },
@@ -116,7 +106,7 @@ window.SITE_CONFIG = {
       // see #hand-wrap in hero.css) and an upward nudge relative to the
       // text baseline. Applied as CSS custom properties at init.
       scale: 1.3,      // 1.3 = 30% bigger
-      offsetY: 12       // px, shifts the whole hand box upward
+      offsetY: 24       // px, shifts the whole hand box upward
     }
   },
 
