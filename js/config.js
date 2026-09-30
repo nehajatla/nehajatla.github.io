@@ -39,35 +39,12 @@ window.SITE_CONFIG = {
 
     ripple: { speedPxPerSec: 1500, frontWidth: 46 },
 
+    // The eye is now a static inline SVG (index.html #eye-svg) built
+    // directly from the source vector — js/eyes.js reads its geometry
+    // straight off that markup rather than from config here. See
+    // eyes.js's own header comment for the pupil-tracking/clamping
+    // logic and its tunables (EASE, POD, PAD).
     assets: {
-      eye: {
-        // Single eye now (the right-eye variant was removed) — kept
-        // under the "left" key since eyes.js/hero.css key off
-        // data-eye="left" and CONFIG.assets.eye.left.
-        left: {
-          closed: 'assets/hero/eye-closed-left.png',
-          openEmpty: 'assets/hero/eye-open-empty-left.png',
-          // Both assets are rendered straight from the same source
-          // vector sheet (MacBook Air - 10.svg: one pod+lash group for
-          // open, one crease+lash group for closed) and the closed art
-          // is then fit (contain, centered, transparent pad) onto a
-          // canvas of the OPEN eye's exact pixel dimensions — so the
-          // two PNGs are pixel-dimension-identical and heightAspect
-          // below is shared by both states: the box never resizes or
-          // shifts position when the eye blinks.
-          pupilCenterFrac: { x: 0.6848, y: 0.5732 },
-          pupilRadiusFrac: 0.1739,
-          // Pod outline's own bounding box (excluding lashes), as a
-          // fraction of the shared crop. eyes.js inscribes an ELLIPSE
-          // in this rect and clamps pupil travel to that ellipse (not
-          // the rect itself) so it can't cross the almond-shaped
-          // outline — a rectangular clamp would let it reach the
-          // rect's corners, which sit outside the pod's pointed tips.
-          podBoundsFrac: { left: 0.0458, top: 0.2352, right: 1.0, bottom: 1.0 },
-          heightAspect: 1.7293
-        },
-        pupilColor: '#4B8AFF'
-      },
       hand: {
         rest: 'assets/hero/hand-rest.png',
         waveFrames: [
@@ -77,21 +54,6 @@ window.SITE_CONFIG = {
           'assets/hero/hand-wave-04.png'
         ]
       }
-    },
-
-    eye: {
-      hoverPadding: 24,
-      openDuration: 250,
-      // Upper bound on the SHARED gaze vector before each eye clamps it
-      // to its own safe margin (see marginsFor in eyes.js) — this can
-      // be generous since the per-eye clamp is what actually keeps
-      // pupils inside their own outline.
-      pupilMaxRadius: 18,
-      // Lower = slower/smoother lerp toward the target each frame,
-      // trading a little responsiveness for a less jittery, more fluid
-      // motion.
-      pupilEase: 0.1,
-      touchOpenHold: 2200
     },
 
     hand: {
@@ -108,7 +70,7 @@ window.SITE_CONFIG = {
       // baseline. Applied as CSS custom properties at init.
       scale: 1.3,      // 1.3 = 30% bigger
       offsetX: -22,     // px, shifts the whole hand box left (unchanged)
-      offsetY: 80       // px, shifts the whole hand box upward
+      offsetY: -10       // px, shifts the whole hand box upward
     }
   },
 
