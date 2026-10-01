@@ -42,17 +42,22 @@
     {
       id: 'next-stop',
       year: 2027,
-      heading: 'next stop: singapore',
-      body: 'studying abroad at Singapore Management University, spring 2027.'
+      heading: 'Next Stop: Singapore',
+      body: 'Studying abroad at Singapore Management University, spring 2027.'
     },
     {
       id: 'summer-2027',
       year: 2027,
-      heading: "summer 2027: the reel's still spinning",
-      body: "open to summer 2027 opportunities — let's talk.",
+      heading: "Summer 2027: The Reel's Still Spinning",
+      body: "Open to summer 2027 opportunities, let's talk.",
       link: 'mailto:neha.jatla@duke.edu'
     }
   ];
+
+  // Material "flight" glyph, drawn in currentColor so it matches the
+  // question mark on the summer card (the ✈ text glyph renders tiny
+  // and inconsistently across fonts).
+  const PLANE_SVG = '<svg viewBox="0 0 24 24" width="64" height="64" fill="currentColor" style="transform:rotate(90deg)"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>';
 
   const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -144,7 +149,7 @@
       // every other card's thumbnail, not the whole (taller) card.
       el.innerHTML = `
         <div class="tl-look-box">
-          <p class="tl-look-icon" aria-hidden="true">${c.id === 'next-stop' ? '&#9992;' : '&#9679;'}</p>
+          <p class="tl-look-icon" aria-hidden="true">${c.id === 'next-stop' ? PLANE_SVG : '?'}</p>
         </div>
         <div class="tl-card-caption tl-look-caption">
           <h3 class="tl-look-heading">${c2.heading}</h3>

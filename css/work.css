@@ -137,10 +137,19 @@
 .case-body > .case-confidential,
 .case-body > .case-ablation,
 .case-body > .case-press,
+.case-body > .case-pair,
+.case-body > .case-scores,
+.case-body > .case-cards,
+.case-body > .case-story,
+.case-body > .case-phases,
+.case-body > .case-ethos,
 .case-body > figure { grid-column: 1 / -1; }
+.case-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+@media (max-width: 640px) { .case-pair { grid-template-columns: 1fr; } }
 .case-body figure { display: flex; flex-direction: column; gap: 8px; margin: 8px 0 24px; }
 .case-body figure .case-frame { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--card-bg); }
 .case-body figure .case-frame img { width: 100%; display: block; margin: 0; border-radius: 0; }
+.case-body figure .case-frame--pad { padding: 20px; background: #fff; }
 .case-body figcaption { font-size: 12px; color: var(--ink-muted); }
 .case-body h3 { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 400; color: var(--ink); margin: 48px 0 14px; scroll-margin-top: 90px; }
 .case-body .case-col > h3:first-child { margin-top: 0; }
@@ -164,7 +173,7 @@
    just RTC's. ─────────────────────────────────────────────────── */
 .case-meta { display: flex; flex-wrap: wrap; gap: 32px; margin: 8px 0 12px; }
 .case-meta > div { display: flex; flex-direction: column; gap: 6px; min-width: 140px; }
-.case-meta .case-meta-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-muted); }
+.case-body .case-meta-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-muted); margin: 0; }
 .case-meta p { color: var(--ink); margin: 0; font-size: 14px; }
 
 .case-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 8px 0 24px; }
@@ -190,6 +199,40 @@
   font-style: italic;
 }
 .case-confidential a { color: var(--color-30); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── Score tiles, labeled cards, user stories, phases and a pull-quote
+   — the building blocks of a product-brief style case study (Lovable).
+   .is-muted marks the downside cards (weaknesses, threats, risks). */
+.case-scores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 0 0 24px; }
+.case-score { border-top: 1px solid var(--border); padding-top: 12px; font-size: 13px; color: var(--ink-muted); }
+.case-score b { display: block; font-family: var(--font-serif); font-weight: 400; font-size: 1.9rem; color: var(--color-30); line-height: 1.1; }
+.case-score span { display: block; color: var(--ink); }
+
+.case-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0 0 24px; }
+.case-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; font-size: 14px; color: var(--ink); }
+.case-card h4 { font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-30); margin-bottom: 8px; }
+.case-card.is-muted h4 { color: var(--ink-muted); }
+.case-card p { margin: 0; }
+.case-card ul { margin: 0 0 0 16px; }
+.case-card li { margin-bottom: 4px; }
+
+.case-story { background: var(--card-bg); border: 1px solid var(--border); border-left: 3px solid var(--color-30); border-radius: 8px; padding: 18px 20px; margin: 0 0 16px; }
+.case-story-as { font-family: var(--font-serif); font-size: 1.2rem; line-height: 1.45; font-style: italic; color: var(--ink); margin: 6px 0 14px !important; }
+.case-story-cols { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; font-size: 13.5px; color: var(--ink); }
+.case-story-cols ul { margin: 6px 0 0 16px; }
+.case-story-cols li { margin-bottom: 3px; }
+
+.case-phases { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 0 0 24px; }
+.case-phase { border-top: 2px solid var(--color-30); padding-top: 12px; }
+.case-body .case-phase .case-meta-label { color: var(--color-30); }
+.case-phase p:last-child { color: var(--ink); margin: 4px 0 0; }
+
+.case-ethos { border-left: 2px solid var(--color-30); padding-left: 16px; font-family: var(--font-serif); font-size: 1.3rem; line-height: 1.45; font-style: italic; color: var(--ink); }
+
+@media (max-width: 640px) {
+  .case-scores { grid-template-columns: repeat(2, 1fr); }
+  .case-cards, .case-story-cols, .case-phases { grid-template-columns: 1fr; }
+}
 
 /* ── Ablation / comparison bar-table — a label, a proportional bar,
    and a value, one row per prompt variant (or similar). The "full"

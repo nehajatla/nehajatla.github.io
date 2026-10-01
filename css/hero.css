@@ -22,7 +22,7 @@
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  padding: calc(var(--nav-h) + 4vh) 8vw 6vh;
+  padding: calc(var(--nav-h) + 4vh) 8vw 6vh 16vw;
   background: transparent;
 }
 

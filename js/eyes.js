@@ -8,14 +8,14 @@
    on phase 1 (open); every ~3-5s (randomized) it blinks through
    1->2->3->2->1, holding each of 2/3 for ~70ms.
 
-   The pupil is a separate circle (#eye-pupil) that keeps tracking the
-   cursor regardless of blink phase — it's inside a masked layer
-   (#eye-pupil-clip) whose mask-image is swapped to match whichever
-   frame's own outline is currently showing (phase 1's mask while
-   resting/phase 1, phase 2's while mid-blink on phase 2), and hidden
-   outright on phase 3 (eyes fully shut). Travel is additionally
-   clamped to an ellipse inscribed in phase 1's outline (a soft, natural
-   range — the mask is what actually guarantees no visual overflow).
+   The pupil is a separate circle (#eye-pupil) that tracks the cursor
+   while the eye is open (phase 1) and freezes in place for the length
+   of a blink, easing to wherever the cursor is once the eye reopens.
+   Its travel is clamped to an ellipse measured off phase 1's art so
+   the WHOLE circle always stays inside the eye outline, never cut off
+   by it. During a blink it sits in a masked layer (#eye-pupil-clip)
+   whose mask-image follows the current frame, so the closing lid
+   covers it, and it's hidden outright on phase 3 (eyes fully shut).
    ================================================================ */
 (function () {
   'use strict';
@@ -35,9 +35,15 @@
   // Geometry measured directly off the traced source art (all three
   // frames share this canvas, see the asset header in that extraction
   // — phase 1's own painted rect is the reference for all of it).
-  const PUPIL_CENTER_FRAC = { x: 0.6034, y: 0.5725 };
-  const PUPIL_RADIUS_FRAC = 0.1763;
-  const POD_BOUNDS_FRAC = { left: 0.0804, top: 0.2727, right: 0.9397, bottom: 0.9264 };
+  // The pupil as drawn (radius 0.1763 of the width) is as tall as the
+  // eye opening, which leaves it no room to move without crossing the
+  // lids, so it's drawn at 70% of that. TRAVEL is the largest ellipse
+  // of pupil-center positions where that circle, plus a few pixels of
+  // margin for the outline's soft edge, sits entirely inside the white
+  // of phase 1's eye (cx/rx are fractions of the art's width, cy/ry of
+  // its height); its center doubles as the resting, look-ahead spot.
+  const PUPIL_RADIUS_FRAC = 0.1234;
+  const TRAVEL_FRAC = { cx: 0.5128, cy: 0.6012, rx: 0.1080, ry: 0.0563 };
   const MASKS = {
     1: 'assets/hero/eye-phase1-mask.png',
     2: 'assets/hero/eye-phase2-mask.png'
@@ -83,20 +89,14 @@
     const painted = paintedRect();
     const stageBox = stage.getBoundingClientRect();
     const originX = painted.left - stageBox.left, originY = painted.top - stageBox.top;
-    const r = painted.width * PUPIL_RADIUS_FRAC;
-    const pad = 1.5;
-    const podLeft = originX + painted.width * POD_BOUNDS_FRAC.left;
-    const podRight = originX + painted.width * POD_BOUNDS_FRAC.right;
-    const podTop = originY + painted.height * POD_BOUNDS_FRAC.top;
-    const podBottom = originY + painted.height * POD_BOUNDS_FRAC.bottom;
     ellipse = {
-      cx: (podLeft + podRight) / 2,
-      cy: (podTop + podBottom) / 2,
-      rx: Math.max(0, (podRight - podLeft) / 2 - r - pad),
-      ry: Math.max(0, (podBottom - podTop) / 2 - r - pad)
+      cx: originX + painted.width * TRAVEL_FRAC.cx,
+      cy: originY + painted.height * TRAVEL_FRAC.cy,
+      rx: painted.width * TRAVEL_FRAC.rx,
+      ry: painted.height * TRAVEL_FRAC.ry
     };
-    restX = originX + painted.width * PUPIL_CENTER_FRAC.x;
-    restY = originY + painted.height * PUPIL_CENTER_FRAC.y;
+    restX = ellipse.cx;
+    restY = ellipse.cy;
     pupilDiameter = painted.width * PUPIL_RADIUS_FRAC * 2;
     pupil.style.width = pupilDiameter + 'px';
     pupil.style.height = pupilDiameter + 'px';
@@ -182,6 +182,7 @@
     if (lastTime === null) lastTime = now;
     const dt = Math.min((now - lastTime) / 1000, 0.1);
     lastTime = now;
+    if (phase !== 1) return; // mid-blink: hold still until the eye reopens
     const factor = 1 - Math.pow(1 - EASE, dt * 60);
     curX += (targetX - curX) * factor;
     curY += (targetY - curY) * factor;

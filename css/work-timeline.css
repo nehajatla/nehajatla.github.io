@@ -224,14 +224,16 @@
 
 /* ── Lookahead cards (2027) — same two-part shape as a project card:
    a boxed area sized to EXACTLY --card-h (matching the thumbnail
-   height exactly, not the whole taller card) with a dashed outline
-   instead of a thumbnail image, then unboxed caption text below. ── */
+   height exactly, not the whole taller card) as a plain white box with
+   a single icon instead of a thumbnail image, then unboxed caption
+   text below. ── */
 .tl-look-box {
   width: 100%;
   height: var(--card-h);
   box-sizing: border-box;
   flex: 0 0 auto;
-  border: 1.5px dashed var(--color-10);
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -239,10 +241,13 @@
 }
 .timeline-card--lookahead:hover .tl-look-box,
 .timeline-card--lookahead:focus-visible .tl-look-box {
-  background: color-mix(in srgb, var(--color-10) 14%, transparent);
+  background: color-mix(in srgb, var(--color-10) 8%, #fff);
 }
 .tl-look-icon {
-  font-size: 28px;
+  font-family: var(--font-serif-garamond, "EB Garamond", Garamond, Georgia, serif);
+  font-size: 72px;
+  line-height: 1;
+  display: flex;
   color: var(--color-30);
 }
 .tl-look-caption { display: flex; flex-direction: column; gap: 4px; }
