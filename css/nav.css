@@ -1,11 +1,9 @@
 /* ================================================================
    nav.css — shared site navigation, identical on every page.
    ================================================================ */
-/* Always fully transparent — no fill, no scroll-triggered fade/blur,
-   no border/shadow — so the grain background shows through behind it
-   and the logo/links are never dimmed or covered. nav.js still toggles
-   .is-scrolled for other purposes, but nothing here reads that class
-   anymore. */
+/* Transparent at the top of the page so the grain background shows
+   through; see .nav::before below for the fade that appears once
+   scrolled. */
 .nav {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -18,6 +16,22 @@
   background: transparent;
 }
 
+/* Once the page is scrolled (nav.js adds .is-scrolled), a cream fade
+   sits behind the nav so content scrolling up underneath it doesn't
+   collide with the tabs. At the very top it stays fully transparent,
+   so the grain background still shows through. */
+.nav::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 -24px;
+  z-index: -1;
+  background: linear-gradient(to bottom, var(--color-60) 72%, rgba(250, 248, 245, 0));
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+  pointer-events: none;
+}
+.nav.is-scrolled::before { opacity: 1; }
+
 /* ── Logo — large inline lotus mark, no visible wordmark (the link's
    aria-label carries "Neha Jatla — home" for assistive tech). Individual
    petals scale apart slightly on hover. */
@@ -29,8 +43,8 @@
 .nav-logo:hover,
 .nav-logo:focus-visible { opacity: 0.85; }
 .nav-logo-mark {
-  width: 44px;
-  height: 44px;
+  width: var(--nav-logo-w);
+  height: var(--nav-logo-w);
   overflow: visible;
 }
 .nav-logo-mark .petal {
@@ -54,7 +68,7 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  margin-left: 64px;
+  margin-left: var(--nav-gap);
   height: 34px;
 }
 .nav-links::before {
@@ -109,8 +123,6 @@
 }
 
 @media (max-width: 640px) {
-  .nav { padding: 0 20px; }
-  .nav-logo-mark { width: 34px; height: 34px; }
-  .nav-links { margin-left: 28px; }
+  :root { --pad-x: 20px; --nav-logo-w: 34px; --nav-gap: 28px; }
   .nav-label { font-size: 9px; }
 }

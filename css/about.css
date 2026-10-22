@@ -9,28 +9,69 @@
   display: flex;
   align-items: flex-start;
   gap: 6vw;
-  padding: calc(var(--nav-h) + 48px) 8vw 100px;
+  /* Left edge lines up with the Work tab, right edge with the end of
+     the nav line, so the page sits on the same grid as the nav. */
+  padding: calc(var(--nav-h) + 48px) var(--pad-x) 100px var(--grid-x);
   flex-wrap: wrap;
 }
 
-.face-flip {
-  position: relative;
-  width: min(460px, 70vw);
-  aspect-ratio: 3 / 4;
-  overflow: hidden;
-  border-radius: 4px;
-  background: var(--ink-ghost);
+/* ── Stories viewer — Instagram-style: progress bars on top, a set
+   time per photo, tap the left/right side to go back/forward, press
+   and hold to pause, groups (Professional / Dance / Casual) below.
+   Sticky, so it stays in place while the text column scrolls. */
+.stories {
+  position: sticky;
+  top: calc(var(--nav-h) + 48px);
+  width: min(420px, 70vw, calc((100vh - var(--nav-h) - 140px) * 0.75));
   flex-shrink: 0;
 }
-.face-flip img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 30%;
-  transition: opacity 0.25s linear;
+.stories-viewer {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #111;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
 }
+.stories-viewer:focus-visible { outline: 2px solid var(--color-30); outline-offset: 3px; }
+.stories-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.35s var(--ease); }
+.stories-slide.is-active { opacity: 1; }
+.stories-slide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* Landscape photos: shown whole, over a blurred copy of themselves. */
+.stories-slide .stories-bg { filter: blur(24px) brightness(0.7); transform: scale(1.15); }
+.stories-slide.is-contain .stories-fg { object-fit: contain; }
+
+.stories-bars { position: absolute; top: 10px; left: 10px; right: 10px; z-index: 3; display: flex; gap: 4px; }
+.stories-bar { flex: 1; height: 3px; border-radius: 2px; background: rgba(255, 255, 255, 0.35); overflow: hidden; }
+.stories-bar i { display: block; height: 100%; width: 0; background: #fff; }
+.stories-bar.is-done i { width: 100%; }
+
+.stories-caption {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
+  padding: 36px 14px 12px;
+  font-size: 13px; color: #fff;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent);
+  pointer-events: none;
+}
+.stories-tap { position: absolute; top: 0; bottom: 0; z-index: 2; cursor: pointer; }
+.stories-tap--prev { left: 0; width: 35%; }
+.stories-tap--next { right: 0; width: 65%; }
+
+.stories-groups { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.stories-group {
+  font-family: "Poppins", var(--font-sans);
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 7px 12px; border-radius: 999px;
+  color: var(--ink-muted);
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.stories-group:hover { color: var(--ink); border-color: var(--ink); }
+.stories-group[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--color-60); }
 
 .about-info { flex: 1 1 420px; min-width: 0; max-width: 640px; }
 
@@ -41,14 +82,14 @@
   color: var(--ink);
   margin-bottom: 12px;
 }
-.about-intro { font-size: 14px; line-height: 1.55; color: var(--ink-muted); max-width: 46em; margin-bottom: 14px; }
-.about-outside-label { font-size: 14px; line-height: 1.55; color: var(--ink-muted); margin-bottom: 2px; }
+.about-intro { font-family: var(--body-font); font-size: var(--body-size); line-height: var(--body-leading); color: var(--body-color); max-width: 46em; margin-bottom: 14px; }
+.about-outside-label { font-family: var(--body-font); font-size: var(--body-size); line-height: var(--body-leading); color: var(--body-color); margin-bottom: 2px; }
 
 .about-list { list-style: none; margin-bottom: 14px; }
-.about-list li { position: relative; padding-left: 16px; font-size: 14px; line-height: 1.5; color: var(--ink-muted); }
+.about-list li { position: relative; padding-left: 16px; font-family: var(--body-font); font-size: var(--body-size); line-height: var(--body-leading); color: var(--body-color); }
 .about-list li::before { content: '·'; position: absolute; left: 0; color: var(--ink-muted); }
 
-.about-contact { font-size: 14px; line-height: 1.55; color: var(--ink-muted); margin-bottom: 26px; scroll-margin-top: calc(var(--nav-h) / 2); }
+.about-contact { font-family: var(--body-font); font-size: var(--body-size); line-height: var(--body-leading); color: var(--body-color); margin-bottom: 26px; scroll-margin-top: calc(var(--nav-h) / 2); }
 .about-contact a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; transition: opacity 0.2s; }
 .about-contact a:hover { opacity: 0.6; }
 
@@ -61,6 +102,6 @@
 .about-row-year { font-size: 13px; color: var(--ink-muted); white-space: nowrap; flex-shrink: 0; }
 
 @media (max-width: 720px) {
-  .about-main { flex-direction: column; align-items: center; text-align: left; }
-  .face-flip { width: min(420px, 86vw); }
+  .about-main { flex-direction: column; align-items: center; text-align: left; padding-left: var(--pad-x); }
+  .stories { position: relative; top: auto; width: min(420px, 100%); }
 }

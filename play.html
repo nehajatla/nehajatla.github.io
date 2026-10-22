@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Hide the system arrow before any stylesheet loads (the black dot from js/cursor.js is the cursor). -->
+  <style>@media (hover: hover) and (pointer: fine) { *, *::before, *::after { cursor: none !important; } }</style>
   <title>Play — Neha Jatla</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg?v=5">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,24 +35,22 @@
     </ul>
   </nav>
 
-  <div class="play-intro" aria-hidden="true"><p>An infinite wall. Scroll, drag, or scatter around.</p></div>
+  <main class="museum" aria-label="Play: motion experiments, art and photography">
+    <h1 class="sr-only">Play</h1>
+    <canvas class="fx" id="aura" aria-hidden="true"></canvas>
+    <canvas class="fx" id="grain" aria-hidden="true"></canvas>
+    <div class="scene" id="scene">
+      <div class="room" id="room">
+        <div class="floor" aria-hidden="true"></div>
+        <div class="ceiling" aria-hidden="true"></div>
+        <section class="wall back" aria-label="Back wall"><div class="comp" id="wall-back"></div></section>
+        <section class="wall left" aria-label="Left wall" id="wall-left"></section>
+        <section class="wall right" aria-label="Right wall" id="wall-right"></section>
+      </div>
+    </div>
+    <p class="museum-hint" aria-hidden="true">Move to look around · scroll to step closer</p>
+  </main>
 
-  <div class="bg-field bg-field--fixed" aria-hidden="true">
-    <canvas class="bg-grain-flow"></canvas>
-  </div>
-
-  <div id="viewport">
-    <div id="canvas"></div>
-  </div>
-
-  <div id="hint">
-    <div class="hint-line"></div>
-    <span>Scroll / Drag to Move</span>
-    <div class="hint-line"></div>
-  </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="js/bg-grain-flow.js"></script>
   <script src="js/play.js"></script>
   <script src="js/config.js"></script>
   <script src="js/nav.js"></script>

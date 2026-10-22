@@ -1,19 +1,22 @@
 /* ================================================================
-   cursor.js — a single black dot that follows the pointer with lerp
-   easing (pointer devices only), grows on hover, shrinks on press.
-   Over an element with [data-cursor-label], the dot itself morphs
+   cursor.js — a single black dot that IS the cursor (pointer devices
+   only): it sits exactly on the pointer, grows on hover, shrinks on
+   press. Over an element with [data-cursor-label], the dot morphs
    from a circle into an oval pill carrying that label's text (e.g.
-   "eye" / "hand") instead of just growing. Transform-only
-   (translate3d + a constant translate(-50%,-50%) for centering, so
-   the pill's variable width never needs JS to know its own size).
+   "eye" / "hand").
+
+   Tracking is 1:1 with no easing or trailing. The position is read
+   from the browser's fastest pointer event (pointerrawupdate where it
+   exists, pointermove otherwise) and written once per frame, so the
+   dot never lags behind the real pointer. It exists under reduced
+   motion too (following the pointer isn't decorative motion), so the
+   system arrow never has to stand in for it.
    ================================================================ */
 (function () {
   'use strict';
   const CFG = (window.SITE_CONFIG && window.SITE_CONFIG.cursor) || {};
-  const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const IS_FINE_POINTER = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-
-  if (REDUCED_MOTION || !IS_FINE_POINTER) return;
+  if (!IS_FINE_POINTER) return;
 
   const dot = document.createElement('div');
   dot.className = 'cursor-dot';
@@ -31,16 +34,31 @@
 
   document.body.appendChild(dot);
 
-  const ease = CFG.ease || 0.25;
-  let x = window.innerWidth / 2, y = window.innerHeight / 2;
-  let targetX = x, targetY = y;
-  let started = false;
+  let x = -200, y = -200;
+  let dirty = false;
 
-  document.addEventListener('pointermove', (e) => {
-    targetX = e.clientX;
-    targetY = e.clientY;
-    if (!started) { started = true; x = targetX; y = targetY; }
-  }, { passive: true });
+  function place() {
+    dirty = false;
+    // translate(-50%,-50%) centers on (x,y) whatever the dot's current
+    // size, so the pill's variable text width never needs measuring.
+    dot.style.transform = 'translate3d(' + x + 'px, ' + y + 'px, 0) translate(-50%, -50%)';
+  }
+  function onMove(e) {
+    x = e.clientX;
+    y = e.clientY;
+    if (!dirty) { dirty = true; requestAnimationFrame(place); }
+    dot.classList.remove('is-away');
+  }
+  const moveEvent = 'onpointerrawupdate' in window ? 'pointerrawupdate' : 'pointermove';
+  document.addEventListener(moveEvent, onMove, { passive: true });
+  // pointermove still fires during drags/scroll in some browsers where
+  // the raw event pauses, so keep it as a backup either way.
+  if (moveEvent !== 'pointermove') document.addEventListener('pointermove', onMove, { passive: true });
+
+  // Hide the dot while the pointer is outside the page, instead of
+  // leaving it parked at the last edge it touched.
+  document.documentElement.addEventListener('pointerleave', () => dot.classList.add('is-away'));
+  window.addEventListener('blur', () => dot.classList.add('is-away'));
 
   document.addEventListener('pointerdown', () => dot.classList.add('is-pressed'));
   document.addEventListener('pointerup', () => dot.classList.remove('is-pressed'));
@@ -48,7 +66,7 @@
   const hoverSelector = CFG.hoverSelector || 'a, button';
   const labelSelector = '[data-cursor-label]';
   document.addEventListener('pointerover', (e) => {
-    if (!(e.target.closest && e.target.closest)) return;
+    if (!e.target.closest) return;
     const labelTarget = e.target.closest(labelSelector);
     if (labelTarget) {
       pillText.textContent = labelTarget.getAttribute('data-cursor-label');
@@ -58,35 +76,8 @@
     }
   });
   document.addEventListener('pointerout', (e) => {
-    if (!(e.target.closest && e.target.closest)) return;
+    if (!e.target.closest) return;
     if (e.target.closest(labelSelector)) dot.classList.remove('is-labeled');
     if (e.target.closest(hoverSelector)) dot.classList.remove('is-hovering');
   });
-
-  // Frame-rate-independent smoothing: a plain `x += (target-x)*ease` looks
-  // jerky whenever the frame interval varies (e.g. the WebGL background
-  // on this page occasionally pushes a frame long), because the same
-  // per-frame factor then represents a different amount of real time.
-  // Scaling the factor by the actual elapsed time keeps the motion at
-  // the same visual speed regardless of frame pacing.
-  let lastTime = null;
-  function frame(now) {
-    if (lastTime === null) lastTime = now;
-    const dt = Math.min((now - lastTime) / 1000, 0.1);
-    lastTime = now;
-    const factor = 1 - Math.pow(1 - ease, dt * 60);
-
-    x += (targetX - x) * factor;
-    y += (targetY - y) * factor;
-    // Snap once close enough to kill residual sub-pixel drift/jitter.
-    if (Math.abs(targetX - x) < 0.05) x = targetX;
-    if (Math.abs(targetY - y) < 0.05) y = targetY;
-
-    // translate(-50%,-50%) centers on (x,y) regardless of the dot's own
-    // current box size, so the pill's variable text width never has to
-    // be measured/subtracted here the way a fixed circle radius was.
-    dot.style.transform = 'translate3d(' + (Math.round(x * 100) / 100) + 'px, ' + (Math.round(y * 100) / 100) + 'px, 0) translate(-50%, -50%)';
-    requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
 })();

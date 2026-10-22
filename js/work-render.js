@@ -38,13 +38,18 @@
   function buildToc(projectId) {
     if (!tocEl) return;
     tocEl.innerHTML = '';
-    tocHeadings = Array.from(bodyEl.querySelectorAll('h3'));
+    // The meta row (role/timeline/team/skills) counts as "Overview";
+    // each h3 carries a one-word data-toc label for the sidebar, while
+    // its full sentence stays as the heading in the body.
+    const meta = bodyEl.querySelector('.case-meta');
+    if (meta) meta.dataset.toc = 'Overview';
+    tocHeadings = Array.from(bodyEl.querySelectorAll('.case-meta, h3'));
     tocLinks = tocHeadings.map((h, i) => {
       const id = 'sec-' + i + '-' + h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-+|-+$)/g, '').slice(0, 40);
       h.id = id;
       const a = document.createElement('a');
       a.href = '#' + id;
-      a.textContent = h.textContent;
+      a.textContent = h.dataset.toc || h.textContent;
       a.addEventListener('click', (e) => {
         e.preventDefault();
         h.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -69,11 +74,41 @@
   }
   overlay.addEventListener('scroll', updateActiveToc, { passive: true });
 
+  // Case-study videos are hosted on the site (not embedded from another
+  // site) with these small custom controls: an embedded frame from
+  // another origin can't be styled, so the system arrow would replace
+  // the site's dot cursor over it.
+  function initVideo(wrap) {
+    const video = wrap.querySelector('video');
+    const big = wrap.querySelector('.case-video-play');
+    const toggle = wrap.querySelector('.case-video-toggle');
+    const seek = wrap.querySelector('.case-video-seek');
+    const time = wrap.querySelector('.case-video-time');
+    const fmt = (t) => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
+    const flip = () => (video.paused ? video.play() : video.pause());
+    big.addEventListener('click', flip);
+    toggle.addEventListener('click', flip);
+    video.addEventListener('click', flip);
+    video.addEventListener('play', () => { wrap.classList.add('is-playing'); toggle.textContent = 'Pause'; toggle.setAttribute('aria-label', 'Pause'); });
+    video.addEventListener('pause', () => { wrap.classList.remove('is-playing'); toggle.textContent = 'Play'; toggle.setAttribute('aria-label', 'Play'); });
+    video.addEventListener('timeupdate', () => {
+      if (!video.duration) return;
+      seek.value = String(Math.round((video.currentTime / video.duration) * 1000));
+      time.textContent = fmt(video.currentTime) + ' / ' + fmt(video.duration);
+    });
+    seek.addEventListener('input', () => {
+      if (video.preload === 'none') video.preload = 'metadata';
+      const go = () => { video.currentTime = (seek.value / 1000) * video.duration; };
+      if (video.duration) go(); else video.addEventListener('loadedmetadata', go, { once: true });
+    });
+  }
+
   function open(p) {
     labelEl.textContent = p.context;
     titleEl.textContent = p.title;
     metaEl.textContent = p.tags.join(' · ');
     bodyEl.innerHTML = p.body;
+    bodyEl.querySelectorAll('.case-video').forEach(initVideo);
     buildToc(p.id);
     overlay.setAttribute('aria-hidden', 'false');
     overlay.classList.add('is-open');
@@ -85,6 +120,7 @@
   }
 
   const close = () => {
+    bodyEl.querySelectorAll('video').forEach((v) => v.pause());
     overlay.setAttribute('aria-hidden', 'true');
     overlay.classList.remove('is-open');
     document.body.style.overflow = '';

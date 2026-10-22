@@ -37,8 +37,20 @@
   --font-sans: "Inter", "Poppins", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", "JetBrains Mono", monospace;
 
+  /* Body text — one style for every paragraph on Work, Play and About. */
+  --body-font: var(--font-sans);
+  --body-size: 15px;
+  --body-leading: 1.7;
+  --body-color: var(--ink-soft);
+
   --nav-h: 118px;
   --pad-x: 52px;
+  /* The nav's logo + gap set where the first tab (Work) starts;
+     --grid-x is that same left edge, for page content that should
+     line up under the tabs. */
+  --nav-logo-w: 44px;
+  --nav-gap: 64px;
+  --grid-x: calc(var(--pad-x) + var(--nav-logo-w) + var(--nav-gap));
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 

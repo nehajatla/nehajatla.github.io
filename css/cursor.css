@@ -5,13 +5,13 @@
    cursor site-wide.
    ================================================================ */
 @media (hover: hover) and (pointer: fine) {
-  body { cursor: none; }
-  /* Mirrors js/config.js's cursor.hoverSelector exactly — anything the
-     dot grows for must also lose its native cursor here, or the arrow
-     (or a more specific cursor like grab/pointer from another
-     stylesheet loaded later) shows alongside the dot instead of it. */
-  a, button, [role="button"], .word, .glyph-img, input[type="checkbox"],
-  .work-card, .preview-card, .timeline-card, .timeline-viewport, [tabindex] { cursor: none; }
+  /* The black dot is the only cursor, everywhere: no arrow, pointer
+     hand, grab hand or zoom glass from any page's own stylesheet ever
+     shows alongside it (hence !important on every element). */
+  *, *::before, *::after { cursor: none !important; }
+  /* Separate rule: a browser without view transitions drops only this
+     one, never the line above. Covers the crossfade between pages. */
+  ::view-transition, ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { cursor: none !important; }
 }
 
 /* Position (translate3d + a constant translate(-50%,-50%), set every
@@ -28,7 +28,10 @@
   z-index: 9999;
   transform: translate3d(-200px, -200px, 0);
   will-change: transform;
+  contain: layout style;
+  transition: opacity 0.15s linear;
 }
+.cursor-dot.is-away { opacity: 0; }
 .cursor-dot-inner {
   position: absolute;
   top: 50%;
@@ -39,7 +42,7 @@
   border-radius: 50%;
   background: var(--ink);
   transform: scale(0.407); /* 11px / 27px base size */
-  transition: transform 0.2s var(--ease), opacity 0.2s var(--ease);
+  transition: transform 0.14s cubic-bezier(0.2, 0.9, 0.3, 1.25), opacity 0.14s ease-out;
 }
 
 /* A LITTLE bigger (not a dramatic grow-and-fade) while hovering a
@@ -83,16 +86,19 @@
   text-transform: uppercase;
   white-space: nowrap;
   opacity: 0;
-  transition: opacity 0.2s var(--ease), transform 0.2s var(--ease);
+  transition: opacity 0.16s ease-out, transform 0.16s cubic-bezier(0.2, 0.9, 0.3, 1.25);
 }
 .cursor-dot.is-labeled .cursor-dot-pill {
   opacity: 1;
   transform: translate(-50%, calc(-50% - 30px)) scale(1);
 }
 
-/* Hidden entirely on touch/coarse pointers and under reduced motion —
-   native cursor is used instead in both cases. */
-@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+/* Hidden on touch/coarse pointers, where there's no cursor to replace.
+   Under reduced motion the dot still shows (it is the cursor); only its
+   grow/shrink transitions are dropped. */
+@media (hover: none), (pointer: coarse) {
   .cursor-dot { display: none; }
-  body, a, button, [role="button"] { cursor: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cursor-dot, .cursor-dot-inner, .cursor-dot-pill { transition: none !important; }
 }

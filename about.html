@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Hide the system arrow before any stylesheet loads (the black dot from js/cursor.js is the cursor). -->
+  <style>@media (hover: hover) and (pointer: fine) { *, *::before, *::after { cursor: none !important; } }</style>
   <title>About — Neha Jatla</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg?v=5">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,7 +40,16 @@
       <canvas class="bg-grain-flow"></canvas>
     </div>
 
-    <div class="face-flip reveal" id="face-flip" aria-hidden="true"></div>
+    <section class="stories reveal" id="stories" aria-roledescription="carousel" aria-label="Photos of Neha">
+      <div class="stories-viewer" tabindex="0" aria-label="Photo viewer. Tap or use the arrow keys to move between photos; press and hold, or space, to pause.">
+        <div class="stories-bars" aria-hidden="true"></div>
+        <div class="stories-frame"></div>
+        <p class="stories-caption" aria-live="polite"></p>
+        <button class="stories-tap stories-tap--prev" type="button" aria-label="Previous photo"></button>
+        <button class="stories-tap stories-tap--next" type="button" aria-label="Next photo"></button>
+      </div>
+      <div class="stories-groups" role="group" aria-label="Photo groups"></div>
+    </section>
 
     <div class="about-info">
       <h1 class="about-title reveal">Hi there, I'm Neha.</h1>
@@ -65,7 +76,7 @@
           <p class="about-row-year">2025&ndash;2026</p>
         </div>
         <div class="about-row">
-          <p class="about-row-left"><span class="about-row-title">Duke AI Health</span> <span class="about-row-sep">/</span> <span class="about-row-role">Product Research &amp; Engineering</span></p>
+          <p class="about-row-left"><span class="about-row-title">Duke CS+</span> <span class="about-row-sep">/</span> <span class="about-row-role">Product Research &amp; Engineering</span></p>
           <p class="about-row-year">Summer 2025</p>
         </div>
         <div class="about-row">

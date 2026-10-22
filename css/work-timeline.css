@@ -216,9 +216,9 @@
   margin-bottom: 4px;
 }
 .tl-card-role {
-  font-family: "Poppins", var(--font-sans);
-  font-size: 12px;
-  letter-spacing: 0.02em;
+  font-family: var(--body-font);
+  font-size: 13px;
+  letter-spacing: 0;
   color: var(--ink-muted);
 }
 
@@ -259,10 +259,10 @@
   line-height: 1.2;
 }
 .tl-look-body {
-  font-family: "Poppins", var(--font-sans);
-  font-size: 13px;
-  color: var(--ink-muted);
-  line-height: 1.55;
+  font-family: var(--body-font);
+  font-size: var(--body-size);
+  color: var(--body-color);
+  line-height: var(--body-leading);
   max-width: 34ch;
 }
 

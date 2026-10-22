@@ -75,11 +75,11 @@ window.SITE_CONFIG = {
   cursor: {
     // NOTE: size/hoverSize/pressSize document the pixel sizes cursor.css
     // hardcodes (11 / 16 / 7px via scale() against a 27px base box) —
-    // they aren't read at runtime, only `ease` and `hoverSelector` are.
+    // they aren't read at runtime, only `hoverSelector` is. The dot
+    // tracks the pointer 1:1 (no easing), see cursor.js.
     size: 11,
     hoverSize: 16,
     pressSize: 7,
-    ease: 0.35,
     // .timeline-card is included explicitly because the "next stop:
     // singapore" card has no href (case study opens later) and is
     // rendered as a plain <div>, not an <a> — it wouldn't otherwise

@@ -3,7 +3,13 @@
    reveals. Shared by every page.
    ================================================================ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* Scrollbars are hidden everywhere (scrolling still works): a scrollbar
+   is browser chrome that always shows the system arrow, which the dot
+   cursor can't cover. With no scrollbar width, pages also can't shift
+   sideways when moving between ones that do and don't scroll. */
 html { scroll-behavior: smooth; }
+* { scrollbar-width: none; }
+*::-webkit-scrollbar { display: none; }
 body {
   background: var(--color-60);
   color: var(--ink);

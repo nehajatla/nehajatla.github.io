@@ -1,129 +1,170 @@
 /* ================================================================
-   play.css — play.html, the infinite pannable art-museum canvas.
-   Ported from the previous playground.html's inline <style>, minus
-   nav/cursor/ambient-background which now live in the shared
-   nav.css/cursor.css/base.css. See js/play.js for the engine.
+   play.css — play.html: a 3D museum room (from play-museum.html).
+   Three invisible walls (back, left, right) hold the pieces; the
+   cursor turns the view, scrolling steps closer. Each piece sits
+   whole, edge to edge (no cropping, no border) with a small placard
+   underneath; hovering lifts it off the wall and blooms a grainy
+   aura with drifting grains behind it (canvas.fx, drawn by play.js).
+
+   Units: 1em on a wall = 1% of the room width (--W), so the whole
+   hang scales with the window. Sizes/positions come from play.js.
    ================================================================ */
-html, body.play-body {
-  width: 100%; height: 100%;
-  overflow: hidden;
-}
+html:has(body.play-body), body.play-body { height: 100%; overflow: hidden; }
 body.play-body { background: var(--color-60); }
 
-.play-intro {
-  position: fixed;
-  top: calc(var(--nav-h) + 18px);
-  left: 0; right: 0;
-  z-index: 200;
-  text-align: center;
-  pointer-events: none;
-}
-.play-intro p {
-  display: inline-block;
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 14px;
-  color: var(--ink-muted);
-  background: rgba(250,248,245,0.7);
-  padding: 4px 14px;
-  border-radius: 20px;
-}
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-#viewport { position: fixed; inset: 0; overflow: hidden; }
-#canvas {
+.museum { position: fixed; inset: 0; }
+
+/* camera */
+.scene {
+  --W: 1800px; --H: 1000px; --D: 1000px; --P: 1200px;
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  will-change: transform;
-  transform: translate3d(0,0,0);
-}
-#canvas::before {
-  content: '';
-  position: fixed;
   inset: 0;
+  perspective: var(--P);
+  perspective-origin: 50% 54%;
+  touch-action: none;
+}
+
+/* the room — walls are invisible; the pieces make the room */
+.room { position: absolute; left: 50%; top: 54%; width: 0; height: 0; transform-style: preserve-3d; will-change: transform; }
+.wall { position: absolute; transform-style: preserve-3d; font-size: calc(var(--W) / 100); }
+.back  { width: var(--W); height: var(--H); left: calc(var(--W) / -2); top: calc(var(--H) / -2);
+         transform: translateZ(calc(var(--D) / -2)); }
+.left  { width: var(--D); height: var(--H); left: calc(var(--D) / -2); top: calc(var(--H) / -2);
+         transform: translateX(calc(var(--W) / -2)) rotateY(90deg); }
+.right { width: var(--D); height: var(--H); left: calc(var(--D) / -2); top: calc(var(--H) / -2);
+         transform: translateX(calc(var(--W) / 2)) rotateY(-90deg); }
+
+/* ── room surfaces: very faint shading, darkest into the corners,
+   and hairline creases where planes meet, so the pieces read as
+   hanging in a room. Each surface sits 1px behind its wall so it
+   never z-fights with a piece hung flat at z = 0. ─────────────── */
+.wall::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateZ(-1px);
   pointer-events: none;
-  z-index: 1;
+}
+.back::before {
   background:
-    radial-gradient(circle at 18% 22%, rgba(17,17,17,0.018) 0%, transparent 50%),
-    radial-gradient(circle at 82% 74%, rgba(17,17,17,0.018) 0%, transparent 50%);
+    linear-gradient(90deg, rgba(60, 45, 30, .06), rgba(60, 45, 30, 0) 9%, rgba(60, 45, 30, 0) 91%, rgba(60, 45, 30, .06)),
+    linear-gradient(180deg, rgba(60, 45, 30, .035), rgba(60, 45, 30, 0) 14%, rgba(60, 45, 30, 0) 84%, rgba(60, 45, 30, .07));
+  box-shadow: inset 1px 0 0 rgba(17, 17, 17, .07), inset -1px 0 0 rgba(17, 17, 17, .07), inset 0 -1px 0 rgba(17, 17, 17, .08);
 }
-
-.frame { position: absolute; top: 0; left: 0; user-select: none; -webkit-user-select: none; }
-.frame.near-cursor { will-change: transform; }
-
-.frame-img-wrap {
-  width: 100%; height: 100%;
-  overflow: hidden;
-  border-radius: 4px;
-  box-shadow:
-    0 2px 3px rgba(17,17,17,0.06),
-    0 14px 36px rgba(17,17,17,0.11),
-    0 36px 72px rgba(17,17,17,0.07);
+/* left wall: its right edge is the back corner, its left edge is near the viewer */
+.left::before {
+  background:
+    linear-gradient(90deg, rgba(60, 45, 30, 0) 45%, rgba(60, 45, 30, .075)),
+    linear-gradient(180deg, rgba(60, 45, 30, .03), rgba(60, 45, 30, 0) 14%, rgba(60, 45, 30, 0) 84%, rgba(60, 45, 30, .07));
+  box-shadow: inset -1px 0 0 rgba(17, 17, 17, .08), inset 0 -1px 0 rgba(17, 17, 17, .08);
 }
-.frame-img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  display: block;
+/* right wall: its left edge is the back corner */
+.right::before {
+  background:
+    linear-gradient(270deg, rgba(60, 45, 30, 0) 45%, rgba(60, 45, 30, .075)),
+    linear-gradient(180deg, rgba(60, 45, 30, .03), rgba(60, 45, 30, 0) 14%, rgba(60, 45, 30, 0) 84%, rgba(60, 45, 30, .07));
+  box-shadow: inset 1px 0 0 rgba(17, 17, 17, .08), inset 0 -1px 0 rgba(17, 17, 17, .08);
+}
+/* floor and ceiling: W wide, D deep, folded flat at the walls' bottom/top edge */
+.floor, .ceiling {
+  position: absolute;
+  width: var(--W); height: var(--D);
+  left: calc(var(--W) / -2); top: calc(var(--D) / -2);
   pointer-events: none;
-  background: linear-gradient(135deg, #e3ded4, #efe9de);
 }
-.frame-video {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  display: block;
-  pointer-events: none;
-  background: linear-gradient(135deg, #e3ded4, #efe9de);
+.floor {
+  transform: translateY(calc(var(--H) / 2)) rotateX(90deg);
+  /* top edge of this plane meets the back wall: a soft contact shadow there and along both side walls */
+  background:
+    linear-gradient(180deg, rgba(60, 45, 30, .09), rgba(60, 45, 30, .02) 12%, rgba(60, 45, 30, 0) 40%),
+    linear-gradient(90deg, rgba(60, 45, 30, .06), rgba(60, 45, 30, 0) 8%, rgba(60, 45, 30, 0) 92%, rgba(60, 45, 30, .06)),
+    #F3EFE9;
 }
-.frame-embed {
-  width: 100%; height: 100%;
-  display: block;
-  border: none;
-  background: #ededed;
+.ceiling {
+  transform: translateY(calc(var(--H) / -2)) rotateX(-90deg);
+  background:
+    linear-gradient(0deg, rgba(60, 45, 30, .05), rgba(60, 45, 30, 0) 30%),
+    #FBFAF7;
 }
 
-.frame-caption { padding-top: 12px; text-align: left; }
-.frame-title {
+/* the back wall is laid out on a 100 x 65em grid, then scaled to fit */
+.comp { position: absolute; left: 50%; top: 50%; width: 100em; height: 65em; margin: -32.5em 0 0 -50em;
+        transform: scale(.82); transform-style: preserve-3d; }
+
+/* ── a piece ──────────────────────────────────────────────────── */
+.piece {
+  position: absolute;
+  transform: translateZ(var(--z, 0px));
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform .38s cubic-bezier(.22, 1, .36, 1);
+}
+.piece:hover { transform: translateZ(calc(var(--z, 0px) + 60px)) scale(1.03); }
+
+.frame {
+  /* no mat or border: the box is sized to the piece, so the piece
+     itself fills it edge to edge with only a soft shadow */
+  position: absolute;
+  inset: 0;
+  box-shadow: 0 0.9em 1.8em -1.1em rgba(17, 17, 17, 0.32);
+  transition: box-shadow .38s cubic-bezier(.22, 1, .36, 1);
+}
+.piece:hover .frame { box-shadow: 0 1.6em 2.8em -1.2em rgba(17, 17, 17, 0.34); }
+.frame img,
+.frame video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* museum placard under each piece */
+.placard {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 0.7em);
+  width: max(100%, 9em);       /* wraps under narrow pieces instead of running into neighbours */
+  font-size: 0.8em;
+  line-height: 1.35;
+  pointer-events: none;
+}
+.placard b {
+  display: block;
   font-family: var(--font-serif);
-  font-size: 16px;
-  font-weight: 400;
-  letter-spacing: 0.01em;
+  font-weight: 500;
+  font-size: 1.25em;
   color: var(--ink);
-  margin-bottom: 3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
-.frame-sub {
-  font-family: var(--font-sans);
-  font-style: italic;
-  font-size: 12.5px;
-  color: var(--ink-ghost);
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.placard span {
+  display: block;
+  margin-top: 0.15em;
+  font-family: "Poppins", var(--font-sans);
+  font-size: 0.78em;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
 }
 
-#hint {
-  position: fixed;
-  bottom: 30px; left: 50%;
-  transform: translateX(-50%);
-  font-size: 11px;
+/* hover effect layers (aura + grains), BEHIND the room so they bloom
+   out from behind the hovered piece */
+.fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; display: block; }
+
+.museum-hint {
+  position: absolute;
+  left: 0; right: 0; bottom: 22px;
+  text-align: center;
+  font-family: "Poppins", var(--font-sans);
+  font-size: 10px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--ink-ghost);
-  z-index: 250;
+  color: var(--ink-muted);
   pointer-events: none;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  transition: opacity 0.6s;
 }
-#hint .hint-line { width: 26px; height: 1px; background: var(--ink-ghost); animation: hintPulse 1.8s ease-in-out infinite; }
-@keyframes hintPulse {
-  0%, 100% { opacity: 0.3; transform: scaleX(1); }
-  50%      { opacity: 1;   transform: scaleX(1.5); }
-}
+.museum-hint.is-hidden { opacity: 0; }
 
-@media (max-width: 640px) {
-  .play-intro { top: calc(var(--nav-h) + 10px); }
+@media (prefers-reduced-motion: reduce) {
+  .piece, .frame { transition: none; }
 }
